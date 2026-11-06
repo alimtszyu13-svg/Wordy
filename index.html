@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wordy — английский по 5 минут в день, бесплатно</title>
+<meta name="description" content="Слова, которые не забываются, грамматика от A1 до C1 простым языком, игры и пробные IELTS. Бесплатно, без рекламы и без регистрации — прямо в телефоне.">
+<meta name="theme-color" content="#F2F3EF">
+<meta name="author" content="Alim Tszyu">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/icons/face.svg">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wordy">
+<meta property="og:title" content="Wordy — английский по 5 минут в день">
+<meta property="og:description" content="Слова, которые не забываются, грамматика A1–C1, игры и пробные IELTS. Бесплатно и без рекламы.">
+<meta property="og:image" content="https://wordy-b5142.web.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.top .btn.small{min-height:40px}
+@media (max-width:520px){ .top .hide-s{display:none} }
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:center;padding:36px 0 8px}
+.hero h1{font-size:clamp(38px,6vw,66px);font-weight:800;letter-spacing:-.04em;line-height:1.02;max-width:11.5em}
+.hero h1 .swash{display:inline-block;position:relative}
+.hero h1 .swash::after{content:"";position:absolute;left:-2%;right:-2%;bottom:.04em;height:.2em;border-radius:.1em;background:var(--accent);opacity:.28;z-index:-1}
+.lead{font-size:clamp(17px,1.9vw,20px);color:var(--muted);margin-top:20px;max-width:31em;line-height:1.55}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.cta .btn{min-height:54px;padding:0 26px;font-size:17px;border-radius:14px}
+.free{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:15px;color:var(--muted)}
+.free li{display:flex;align-items:center;gap:7px}
+.free svg{flex:none;color:var(--accent-ink)}
+
+/* ---------- live demo: the one memorable thing ---------- */
+.demo{position:relative;justify-self:center;width:min(400px,100%);background:var(--surface);border-radius:28px;padding:46px 22px 22px;box-shadow:0 1px 2px rgba(20,28,40,.06),0 30px 70px -34px rgba(20,28,40,.45)}
+.demo-h{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;color:var(--muted)}
+.demo-h b{color:var(--ink);font-weight:600}
+.coins{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-variant-numeric:tabular-nums;transition:transform .25s}
+.coins.pop{transform:scale(1.18)}
+.dots{display:flex;gap:5px}
+.dots i{width:22px;height:5px;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.dots i.ok{background:var(--accent);opacity:.45}
+.mascot{position:absolute;top:-34px;right:18px;width:68px;height:68px;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.mascot.jump{transform:translateY(-10px) rotate(-6deg)}
+.mascot.sad{transform:translateY(3px) rotate(4deg)}
+.mascot .pupil{transition:transform .12s}
+.mascot .lid{transform-origin:center;transform:scaleY(0);transition:transform .08s}
+.mascot.blink .lid{transform:scaleY(1)}
+.mascot .smile,.mascot .grin,.mascot .oh{transition:opacity .2s}
+.mascot .grin,.mascot .oh{opacity:0}
+.mascot.jump .smile,.mascot.sad .smile{opacity:0} .mascot.jump .grin{opacity:1} .mascot.sad .oh{opacity:1}
+.word{margin-top:26px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.word b{font-size:clamp(36px,5vw,46px);font-weight:800;letter-spacing:-.03em;line-height:1}
+.say{width:42px;height:42px;border-radius:50%;border:0;background:var(--bg);color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.say:hover{background:var(--bg-2)}
+.ipa{color:var(--muted);font-size:17px;margin-top:6px}
+.q{margin-top:18px;font-weight:600}
+.opts{display:grid;gap:8px;margin-top:10px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font:500 16.5px var(--f-sans);text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:#2F8F5B;background:color-mix(in srgb,#2F8F5B 12%,transparent)}
+.opt.wrong{border-color:#C9474F;background:color-mix(in srgb,#C9474F 10%,transparent)}
+.opt.dim{opacity:.5}
+.fb{margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--bg);font-size:15.5px;line-height:1.5}
+.fb .ex{display:block;font-family:var(--f-read);font-style:italic;margin-top:6px}
+.fb .ex mark{background:var(--accent-soft);color:inherit;border-radius:3px;padding:0 2px}
+.fb .when{display:block;margin-top:8px;color:var(--muted);font-size:14px}
+.demo .next{margin-top:14px;width:100%;min-height:50px}
+.demo-end{text-align:center;padding:18px 4px 4px}
+.demo-end b{display:block;font-size:26px;letter-spacing:-.02em}
+.demo-end p{color:var(--muted);margin-top:10px}
+.demo-end .btn{margin-top:18px;width:100%;min-height:52px}
+.demo-end .again{margin-top:10px;background:none;border:0;color:var(--muted);font:inherit;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* ---------- meet Wordy ---------- */
+.meet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+.meet .sub+.sub{margin-top:8px}
+.outfits{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 15px var(--f-sans);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.meet-note{margin-top:14px;font-size:14.5px;color:var(--muted);max-width:34em}
+.stage{position:relative;justify-self:center;width:min(380px,100%);aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle at 50% 60%,var(--accent-soft),transparent 68%);display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:6%}
+.bubble{position:relative;margin-bottom:14px;width:max-content;max-width:min(300px,94%);padding:12px 16px;border-radius:18px;background:var(--surface);box-shadow:0 10px 30px -14px rgba(20,28,40,.4);font-weight:600;font-size:16px;text-align:center;line-height:1.35;transition:opacity .2s,transform .2s;white-space:normal}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--surface);transform:translateX(-50%) rotate(45deg)}
+.bubble.out{opacity:0;transform:translateY(6px)}
+.buddy{width:56%;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.buddy svg{display:block;width:100%;height:auto;overflow:visible}
+.buddy .body,.buddy .arm,.buddy .leg,.buddy .shadow{transform-box:fill-box}
+.buddy .body{transform-origin:50% 100%;animation:bob 2.6s ease-in-out infinite}
+.buddy .shadow{transform-origin:center;animation:shad 2.6s ease-in-out infinite}
+.buddy .al{transform-origin:100% 0%;animation:swayL 2.6s ease-in-out infinite}
+.buddy .ar{transform-origin:0% 0%;animation:swayR 2.6s ease-in-out infinite}
+.buddy .pupils{transition:transform .12s}
+.buddy .lids{opacity:0}
+.buddy.blink .lids{opacity:1}
+.buddy .lids path{opacity:0}
+.buddy .m{opacity:0;transition:opacity .15s}
+.buddy .smile{opacity:1}
+.buddy .o{opacity:0;transition:opacity .2s}
+.buddy[data-o="cap"] .o-cap,.buddy[data-o="bow"] .o-bow,.buddy[data-o="specs"] .o-specs,.buddy[data-o="crown"] .o-crown{opacity:1}
+.buddy .zzz{opacity:0}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-5px) scale(.985,1.015)}}
+@keyframes shad{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.9)}}
+@keyframes swayL{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
+@keyframes swayR{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
+/* reactions */
+.buddy.happy .body{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}
+.buddy.happy .smile{opacity:0} .buddy.happy .grin{opacity:1}
+.buddy.happy .ar,.buddy.wave .ar{animation:wave .6s ease-in-out 2}
+.buddy.wave .ar{animation:wave .5s ease-in-out 3}
+.buddy.oops .smile{opacity:0} .buddy.oops .oh{opacity:1}
+.buddy.oops .body{animation:shake .45s ease-in-out}
+.buddy.sleep .body{animation:breathe 3.4s ease-in-out infinite}
+.buddy.sleep .lids{opacity:1} .buddy.sleep .lids path{opacity:1} .buddy.sleep .lids ellipse,.buddy.sleep .eyes>ellipse,.buddy.sleep .pupils{opacity:0}
+.buddy.sleep .lids ellipse{fill:#FF7D16}
+.buddy.sleep .zzz{opacity:1;animation:zz 2.4s ease-in-out infinite}
+.buddy.sleep .arm{animation:none}
+@keyframes hop{0%{transform:translateY(0) scale(1.08,.9)}35%{transform:translateY(-26px) scale(.94,1.08)}70%{transform:translateY(0) scale(1.06,.94)}100%{transform:translateY(0) scale(1)}}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-55deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px) rotate(-3deg)}75%{transform:translateX(6px) rotate(3deg)}}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,.98)}}
+@keyframes zz{0%{transform:translateY(4px);opacity:0}30%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.buddy *{animation:none!important}}
+@media (max-width:900px){ .meet{grid-template-columns:1fr;gap:28px} .meet .stage{order:-1;width:min(320px,86%)} }
+
+/* ---------- sections ---------- */
+section{padding:88px 0 0}
+section>h2{font-size:clamp(28px,3.8vw,40px);letter-spacing:-.03em;max-width:20em}
+section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:0 40px;margin-top:34px}
+.why>div{padding-top:20px;border-top:2px solid var(--ink)}
+.why h3{font-size:21px}
+.why p{color:var(--muted);margin-top:10px;font-size:16.5px}
+.why .ladder{display:flex;gap:6px;margin-top:16px;align-items:flex-end}
+.why .ladder span{display:grid;place-items:center;min-width:38px;height:30px;padding:0 8px;border-radius:9px;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-size:14px}
+
+/* real screens in phone frames */
+.screens{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:36px}
+.screens figure{margin:0}
+.phone{position:relative;border-radius:34px;padding:9px;background:#1A2230;box-shadow:0 24px 50px -30px rgba(20,28,40,.6)}
+.phone img{display:block;width:100%;height:auto;aspect-ratio:1/2;object-fit:cover;object-position:top;border-radius:26px;background:var(--bg-2)}
+.screens figcaption{margin-top:14px;font-size:15.5px;color:var(--muted);line-height:1.45}
+.screens figcaption b{display:block;color:var(--ink);font-size:17px;margin-bottom:2px}
+
+.inside{display:grid;grid-template-columns:repeat(3,1fr);gap:0 36px;margin-top:30px}
+.inside>div{padding:20px 0;border-top:1px solid var(--line)}
+.inside .n{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--accent-ink)}
+.inside h3{font-size:18px;margin-top:8px}
+.inside p{color:var(--muted);margin-top:6px;font-size:15.5px}
+
+.who{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+.who>div{background:var(--surface);border-radius:20px;padding:22px 22px 24px}
+.who h3{font-size:19px}
+.who p{color:var(--muted);margin-top:8px;font-size:16px}
+.who a{display:inline-block;margin-top:14px;font-weight:600}
+
+.steps{list-style:none;counter-reset:s;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.steps li{counter-increment:s}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;margin-bottom:12px}
+:root[data-theme="dark"] .steps li::before{color:#11151B}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .steps li::before{color:#11151B}}
+.steps b{display:block;font-size:17px}
+.steps span{display:block;color:var(--muted);margin-top:4px;font-size:15.5px}
+
+.faq{margin-top:26px;max-width:760px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:18px 40px 18px 0;font-weight:600;font-size:17.5px;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";position:absolute;right:6px;top:50%;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.faq details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.faq details>div{padding:0 0 20px;color:var(--muted);font-size:16.5px;max-width:42em}
+.faq details>div p+p{margin-top:8px}
+.inst-big{margin-top:14px;background:var(--navy);color:#fff}
+.inst-big:hover{background:#1a3350}
+:root[data-theme="dark"] .inst-big{background:#2E5580}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .inst-big{background:#2E5580}}
+.inst-msg{margin-top:10px;font-size:15px}
+
+.final{margin-top:96px;background:var(--navy);color:#fff;border-radius:28px;padding:44px clamp(22px,5vw,60px);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.final h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;max-width:16em}
+.final p{opacity:.8;margin-top:10px;font-size:17px}
+.final .btn{min-height:56px;padding:0 28px;font-size:17px}
+:root[data-theme="dark"] .final{background:#1E2A38}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .final{background:#1E2A38}}
+
+/* sticky start button on phones once the hero button is off screen */
+.stick{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;display:none}
+.stick .btn{width:100%;min-height:54px;font-size:17px;border-radius:16px;box-shadow:0 14px 30px -12px rgba(232,101,12,.7)}
+@media (max-width:820px){ .stick.on{display:block} body{padding-bottom:84px} }
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:56px;padding-top:16px}
+  .demo{width:min(420px,100%)}
+  .why,.inside,.who{grid-template-columns:1fr}
+  .why{gap:28px}
+  .steps{grid-template-columns:1fr 1fr}
+  .screens{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:16px;margin-left:-20px;margin-right:-20px;padding:0 20px 8px;scrollbar-width:none}
+  .screens::-webkit-scrollbar{display:none}
+  .screens figure{flex:0 0 min(68vw,260px);scroll-snap-align:start}
+  .final{grid-template-columns:1fr}
+  section{padding-top:72px}
+}
+@media (max-width:520px){ .steps{grid-template-columns:1fr} .cta .btn{flex:1 1 100%} }
+@media (prefers-reduced-motion:reduce){ .mascot,.coins{transition:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><img src="/icons/face.svg" alt="">wordy</a>
+    <nav><a class="btn small ghost hide-s" href="/app.html#teacher">Для учителя</a><a class="btn small ghost" href="/app.html#class">Войти</a></nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1>Английский, который <span class="swash">не забывается</span></h1>
+        <p class="lead">По 5 минут в день. Слова возвращаются ровно тогда, когда начинают забываться, грамматика объяснена по-русски и просто, а Ворди радуется каждому твоему успеху.</p>
+        <div class="cta"><a class="btn" id="go" href="/app.html">Начать бесплатно</a><a class="btn ghost" href="/app.html#teacher">Я учитель</a></div>
+        <ul class="free">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>Бесплатно, без подписки</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>Без рекламы</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>Можно без регистрации</li>
+        </ul>
+      </div>
+
+      <div class="demo" id="demo" aria-live="polite">
+        <svg class="mascot" id="mascot" viewBox="0 0 30 30" aria-hidden="true">
+          <circle cx="15" cy="15" r="13.5" fill="#FF7A12"/>
+          <ellipse cx="11" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/><ellipse cx="19" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/>
+          <g class="pupil" id="pupils"><ellipse cx="11" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><ellipse cx="19" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><circle cx="10.2" cy="11" r=".9" fill="#fff"/><circle cx="18.2" cy="11" r=".9" fill="#fff"/></g>
+          <ellipse class="lid" cx="11" cy="12.5" rx="3.5" ry="4.8" fill="#FF7A12"/><ellipse class="lid" cx="19" cy="12.5" rx="3.5" ry="4.8" fill="#FF7A12"/>
+          <path class="smile" d="M12.5 20q2.5 1.8 5 0" stroke="#4A1E0C" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path class="grin" d="M11.2 19.2q3.8 4.2 7.6 0z" fill="#4A1E0C"/>
+          <ellipse class="oh" cx="15" cy="20.6" rx="1.5" ry="1.3" fill="#4A1E0C"/>
+        </svg>
+        <div id="demo-body"></div>
+        <noscript><p>Включи JavaScript, чтобы попробовать карточку.</p></noscript>
+      </div>
+    </div>
+
+    <section class="meet" aria-labelledby="h-meet">
+      <div class="meet-txt">
+        <h2 id="h-meet">Знакомься, это Ворди</h2>
+        <p class="sub">Он живёт прямо в приложении. Радуется твоим верным ответам, подбадривает после ошибок, засыпает, если долго ничего не делать, и просыпается, когда ты возвращаешься.</p>
+        <p class="sub">Нажми на него — или подбери ему наряд.</p>
+        <div class="outfits" role="group" aria-label="Наряд для Ворди">
+          <button type="button" class="chip" data-o="" aria-pressed="true">Без наряда</button>
+          <button type="button" class="chip" data-o="cap" aria-pressed="false">Кепка</button>
+          <button type="button" class="chip" data-o="bow" aria-pressed="false">Бабочка</button>
+          <button type="button" class="chip" data-o="specs" aria-pressed="false">Очки</button>
+          <button type="button" class="chip" data-o="crown" aria-pressed="false">Корона</button>
+        </div>
+        <p class="meet-note">В приложении наряды и мебель для домика покупаются за монеты, которые зарабатываешь учёбой.</p>
+      </div>
+      <div class="stage" id="stage">
+        <div class="bubble" id="bubble" aria-live="polite">Привет! Я Ворди.</div>
+        <button type="button" class="buddy" id="buddy" aria-label="Ворди. Нажми, чтобы он отреагировал">
+          <svg viewBox="0 0 200 214" aria-hidden="true">
+            <defs><radialGradient id="bg1" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#FFA24D"/><stop offset=".6" stop-color="#FF7A12"/><stop offset="1" stop-color="#E25F07"/></radialGradient></defs>
+            <ellipse class="shadow" cx="100" cy="205" rx="50" ry="7" fill="rgba(20,28,40,.18)"/>
+            <g class="legs"><path class="leg l" d="M80 164 q-3 20 -9 32 q4 4 12 4 q8 0 12 -3 q-2 -16 1 -31z" fill="#E86A0B"/><path class="leg r" d="M120 164 q3 20 9 32 q-4 4 -12 4 q-8 0 -12 -3 q2 -16 -1 -31z" fill="#E86A0B"/></g>
+            <g class="arm al"><path d="M38 112 q-22 6 -26 26 q8 6 14 0 q4 -12 18 -16z" fill="#F07010"/></g>
+            <g class="arm ar"><path d="M162 112 q22 6 26 26 q-8 6 -14 0 q-4 -12 -18 -16z" fill="#F07010"/></g>
+            <g class="body"><circle cx="100" cy="112" r="66" fill="url(#bg1)"/>
+              <g class="eyes"><ellipse cx="78" cy="98" rx="15" ry="20" fill="#fff"/><ellipse cx="122" cy="98" rx="15" ry="20" fill="#fff"/>
+                <g class="pupils" id="bpup"><ellipse cx="78" cy="100" rx="10.5" ry="15" fill="#24130A"/><ellipse cx="122" cy="100" rx="10.5" ry="15" fill="#24130A"/><circle cx="74" cy="92" r="4" fill="#fff"/><circle cx="118" cy="92" r="4" fill="#fff"/></g>
+                <g class="lids"><ellipse cx="78" cy="98" rx="16" ry="21" fill="#FF7D16"/><ellipse cx="122" cy="98" rx="16" ry="21" fill="#FF7D16"/><path d="M64 100 q14 8 28 0 M108 100 q14 8 28 0" stroke="#4A1E0C" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>
+              <ellipse cx="62" cy="128" rx="9" ry="5" fill="#FF5A5A" opacity=".35"/><ellipse cx="138" cy="128" rx="9" ry="5" fill="#FF5A5A" opacity=".35"/>
+              <path class="m smile" d="M88 134 q12 9 24 0" stroke="#4A1E0C" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path class="m grin" d="M84 130 q16 20 32 0z" fill="#4A1E0C"/>
+              <ellipse class="m oh" cx="100" cy="136" rx="6" ry="7" fill="#4A1E0C"/>
+              <g class="o o-cap"><path d="M52 66 q48 -52 96 0 q-48 -10 -96 0z" fill="#23405F"/><path d="M140 62 q22 2 30 12 q-18 2 -34 -4z" fill="#1A3350"/><circle cx="100" cy="30" r="5" fill="#E8650C"/></g>
+              <g class="o o-bow"><path d="M100 172 l-22 -12 v24z M100 172 l22 -12 v24z" fill="#D2394E"/><circle cx="100" cy="172" r="6" fill="#B02A3E"/></g>
+              <g class="o o-specs" fill="none" stroke="#18202B" stroke-width="4"><circle cx="78" cy="99" r="19"/><circle cx="122" cy="99" r="19"/><path d="M97 97 q3 -3 6 0 M59 96 l-14 -6 M141 96 l14 -6"/></g>
+              <g class="o o-crown"><path d="M64 54 l8 -30 l16 18 l12 -26 l12 26 l16 -18 l8 30z" fill="#F2B233" stroke="#C98A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="40" r="4" fill="#D2394E"/></g>
+            </g>
+            <g class="zzz" fill="#5E6672" font-family="Onest,sans-serif" font-weight="700"><text x="150" y="40" font-size="18">z</text><text x="164" y="22" font-size="13">z</text></g>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-why">
+      <h2 id="h-why">Почему здесь получается не бросить</h2>
+      <div class="why">
+        <div><h3>Слова не вылетают из головы</h3><p>Каждое выученное слово Ворди возвращает на повторение именно тогда, когда ты начинаешь его забывать. После пяти повторений оно остаётся надолго.</p>
+          <div class="ladder" aria-label="Повторение через 1, 2, 4, 7 и 15 дней"><span>1 д</span><span>2 д</span><span>4 д</span><span>7 д</span><span>15 д</span></div></div>
+        <div><h3>Грамматика без зубрёжки</h3><p>Каждая тема — как в хорошем учебнике, только по-русски и короче: правило, таблица, живые примеры, типичные ошибки. Потом упражнения с разбором каждой ошибки.</p></div>
+        <div><h3>Учёба похожа на игру</h3><p>За верные ответы — монеты, а на них можно обставить домик Ворди и подобрать ему наряд. Надоело повторять — сыграй: побег из комнаты, космический тир и ещё пять игр на английские слова.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-screens">
+      <h2 id="h-screens">Так это выглядит</h2>
+      <p class="sub">Настоящие экраны Wordy на телефоне. На компьютере всё то же самое, только просторнее.</p>
+      <div class="screens">
+        <figure><div class="phone"><img src="/img/screen-home.webp" width="560" height="1120" alt="Главный экран Wordy: цель на сегодня и план от Ворди" loading="lazy"></div><figcaption><b>План на сегодня</b>Ворди сам решает, с чего начать: повторить слова, пройти урок или сыграть.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-gram.webp" width="560" height="1120" alt="Урок грамматики Present Perfect с содержанием" loading="lazy"></div><figcaption><b>Урок грамматики</b>95 тем от to be до инверсии. Правило, примеры, упражнения и итоговый тест.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-esc.webp" width="560" height="1120" alt="Игра «Побег из комнаты»: комната, в которой нужно найти ключ" loading="lazy"></div><figcaption><b>Побег из комнаты</b>Подсказки спрятаны в записках на английском. Понял — выбрался.</figcaption></figure>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-inside">
+      <h2 id="h-inside">Что внутри</h2>
+      <div class="inside">
+        <div><span class="n">3000+</span><h3>слов с произношением</h3><p>От базовых до IELTS и SAT, плюс идиомы. Карточки, мини-тест и повторение по дням.</p></div>
+        <div><span class="n">95</span><h3>тем грамматики</h3><p>Уровни A1–C1 и 2670 упражнений. Открыто всё до твоего уровня, дальше — по мере роста.</p></div>
+        <div><span class="n">7</span><h3>игр</h3><p>Угадай слово, кроссворд, космический тир, побег из комнаты, словопад и другие.</p></div>
+        <div><span class="n">126</span><h3>текстов для чтения</h3><p>Факты, истории и классика по уровням. Нажми на незнакомое слово — увидишь перевод.</p></div>
+        <div><span class="n">10</span><h3>пробных IELTS</h3><p>Academic: Listening с озвучкой и Reading с проверкой и примерным баллом, а ещё Writing и Speaking.</p></div>
+        <div><span class="n">A1→C1</span><h3>сертификаты уровней</h3><p>Прошёл уровень — получи сертификат с кодом, который можно проверить на сайте.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-who">
+      <h2 id="h-who">Кому подойдёт</h2>
+      <div class="who">
+        <div><h3>Начинаешь с нуля</h3><p>Выбери A1 — первая тема to be, первые слова самые частые. Ворди подскажет, что делать дальше.</p></div>
+        <div><h3>Готовишься к IELTS или SAT</h3><p>Пробные тесты в формате экзамена, академические слова и примерный балл, чтобы видеть рост.</p></div>
+        <div><h3>Ты учитель</h3><p>Группы, домашние задания с проверкой и викторины на уроке. Тоже бесплатно.</p><a href="#h-teacher">Как это работает</a></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-teacher">
+      <h2 id="h-teacher">Для учителя: класс в телефоне</h2>
+      <p class="sub">Зарегистрируйся как учитель — и Wordy станет рабочим местом для групп и индивидуальных учеников.</p>
+      <ol class="steps">
+        <li><b>Создай группу</b><span>Для индивидуального ученика — отдельная группа с его именем.</span></li>
+        <li><b>Дай код дня</b><span>Код меняется каждый день. Или пригласи ученика по email.</span></li>
+        <li><b>Задай и проверь домашку</b><span>Комментарии прямо к фрагментам ответа, оценка, возврат на доработку.</span></li>
+        <li><b>Проведи викторину</b><span>Вопросы на твоём экране, ученики отвечают с телефонов, после каждого вопроса — таблица лидеров.</span></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="h-faq">
+      <h2 id="h-faq">Частые вопросы</h2>
+      <div class="faq">
+        <details><summary>Это правда бесплатно?</summary><div><p>Да. Без подписки, без пробного периода, без рекламы и без платных разделов. Монеты в Wordy зарабатываются только учёбой.</p></div></details>
+        <details><summary>Нужно регистрироваться?</summary><div><p>Нет — открой и начни. Прогресс сохранится в браузере. Аккаунт через Google займёт пару секунд и нужен, чтобы прогресс был на всех устройствах, вступить в группу учителя и получать сертификаты.</p></div></details>
+        <details><summary>Не знаю свой уровень. С чего начать?</summary><div><p>При первом входе Ворди спросит уровень и коротко объяснит каждый. Не уверен — начни с A1: лёгкие темы пройдёшь быстро. Уровень можно сменить в любой момент.</p></div></details>
+        <details><summary>Сколько времени нужно в день?</summary><div><p>Хватит 5–10 минут: слова дня и короткое повторение. Хочешь больше — урок грамматики, текст или игра. Можно включить напоминание, и Ворди пришлёт одно уведомление, только если ты в этот день ещё не занимался.</p></div></details>
+        <details id="faq-install"><summary>Как поставить Wordy на телефон?</summary><div>
+          <p><b>Android:</b> открой Wordy в Chrome → меню ⋮ → «Установить приложение» или «Добавить на главный экран».</p>
+          <p><b>iPhone:</b> открой Wordy в Safari → «Поделиться» → «На экран Домой».</p>
+          <p>Wordy откроется как обычное приложение, без адресной строки. После первого запуска он работает даже без интернета.</p>
+          <button class="btn inst-big" id="install-btn" type="button"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M5 21h14"/></svg><span>Установить приложение</span></button>
+          <p class="inst-msg" id="install-msg" role="status" hidden></p></div></details>
+        <details><summary>Ворди не будет отвлекать?</summary><div><p>Ворди подсказывает, радуется верным ответам и поддерживает после ошибок. Если хочется тишины — в Настройках его можно сделать тихим или совсем спрятать.</p></div></details>
+      </div>
+    </section>
+
+    <div class="final">
+      <div><h2>Первое слово — через 10 секунд</h2><p>Выбери уровень, и Ворди соберёт подборку на сегодня.</p></div>
+      <a class="btn" href="/app.html">Начать бесплатно</a>
+    </div>
+  </main>
+</div>
+<div class="stick" id="stick"><a class="btn" href="/app.html">Начать бесплатно</a></div>
+<footer><div class="wrap"><span>Wordy · 2026 · Создатель — <b>Alim Tszyu</b></span><nav><a href="/verify.html">Проверить сертификат</a><a href="/privacy.html">Конфиденциальность</a><a href="/terms.html">Условия использования</a><a href="/app.html">Открыть Wordy</a></nav></div></footer>
+<script>
+(function(){
+  /* ---------- live demo: three real Wordy cards ---------- */
+  var W=[
+    {w:'habit',ipa:'/ˈhæbɪt/',opts:['привычка','жилище','кролик'],ok:0,ex:'Reading before bed is a good <mark>habit</mark>.',why:'Не путай с habitat — «среда обитания».'},
+    {w:'grateful',ipa:'/ˈɡreɪtfəl/',opts:['великолепный','благодарный','тёртый'],ok:1,ex:'I’m really <mark>grateful</mark> for your help.',why:'Похоже на great, но это другое слово: grateful — «благодарный».'},
+    {w:'a piece of cake',ipa:'/ə ˌpiːs əv ˈkeɪk/',opts:['кусок торта','сладкоежка','проще простого'],ok:2,ex:'The test was <mark>a piece of cake</mark>.',why:'Это идиома: дословно «кусок торта», а по смыслу — «проще простого».'}
+  ];
+  var i=0, score=0, coins=0, body=document.getElementById('demo-body'), m=document.getElementById('mascot'), pup=document.getElementById('pupils');
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function dots(){ return '<span class="dots" aria-label="Слово '+Math.min(i+1,3)+' из 3">'+W.map(function(_,k){ return '<i class="'+(k<i?'ok':k===i?'on':'')+'"></i>'; }).join('')+'</span>'; }
+  function head(){ return '<div class="demo-h"><span><b>Попробуй прямо здесь</b></span><span class="coins" id="coins"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F2B233"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#B9770E" stroke-width="2"/></svg>'+coins+'</span></div>'; }
+  function mood(c){ m.classList.remove('jump','sad'); if(c){ void m.getBoundingClientRect(); m.classList.add(c); setTimeout(function(){ m.classList.remove(c); },900); } }
+  function speak(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='en-US'; u.rate=.9; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+  function card(){
+    var c=W[i];
+    body.innerHTML=head()+'<div style="margin-top:14px">'+dots()+'</div>'
+      +'<div class="word"><b lang="en">'+esc(c.w)+'</b><button class="say" id="say" type="button" aria-label="Послушать произношение"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button></div>'
+      +'<div class="ipa" lang="en">'+esc(c.ipa)+'</div><p class="q">Что это значит?</p>'
+      +'<div class="opts">'+c.opts.map(function(o,k){ return '<button class="opt" type="button" data-k="'+k+'">'+esc(o)+'</button>'; }).join('')+'</div><div id="after"></div>';
+    document.getElementById('say').onclick=function(){ speak(c.w); };
+    [].forEach.call(body.querySelectorAll('.opt'),function(b){ b.onclick=function(){ pickOpt(+b.dataset.k); }; });
+  }
+  function pickOpt(k){
+    var c=W[i], ok=k===c.ok, bs=body.querySelectorAll('.opt');
+    [].forEach.call(bs,function(b,j){ b.disabled=true; if(j===c.ok) b.classList.add('right'); else if(j===k) b.classList.add('wrong'); else b.classList.add('dim'); });
+    if(ok){ score++; coins+=5; var el=document.getElementById('coins'); el.lastChild.nodeValue=coins; el.classList.add('pop'); setTimeout(function(){ el.classList.remove('pop'); },260); mood('jump'); }
+    else mood('sad');
+    speak(c.w);
+    document.getElementById('after').innerHTML='<div class="fb">'+(ok?'<b>Верно! +5 монет.</b> ':'<b>Почти!</b> «'+esc(c.w)+'» — это «'+esc(c.opts[c.ok])+'». ')+esc(c.why)
+      +'<span class="ex" lang="en">'+c.ex+'</span><span class="when">'+(ok?'Ворди вернёт это слово через 1 день, потом через 2, 4, 7 и 15.':'Такое слово Ворди покажет снова уже завтра.')+'</span></div>'
+      +'<button class="btn next" id="nx" type="button">'+(i<2?'Следующее слово':'Посмотреть итог')+'</button>';
+    var nx=document.getElementById('nx'); nx.onclick=function(){ i++; if(i<3) card(); else end(); }; try{ nx.focus({preventScroll:true}); }catch(e){}
+  }
+  function end(){
+    mood(score>=2?'jump':'');
+    body.innerHTML=head()+'<div class="demo-end"><b>'+score+' из 3'+(score===3?' — отлично!':'')+'</b><p>Это три из более чем 3000 слов в Wordy. Ворди сам напомнит, когда их пора повторить.</p>'
+      +'<a class="btn" href="/app.html">Продолжить в Wordy</a><button class="again" id="again" type="button">Попробовать ещё раз</button></div>';
+    document.getElementById('again').onclick=function(){ i=0; score=0; coins=0; card(); };
+  }
+  card();
+  /* Wordy looks at the pointer and blinks now and then */
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    window.addEventListener('pointermove',function(e){ var r=m.getBoundingClientRect(), dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height/2), d=Math.max(1,Math.hypot(dx,dy)), k=Math.min(1,d/220);
+      pup.style.transform='translate('+(dx/d*1.1*k).toFixed(2)+'px,'+(dy/d*1.1*k).toFixed(2)+'px)'; },{passive:true});
+    (function blink(){ setTimeout(function(){ m.classList.add('blink'); setTimeout(function(){ m.classList.remove('blink'); blink(); },140); },2600+Math.random()*2800); })();
+  }
+
+/* ---------- meet Wordy: taps, outfits, sleep when idle ---------- */
+  var bd=document.getElementById('buddy'), bb=document.getElementById('bubble'), bp=document.getElementById('bpup');
+  var LINES=['Ой, щекотно!','Пять минут в день — и слова останутся с тобой.','Знаешь, как будет «привычка»? Habit!','Ещё раз — и я станцую!','Верный ответ? Я так и знал!','Ошибся? Не страшно, повторим завтра.','Я храню твои слова, пока ты отдыхаешь.'];
+  var OUT={'':'Мне и так хорошо!','cap':'Кепка! Теперь я спортивный.','bow':'Бабочка — для экзамена IELTS.','specs':'В очках я выгляжу умнее, правда?','crown':'Король английского!'};
+  var li=0, bt=0, idle=0, asleep=false;
+  function talk(t){ bb.classList.add('out'); setTimeout(function(){ bb.textContent=t; bb.classList.remove('out'); },160); }
+  function act(c,ms){ bd.classList.remove('happy','wave','oops'); void bd.getBoundingClientRect(); bd.classList.add(c); clearTimeout(bt); bt=setTimeout(function(){ bd.classList.remove(c); },ms||1300); }
+  function wake(){ idle=Date.now(); if(asleep){ asleep=false; bd.classList.remove('sleep'); act('wave'); talk('Ой, я задремал! Ты вернулся!'); } }
+  bd.addEventListener('click',function(){ if(asleep){ wake(); return; } wake(); act(li%3===2?'oops':'happy'); talk(LINES[li++%LINES.length]); });
+  [].forEach.call(document.querySelectorAll('.outfits .chip'),function(c){ c.addEventListener('click',function(){
+    [].forEach.call(document.querySelectorAll('.outfits .chip'),function(x){ x.setAttribute('aria-pressed',x===c?'true':'false'); });
+    bd.dataset.o=c.dataset.o; wake(); act('happy'); talk(OUT[c.dataset.o]); }); });
+  if(!reduce){
+    window.addEventListener('pointermove',function(e){ var r=bd.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return; var dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height*.42), d=Math.max(1,Math.hypot(dx,dy)), k=Math.min(1,d/260);
+      bp.style.transform='translate('+(dx/d*4.5*k).toFixed(1)+'px,'+(dy/d*5*k).toFixed(1)+'px)'; if(asleep&&d<200) wake(); },{passive:true});
+    (function bl(){ setTimeout(function(){ if(!asleep){ bd.classList.add('blink'); setTimeout(function(){ bd.classList.remove('blink'); },150); } bl(); },2400+Math.random()*3000); })();
+  }
+  idle=Date.now();
+  ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){ window.addEventListener(ev,function(){ if(!asleep) idle=Date.now(); },{passive:true}); });
+  setInterval(function(){ if(!asleep&&Date.now()-idle>14000){ var r=bd.getBoundingClientRect(); if(r.bottom>0&&r.top<innerHeight){ asleep=true; bd.classList.add('sleep'); talk('Zzz… Нажми, чтобы разбудить.'); } } },1500);
+  var wv=false; if('IntersectionObserver' in window) new IntersectionObserver(function(es){ if(es[0].isIntersecting&&!wv){ wv=true; setTimeout(function(){ act('wave',1600); talk('Привет! Я Ворди. Нажми на меня!'); },300); } },{threshold:.5}).observe(bd);
+
+  /* sticky start button on phones */
+  var go=document.getElementById('go'), st=document.getElementById('stick');
+  if('IntersectionObserver' in window) new IntersectionObserver(function(es){ st.classList.toggle('on',!es[0].isIntersecting&&es[0].boundingClientRect.top<0); }).observe(go);
+
+  /* install: the button always works; without a browser prompt it shows the steps */
+  var deferred=null, msg=document.getElementById('install-msg');
+  var standalone=false; try{ standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true; }catch(e){}
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferred=e; });
+  window.addEventListener('appinstalled',function(){ say('Готово! Wordy установлен — значок появится на главном экране.'); });
+  function say(t){ msg.textContent=t; msg.hidden=false; }
+  document.getElementById('install-btn').addEventListener('click',function(){
+    if(standalone){ say('Wordy уже установлен на этом устройстве.'); return; }
+    if(!deferred){ say('Браузер пока не предложил установку. Сделай это по шагам выше — это пара нажатий.'); return; }
+    var d=deferred; deferred=null; d.prompt(); say('Подтверди установку в окне браузера…');
+    d.userChoice.then(function(r){ say(r&&r.outcome==='accepted'?'Устанавливается. Значок Wordy появится на главном экране через несколько секунд.':'Установку можно сделать и позже — по шагам выше.'); }).catch(function(){}); });
+  if(location.hash==='#install'){ var f=document.getElementById('faq-install'); f.open=true; f.scrollIntoView(); }
+  if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('/sw.js').catch(function(){});
+})();
+</script>
+</body>
+</html>

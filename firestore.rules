@@ -1,0 +1,185 @@
+rules_version = '2';
+// Wordy — правила доступа. Все проверки выполняет сервер Firebase:
+// ученик не может прочитать чужие данные, сделать себя учителем или вступить по устаревшему коду.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function profile(u) { return get(/databases/$(database)/documents/users/$(u)).data; }
+    function isTeacher() { return signedIn() && profile(uid()).role == 'teacher'; }
+    function isStudent() { return signedIn() && profile(uid()).role == 'student'; }
+    function group(g) { return get(/databases/$(database)/documents/groups/$(g)).data; }
+    function teaches(g) { return signedIn() && group(g).teacher == uid(); }
+    function memberOf(g) { return signedIn() && exists(/databases/$(database)/documents/groups/$(g)/members/$(uid())); }
+    function onlyKeys(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    // Профиль: роль выбирается один раз при регистрации и больше не меняется.
+    match /users/{u} {
+      allow read: if signedIn() && uid() == u;
+      allow create: if signedIn() && uid() == u
+        && request.resource.data.role in ['teacher', 'student']
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && request.resource.data.groups.size() == 0;
+      allow update: if signedIn() && uid() == u && onlyKeys(['name', 'groups', 'avatar', 'bio'])
+        && request.resource.data.groups.size() <= 50
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && (!('bio' in request.resource.data) || (request.resource.data.bio is string && request.resource.data.bio.size() <= 300))
+        && (!('avatar' in request.resource.data) || request.resource.data.avatar == null || (request.resource.data.avatar is string && request.resource.data.avatar.size() <= 20));
+      // Удалить свой аккаунт может только сам владелец.
+      allow delete: if signedIn() && uid() == u;
+      match /private/{doc} {
+        allow read, write: if signedIn() && uid() == u;
+      }
+      // Библиотека викторин учителя — видит и меняет только он сам.
+      match /quizzes/{q} {
+        allow read, write: if signedIn() && uid() == u;
+      }
+    }
+
+    // Код дня: можно открыть по точному коду (get), но нельзя перебрать список (list).
+    match /joinCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if isTeacher() && request.resource.data.teacher == uid()
+        && teaches(request.resource.data.group)
+        && request.resource.data.exp > request.time
+        && request.resource.data.exp < request.time + duration.value(2, 'd');
+      allow delete: if signedIn() && resource.data.teacher == uid();
+    }
+
+    // Приглашение по email: создаёт учитель своей группы, видят только он и владелец этого email.
+    match /invites/{id} {
+      allow read: if signedIn() && (resource.data.teacher == uid() || resource.data.email == request.auth.token.email.lower());
+      allow create: if isTeacher() && request.resource.data.teacher == uid()
+        && teaches(request.resource.data.group)
+        && id == request.resource.data.group + '_' + request.resource.data.email
+        && request.resource.data.email is string && request.resource.data.email.size() <= 200;
+      allow delete: if signedIn() && (resource.data.teacher == uid() || resource.data.email == request.auth.token.email.lower());
+    }
+
+    // Отзывы и сообщения об ошибках: отправить может любой, прочитать — только автор Wordy в консоли Firebase.
+    match /feedback/{f} {
+      allow create: if request.resource.data.keys().hasOnly(['kind', 'text', 'contact', 'page', 'level', 'ua', 'uid', 'email', 'at'])
+        && request.resource.data.kind in ['bug', 'idea']
+        && request.resource.data.text is string && request.resource.data.text.size() >= 5 && request.resource.data.text.size() <= 2000
+        && request.resource.data.contact is string && request.resource.data.contact.size() <= 120
+        && (request.resource.data.uid == null || (signedIn() && request.resource.data.uid == uid()))
+        && (request.resource.data.email == null || (signedIn() && request.resource.data.email == request.auth.token.email))
+        && request.resource.data.at == request.time;
+      allow read, update, delete: if false;
+    }
+
+    // Анонимная статистика: одна запись на устройство в день (act/{день}_{id}). Писать может любое устройство только в свою запись,
+    // читать — только автор Wordy. Имён и email здесь нет.
+    match /act/{id} {
+      allow create, update: if id == request.resource.data.day + '_' + request.resource.data.aid
+        && request.resource.data.keys().hasOnly(['aid', 'day', 'first', 'lvl', 'acc', 'sess', 'min', 'xp', 'v'])
+        && request.resource.data.aid is string && request.resource.data.aid.matches('^[a-z0-9]{6,24}$')
+        && request.resource.data.day is string && request.resource.data.day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.first is string && request.resource.data.first.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.lvl is string && request.resource.data.lvl.size() <= 6
+        && request.resource.data.acc is bool
+        && request.resource.data.sess is int && request.resource.data.sess <= 500
+        && request.resource.data.min is int && request.resource.data.min <= 1500
+        && request.resource.data.xp is int && request.resource.data.xp <= 200000
+        && (!('v' in request.resource.data) || (request.resource.data.v is map && request.resource.data.v.size() <= 40));
+      allow read: if signedIn() && request.auth.token.email == 'alimtszyu13@gmail.com' && request.auth.token.email_verified == true;
+      allow delete: if false;
+    }
+
+    // Напоминания: адрес устройства для уведомлений. Запись — по хешу адреса (знает только само устройство),
+    // читать может только сервер Wordy (Cloud Functions обходят правила). Поле sent пишет только сервер.
+    function pushOk(d) {
+      return d.token is string && d.token.size() > 20 && d.token.size() <= 600
+        && d.on is bool
+        && d.hour is int && d.hour >= 0 && d.hour <= 23
+        && d.utcHour is int && d.utcHour >= 0 && d.utcHour <= 23
+        && d.tz is int && d.tz >= -840 && d.tz <= 840
+        && d.last is string && d.last.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.streak is int && d.streak >= 0 && d.streak <= 9999
+        && d.lvl is string && d.lvl.size() <= 4;
+    }
+    match /push/{id} {
+      allow create: if id.matches('^[0-9a-f]{64}$')
+        && request.resource.data.keys().hasOnly(['token', 'on', 'hour', 'utcHour', 'tz', 'last', 'streak', 'lvl'])
+        && pushOk(request.resource.data);
+      allow update: if onlyKeys(['token', 'on', 'hour', 'utcHour', 'tz', 'last', 'streak', 'lvl']) && pushOk(request.resource.data);
+      allow delete: if true;
+      allow read: if false;
+    }
+
+    // Сертификаты уровней: проверить по коду может любой (страница verify.html), выдать — только себе, изменить нельзя.
+    match /certs/{c} {
+      allow get: if true;
+      allow list: if signedIn() && resource.data.uid == uid();
+      allow create: if signedIn() && request.resource.data.uid == uid()
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'level', 'words', 'gram', 'issuedAt'])
+        && request.resource.data.level in ['A1', 'A2', 'B1', 'B2', 'C1']
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 60
+        && request.resource.data.words is int && request.resource.data.gram is int
+        && request.resource.data.issuedAt == request.time
+        && c.matches('^W[A-Z0-9]{4}-[A-Z0-9]{4}$');
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == uid();
+    }
+
+    match /groups/{g} {
+      allow read: if teaches(g) || memberOf(g) || (signedIn() && resource.data.teacher == uid());
+      allow create: if isTeacher() && request.resource.data.teacher == uid();
+      allow update: if signedIn() && resource.data.teacher == uid() && request.resource.data.teacher == uid();
+      allow delete: if signedIn() && resource.data.teacher == uid();
+
+      // Ученик вступает только с действующим кодом этой группы.
+      match /members/{m} {
+        allow read: if teaches(g) || (signedIn() && uid() == m);
+        // ...или по личному приглашению учителя на свой email.
+        allow create: if isStudent() && uid() == m && (
+          (request.resource.data.code == 'invite'
+            && exists(/databases/$(database)/documents/invites/$(g + '_' + request.auth.token.email.lower())))
+          || (get(/databases/$(database)/documents/joinCodes/$(request.resource.data.code)).data.group == g
+            && get(/databases/$(database)/documents/joinCodes/$(request.resource.data.code)).data.exp > request.time));
+        allow update: if (signedIn() && uid() == m && onlyKeys(['stats', 'name', 'bio', 'avatar']))
+                      || (teaches(g) && onlyKeys(['grant']));
+        allow delete: if teaches(g) || (signedIn() && uid() == m);
+      }
+
+      // Живая викторина: игрой управляет только учитель. Верные ответы лежат в key/ и ученикам недоступны.
+      match /games/{gm} {
+        allow read: if teaches(g) || memberOf(g);
+        allow create, update, delete: if teaches(g);
+        match /key/{k} {
+          allow read, write: if teaches(g);
+        }
+        match /players/{p} {
+          allow read: if teaches(g) || (signedIn() && uid() == p);
+          allow create: if memberOf(g) && uid() == p && request.resource.data.name is string && request.resource.data.name.size() <= 60;
+          allow update: if memberOf(g) && uid() == p && onlyKeys(['ans', 'name']);
+          allow delete: if teaches(g);
+        }
+      }
+
+      match /assignments/{a} {
+        allow read: if teaches(g) || memberOf(g);
+        allow create, update: if teaches(g)
+          && request.resource.data.title is string && request.resource.data.title.size() <= 120
+          && request.resource.data.text is string && request.resource.data.text.size() <= 10000;
+        allow delete: if teaches(g);
+
+        // Ответ ученика: ученик пишет текст и файлы, учитель — только отзыв, оценку и статус проверки.
+        match /subs/{s} {
+          allow read: if teaches(g) || (signedIn() && uid() == s);
+          allow create: if memberOf(g) && uid() == s
+            && request.resource.data.text.size() <= 20000
+            && request.resource.data.status in ['draft', 'submitted'];
+          allow update: if (memberOf(g) && uid() == s
+                && onlyKeys(['name', 'text', 'files', 'status', 'updatedAt', 'submittedAt', 'versions'])
+                && request.resource.data.text.size() <= 20000
+                && (request.resource.data.status in ['draft', 'submitted'] || request.resource.data.status == resource.data.status))
+            || (teaches(g)
+                && onlyKeys(['comments', 'feedback', 'grade', 'status', 'reviewedAt'])
+                && request.resource.data.status in ['submitted', 'returned', 'checked']);
+        }
+      }
+    }
+  }
+}

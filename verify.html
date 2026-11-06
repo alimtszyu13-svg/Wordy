@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проверка сертификата — Wordy</title>
+<meta name="description" content="Проверить подлинность сертификата Wordy по коду.">
+<meta name="theme-color" content="#F2F3EF">
+<meta name="author" content="Alim Tszyu">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/icons/face.svg">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/site.css">
+<style>
+.vf{max-width:560px;margin:28px auto 0;padding:0 20px;display:grid;gap:16px}
+.vf h1{font-size:clamp(28px,5vw,38px)}
+.vf form{display:flex;gap:8px}
+.vf input{flex:1;min-width:0;padding:12px 14px;font:600 17px var(--f-sans);letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.vf input:focus{outline:none;border-color:var(--accent)}
+.res{background:var(--surface);border-radius:16px;padding:20px 22px;display:grid;gap:6px}
+.res.ok{border-left:5px solid #1F8A5B}.res.bad{border-left:5px solid #C43A31}
+.res b.big{font-size:24px}
+</style>
+</head>
+<body>
+<div class="wrap"><header class="top"><a class="brand" href="/"><img src="/icons/face.svg" alt="">wordy</a><nav><a class="btn small" href="/app.html">Открыть Wordy</a></nav></header></div>
+<main class="vf">
+  <h1>Проверка сертификата</h1>
+  <p class="muted">Введи код с сертификата, например WABCD-EFGH. Мы покажем, кому и когда он выдан.</p>
+  <form id="f"><label class="sr-only" for="c">Код сертификата</label><input id="c" autocomplete="off" maxlength="12" placeholder="WXXXX-XXXX" required><button class="btn" type="submit">Проверить</button></form>
+  <div id="out" role="status" aria-live="polite"></div>
+</main>
+<footer><div class="wrap"><span>Wordy · 2026 · Создатель — <b>Alim Tszyu</b></span><nav><a href="/">О Wordy</a><a href="/privacy.html">Конфиденциальность</a></nav></div></footer>
+<script>
+(function(){
+  var KEY='AIzaSyDFJqkMvib93dIzi4G7FoOtBuiTXexr4sM', P='wordy-b5142';
+  var NAMES={A1:'Начинающий',A2:'Элементарный',B1:'Средний',B2:'Выше среднего',C1:'Продвинутый'};
+  var f=document.getElementById('f'), c=document.getElementById('c'), out=document.getElementById('out');
+  function esc(x){ return String(x==null?'':x).replace(/[&<>"]/g,function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]; }); }
+  function norm(v){ v=String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,''); return v.length===9?v.slice(0,5)+'-'+v.slice(5):v; }
+  function check(code){
+    code=norm(code); if(!/^W[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(code)){ out.innerHTML='<div class="res bad"><b>Неверный формат кода</b><span class="muted">Код выглядит так: WABCD-EFGH.</span></div>'; return; }
+    out.innerHTML='<p class="muted">Проверяю…</p>';
+    fetch('https://firestore.googleapis.com/v1/projects/'+P+'/databases/(default)/documents/certs/'+encodeURIComponent(code)+'?key='+KEY)
+      .then(function(r){ if(r.status===404||r.status===403) return null; if(!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function(d){
+        if(!d||!d.fields){ out.innerHTML='<div class="res bad"><b>Сертификат не найден</b><span class="muted">Проверь код. Если аккаунт владельца удалён, его сертификаты тоже удаляются.</span></div>'; return; }
+        var F=d.fields, lv=(F.level||{}).stringValue||'', when=(F.issuedAt||{}).timestampValue;
+        var dt=when?new Date(when).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}):'—';
+        out.innerHTML='<div class="res ok"><span class="muted">Сертификат подлинный · '+esc(code)+'</span><b class="big">'+esc((F.name||{}).stringValue)+'</b>'
+          +'<span>Уровень <b>'+esc(lv)+' · '+esc(NAMES[lv]||'')+'</b></span><span>Выучено слов: '+esc((F.words||{}).integerValue||0)+' · тем грамматики: '+esc((F.gram||{}).integerValue||0)+'</span><span class="muted">Выдан '+esc(dt)+'</span></div>';
+      }).catch(function(){ out.innerHTML='<div class="res bad"><b>Не получилось проверить</b><span class="muted">Нет связи с сервером. Попробуй ещё раз.</span></div>'; });
+  }
+  f.addEventListener('submit',function(e){ e.preventDefault(); history.replaceState(null,'','?c='+encodeURIComponent(norm(c.value))); check(c.value); });
+  var q=new URLSearchParams(location.search).get('c'); if(q){ c.value=norm(q); check(q); }
+})();
+</script>
+</body>
+</html>

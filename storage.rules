@@ -1,0 +1,19 @@
+rules_version = '2';
+// Файлы домашек: hw/{группа}/{задание}/task/… — от учителя, hw/{группа}/{задание}/{ученик}/… — от ученика.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function g(gid) { return firestore.get(/databases/(default)/documents/groups/$(gid)).data; }
+    function teaches(gid) { return request.auth != null && g(gid).teacher == request.auth.uid; }
+    function memberOf(gid) { return request.auth != null && firestore.exists(/databases/(default)/documents/groups/$(gid)/members/$(request.auth.uid)); }
+    function okSize() { return request.resource.size < 20 * 1024 * 1024; }
+
+    match /hw/{gid}/{aid}/task/{file} {
+      allow read: if teaches(gid) || memberOf(gid);
+      allow write: if teaches(gid) && okSize();
+    }
+    match /hw/{gid}/{aid}/{sid}/{file} {
+      allow read: if teaches(gid) || (request.auth != null && request.auth.uid == sid);
+      allow write: if request.auth != null && request.auth.uid == sid && memberOf(gid) && okSize();
+    }
+  }
+}
