@@ -84,7 +84,7 @@
 .demo-end .again{margin-top:10px;background:none;border:0;color:var(--muted);font:inherit;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 
 /* ---------- meet Wordy ---------- */
-.meet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+.meet{overflow-x:clip;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
 .meet .sub+.sub{margin-top:8px}
 .outfits{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
 .chip{min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:500 15px var(--f-sans);cursor:pointer}
@@ -94,44 +94,8 @@
 .bubble{position:relative;margin-bottom:14px;width:max-content;max-width:min(300px,94%);padding:12px 16px;border-radius:18px;background:var(--surface);box-shadow:0 10px 30px -14px rgba(20,28,40,.4);font-weight:600;font-size:16px;text-align:center;line-height:1.35;transition:opacity .2s,transform .2s;white-space:normal}
 .bubble::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:var(--surface);transform:translateX(-50%) rotate(45deg)}
 .bubble.out{opacity:0;transform:translateY(6px)}
-.buddy{width:56%;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.buddy{width:96%;margin-top:-14%;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .buddy svg{display:block;width:100%;height:auto;overflow:visible}
-.buddy .body,.buddy .arm,.buddy .leg,.buddy .shadow{transform-box:fill-box}
-.buddy .body{transform-origin:50% 100%;animation:bob 2.6s ease-in-out infinite}
-.buddy .shadow{transform-origin:center;animation:shad 2.6s ease-in-out infinite}
-.buddy .al{transform-origin:100% 0%;animation:swayL 2.6s ease-in-out infinite}
-.buddy .ar{transform-origin:0% 0%;animation:swayR 2.6s ease-in-out infinite}
-.buddy .pupils{transition:transform .12s}
-.buddy .lids{opacity:0}
-.buddy.blink .lids{opacity:1}
-.buddy .lids path{opacity:0}
-.buddy .m{opacity:0;transition:opacity .15s}
-.buddy .smile{opacity:1}
-.buddy .o{opacity:0;transition:opacity .2s}
-.buddy[data-o="cap"] .o-cap,.buddy[data-o="bow"] .o-bow,.buddy[data-o="specs"] .o-specs,.buddy[data-o="crown"] .o-crown{opacity:1}
-.buddy .zzz{opacity:0}
-@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-5px) scale(.985,1.015)}}
-@keyframes shad{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.9)}}
-@keyframes swayL{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
-@keyframes swayR{0%,100%{transform:rotate(0)}50%{transform:rotate(6deg)}}
-/* reactions */
-.buddy.happy .body{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}
-.buddy.happy .smile{opacity:0} .buddy.happy .grin{opacity:1}
-.buddy.happy .ar,.buddy.wave .ar{animation:wave .6s ease-in-out 2}
-.buddy.wave .ar{animation:wave .5s ease-in-out 3}
-.buddy.oops .smile{opacity:0} .buddy.oops .oh{opacity:1}
-.buddy.oops .body{animation:shake .45s ease-in-out}
-.buddy.sleep .body{animation:breathe 3.4s ease-in-out infinite}
-.buddy.sleep .lids{opacity:1} .buddy.sleep .lids path{opacity:1} .buddy.sleep .lids ellipse,.buddy.sleep .eyes>ellipse,.buddy.sleep .pupils{opacity:0}
-.buddy.sleep .lids ellipse{fill:#FF7D16}
-.buddy.sleep .zzz{opacity:1;animation:zz 2.4s ease-in-out infinite}
-.buddy.sleep .arm{animation:none}
-@keyframes hop{0%{transform:translateY(0) scale(1.08,.9)}35%{transform:translateY(-26px) scale(.94,1.08)}70%{transform:translateY(0) scale(1.06,.94)}100%{transform:translateY(0) scale(1)}}
-@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-55deg)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px) rotate(-3deg)}75%{transform:translateX(6px) rotate(3deg)}}
-@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,.98)}}
-@keyframes zz{0%{transform:translateY(4px);opacity:0}30%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.buddy *{animation:none!important}}
 @media (max-width:900px){ .meet{grid-template-columns:1fr;gap:28px} .meet .stage{order:-1;width:min(320px,86%)} }
 
 /* ---------- sections ---------- */
@@ -259,35 +223,37 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
         <div class="outfits" role="group" aria-label="Наряд для Ворди">
           <button type="button" class="chip" data-o="" aria-pressed="true">Без наряда</button>
           <button type="button" class="chip" data-o="cap" aria-pressed="false">Кепка</button>
-          <button type="button" class="chip" data-o="bow" aria-pressed="false">Бабочка</button>
-          <button type="button" class="chip" data-o="specs" aria-pressed="false">Очки</button>
           <button type="button" class="chip" data-o="crown" aria-pressed="false">Корона</button>
+          <button type="button" class="chip" data-o="glasses" aria-pressed="false">Очки</button>
+          <button type="button" class="chip" data-o="bowtie" aria-pressed="false">Бабочка</button>
+          <button type="button" class="chip" data-o="grad" aria-pressed="false">Шапочка выпускника</button>
         </div>
         <p class="meet-note">В приложении наряды и мебель для домика покупаются за монеты, которые зарабатываешь учёбой.</p>
       </div>
       <div class="stage" id="stage">
         <div class="bubble" id="bubble" aria-live="polite">Привет! Я Ворди.</div>
         <button type="button" class="buddy" id="buddy" aria-label="Ворди. Нажми, чтобы он отреагировал">
-          <svg viewBox="0 0 200 214" aria-hidden="true">
-            <defs><radialGradient id="bg1" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#FFA24D"/><stop offset=".6" stop-color="#FF7A12"/><stop offset="1" stop-color="#E25F07"/></radialGradient></defs>
-            <ellipse class="shadow" cx="100" cy="205" rx="50" ry="7" fill="rgba(20,28,40,.18)"/>
-            <g class="legs"><path class="leg l" d="M80 164 q-3 20 -9 32 q4 4 12 4 q8 0 12 -3 q-2 -16 1 -31z" fill="#E86A0B"/><path class="leg r" d="M120 164 q3 20 9 32 q-4 4 -12 4 q-8 0 -12 -3 q2 -16 -1 -31z" fill="#E86A0B"/></g>
-            <g class="arm al"><path d="M38 112 q-22 6 -26 26 q8 6 14 0 q4 -12 18 -16z" fill="#F07010"/></g>
-            <g class="arm ar"><path d="M162 112 q22 6 26 26 q-8 6 -14 0 q-4 -12 -18 -16z" fill="#F07010"/></g>
-            <g class="body"><circle cx="100" cy="112" r="66" fill="url(#bg1)"/>
-              <g class="eyes"><ellipse cx="78" cy="98" rx="15" ry="20" fill="#fff"/><ellipse cx="122" cy="98" rx="15" ry="20" fill="#fff"/>
-                <g class="pupils" id="bpup"><ellipse cx="78" cy="100" rx="10.5" ry="15" fill="#24130A"/><ellipse cx="122" cy="100" rx="10.5" ry="15" fill="#24130A"/><circle cx="74" cy="92" r="4" fill="#fff"/><circle cx="118" cy="92" r="4" fill="#fff"/></g>
-                <g class="lids"><ellipse cx="78" cy="98" rx="16" ry="21" fill="#FF7D16"/><ellipse cx="122" cy="98" rx="16" ry="21" fill="#FF7D16"/><path d="M64 100 q14 8 28 0 M108 100 q14 8 28 0" stroke="#4A1E0C" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>
-              <ellipse cx="62" cy="128" rx="9" ry="5" fill="#FF5A5A" opacity=".35"/><ellipse cx="138" cy="128" rx="9" ry="5" fill="#FF5A5A" opacity=".35"/>
-              <path class="m smile" d="M88 134 q12 9 24 0" stroke="#4A1E0C" stroke-width="4" fill="none" stroke-linecap="round"/>
-              <path class="m grin" d="M84 130 q16 20 32 0z" fill="#4A1E0C"/>
-              <ellipse class="m oh" cx="100" cy="136" rx="6" ry="7" fill="#4A1E0C"/>
-              <g class="o o-cap"><path d="M52 66 q48 -52 96 0 q-48 -10 -96 0z" fill="#23405F"/><path d="M140 62 q22 2 30 12 q-18 2 -34 -4z" fill="#1A3350"/><circle cx="100" cy="30" r="5" fill="#E8650C"/></g>
-              <g class="o o-bow"><path d="M100 172 l-22 -12 v24z M100 172 l22 -12 v24z" fill="#D2394E"/><circle cx="100" cy="172" r="6" fill="#B02A3E"/></g>
-              <g class="o o-specs" fill="none" stroke="#18202B" stroke-width="4"><circle cx="78" cy="99" r="19"/><circle cx="122" cy="99" r="19"/><path d="M97 97 q3 -3 6 0 M59 96 l-14 -6 M141 96 l14 -6"/></g>
-              <g class="o o-crown"><path d="M64 54 l8 -30 l16 18 l12 -26 l12 26 l16 -18 l8 30z" fill="#F2B233" stroke="#C98A12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="40" r="4" fill="#D2394E"/></g>
+          <svg viewBox="-80 -150 160 190" aria-hidden="true">
+            <ellipse id="b-shadow" cx="0" cy="1.5" rx="25" ry="4.2" fill="#5a2a08" opacity=".16"/>
+            <g stroke="#FF7A12" stroke-width="15" stroke-linecap="round" fill="none"><path id="b-legL" d="M-13 -23.5L-15 -5"/><path id="b-legR" d="M13 -23.5L15 -5"/></g>
+            <ellipse id="b-footL" rx="9" ry="5.6" fill="#FF7A12" cx="-17" cy="-4.6"/><ellipse id="b-footR" rx="9" ry="5.6" fill="#FF7A12" cx="17" cy="-4.6"/>
+            <g id="b-body" transform="translate(0 -18)">
+              <g stroke="#FF7A12" stroke-width="10.5" stroke-linecap="round" fill="none"><path id="b-armL" d="M-33 -40Q-41.8 -30.6 -41 -17.7"/><path id="b-armR" d="M33 -40Q41.8 -30.6 41 -17.7"/></g>
+              <circle id="b-handL" r="6.2" fill="#FF7A12" cx="-41" cy="-17.7"/><circle id="b-handR" r="6.2" fill="#FF7A12" cx="41" cy="-17.7"/>
+              <ellipse cx="0" cy="-34" rx="38" ry="34" fill="#FF7A12"/>
+              <path d="M-33.5 -18 A38 34 0 0 0 33.5 -18 A46 40 0 0 1 -33.5 -18Z" fill="#E5600A" opacity=".32"/>
+              <g id="b-neck"></g>
+              <g id="b-face">
+                <g id="b-eyeL" transform="translate(-10.5 -43)"><ellipse rx="7.4" ry="10.2" fill="#fff"/><ellipse class="pup" rx="5.6" ry="8" fill="#24130A"/><circle class="hl" r="2.1" fill="#fff" cx="-1.9" cy="-4"/></g>
+                <g id="b-eyeR" transform="translate(10.5 -43)"><ellipse rx="7.4" ry="10.2" fill="#fff"/><ellipse class="pup" rx="5.6" ry="8" fill="#24130A"/><circle class="hl" r="2.1" fill="#fff" cx="-1.9" cy="-4"/></g>
+                <g id="b-closed" stroke="#24130A" stroke-width="2.8" fill="none" stroke-linecap="round" opacity="0"><path d="M-17 -43 Q-10.5 -38 -4 -43"/><path d="M4 -43 Q10.5 -38 17 -43"/></g>
+                <g id="b-joy" stroke="#24130A" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"><path d="M-17 -41 Q-10.5 -50 -4 -41"/><path d="M4 -41 Q10.5 -50 17 -41"/></g>
+                <path id="b-mouth" fill="#4A1E0C" stroke="#4A1E0C" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" d="M-6 -27Q0 -25.5 6 -27Q0 -20 -6 -27Z"/>
+                <g id="b-eyes"></g>
+              </g>
+              <g id="b-hat" transform="translate(0 -64)"></g>
             </g>
-            <g class="zzz" fill="#5E6672" font-family="Onest,sans-serif" font-weight="700"><text x="150" y="40" font-size="18">z</text><text x="164" y="22" font-size="13">z</text></g>
+            <g id="b-zz" fill="#C25507" font-family="Onest,sans-serif" font-weight="800"><text x="28" y="-92" font-size="12" opacity="0">z</text><text x="34" y="-102" font-size="15" opacity="0">z</text><text x="40" y="-112" font-size="18" opacity="0">z</text></g>
           </svg>
         </button>
       </div>
@@ -419,27 +385,73 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
     (function blink(){ setTimeout(function(){ m.classList.add('blink'); setTimeout(function(){ m.classList.remove('blink'); blink(); },140); },2600+Math.random()*2800); })();
   }
 
-/* ---------- meet Wordy: taps, outfits, sleep when idle ---------- */
-  var bd=document.getElementById('buddy'), bb=document.getElementById('bubble'), bp=document.getElementById('bpup');
-  var LINES=['Ой, щекотно!','Пять минут в день — и слова останутся с тобой.','Знаешь, как будет «привычка»? Habit!','Ещё раз — и я станцую!','Верный ответ? Я так и знал!','Ошибся? Не страшно, повторим завтра.','Я храню твои слова, пока ты отдыхаешь.'];
-  var OUT={'':'Мне и так хорошо!','cap':'Кепка! Теперь я спортивный.','bow':'Бабочка — для экзамена IELTS.','specs':'В очках я выгляжу умнее, правда?','crown':'Король английского!'};
-  var li=0, bt=0, idle=0, asleep=false;
+  /* ---------- meet Wordy: the same character as in the app (same body, eyes, wardrobe), driven by a small rig ---------- */
+  var ITEMS={cap:['hat','<path d="M-29 9 C-30 -22 30 -22 29 9 Z" fill="#E11D48"/><path d="M0 -14 V7" stroke="#BE123C" stroke-width="2"/><path d="M8 4 Q30 -1 47 8 Q30 14 8 11 Z" fill="#9F1239"/><circle cx="0" cy="-14" r="3" fill="#BE123C"/>'],
+    crown:['hat','<path d="M-24 9 L-27 -18 L-13 -6 L0 -25 L13 -6 L27 -18 L24 9 Z" fill="#FBBF24" stroke="#D97706" stroke-width="2" stroke-linejoin="round"/><path d="M-24 4 H24" stroke="#F59E0B" stroke-width="2"/><circle cx="0" cy="-1" r="3.6" fill="#EF4444"/><circle cx="-14" cy="0" r="2.6" fill="#3B82F6"/><circle cx="14" cy="0" r="2.6" fill="#22C55E"/><circle cx="-27" cy="-19" r="2.6" fill="#FDE68A"/><circle cx="0" cy="-26" r="2.9" fill="#FDE68A"/><circle cx="27" cy="-19" r="2.6" fill="#FDE68A"/>'],
+    grad:['hat','<path d="M-22 9 Q0 15 22 9 L20 -4 L-20 -4 Z" fill="#1F2937"/><path d="M-37 -6 L0 -18 L37 -6 L0 6 Z" fill="#111827"/><path d="M-37 -6 L0 6 L37 -6" stroke="#374151" stroke-width="1.5" fill="none"/><path d="M0 -6 L25 -2" stroke="#F59E0B" stroke-width="2"/><circle cx="0" cy="-6" r="2.8" fill="#F59E0B"/><path d="M25 -2 L25 14" stroke="#F59E0B" stroke-width="2"/><path d="M22 13 h6 l1.5 9 h-9z" fill="#F59E0B"/>'],
+    glasses:['eyes','<circle cx="-10.5" cy="-43" r="10" fill="rgba(255,255,255,.18)" stroke="#2B1A12" stroke-width="2.6"/><circle cx="10.5" cy="-43" r="10" fill="rgba(255,255,255,.18)" stroke="#2B1A12" stroke-width="2.6"/><path d="M-1 -45 Q0 -47 1 -45" stroke="#2B1A12" stroke-width="2.6" fill="none"/><path d="M-20.5 -45 L-31 -48 M20.5 -45 L31 -48" stroke="#2B1A12" stroke-width="2.4" stroke-linecap="round"/>'],
+    bowtie:['neck','<path d="M0 -11 L-14 -19 Q-17 -11 -14 -3 Z" fill="#8B5CF6"/><path d="M0 -11 L14 -19 Q17 -11 14 -3 Z" fill="#8B5CF6"/><rect x="-4" y="-15" width="8" height="8" rx="3" fill="#6D28D9"/>']};
+  var $=function(id){ return document.getElementById(id); };
+  var bd=$('buddy'), bb=$('bubble'), R={body:$('b-body'),legL:$('b-legL'),legR:$('b-legR'),footL:$('b-footL'),footR:$('b-footR'),armL:$('b-armL'),armR:$('b-armR'),handL:$('b-handL'),handR:$('b-handR'),
+    face:$('b-face'),eyeL:$('b-eyeL'),eyeR:$('b-eyeR'),closed:$('b-closed'),joy:$('b-joy'),mouth:$('b-mouth'),shadow:$('b-shadow'),hat:$('b-hat'),neck:$('b-neck'),eyes:$('b-eyes'),zz:$('b-zz').children};
+  var pupL=R.eyeL.querySelector('.pup'), pupR=R.eyeR.querySelector('.pup'), hlL=R.eyeL.querySelector('.hl'), hlR=R.eyeR.querySelector('.hl');
+  var LINES=['Ой, щекотно!','Пять минут в день — и слова останутся с тобой.','Знаешь, как будет «привычка»? Habit!','Ещё раз — и я станцую!','Ошибся? Не страшно, повторим завтра.','Я храню твои слова, пока ты отдыхаешь.'];
+  var OUT={'':'Мне и так хорошо!',cap:'Кепка! Теперь я спортивный.',crown:'Король английского!',glasses:'В очках я выгляжу умнее, правда?',bowtie:'Бабочка — для экзамена IELTS.',grad:'Сдам IELTS — и сразу на выпускной!'};
+  var MOUTH={idle:'M-6 -27Q0 -25.5 6 -27Q0 -20 -6 -27Z',happy:'M-8.5 -28.5Q0 -26.5 8.5 -28.5Q0 -8 -8.5 -28.5Z',oh:'M-3.6 -25Q0 -31 3.6 -25Q0 -19 -3.6 -25Z',sleep:'M-4 -26Q0 -24.5 4 -26Q0 -22 -4 -26Z'};
+  var mode='idle', mT=performance.now(), lineI=0, asleep=false, idleAt=Date.now(), look={x:0,y:0}, lookT={x:0,y:0}, blinkAt=performance.now()+2500, blinkP=0, visible=true, t0=performance.now();
   function talk(t){ bb.classList.add('out'); setTimeout(function(){ bb.textContent=t; bb.classList.remove('out'); },160); }
-  function act(c,ms){ bd.classList.remove('happy','wave','oops'); void bd.getBoundingClientRect(); bd.classList.add(c); clearTimeout(bt); bt=setTimeout(function(){ bd.classList.remove(c); },ms||1300); }
-  function wake(){ idle=Date.now(); if(asleep){ asleep=false; bd.classList.remove('sleep'); act('wave'); talk('Ой, я задремал! Ты вернулся!'); } }
-  bd.addEventListener('click',function(){ if(asleep){ wake(); return; } wake(); act(li%3===2?'oops':'happy'); talk(LINES[li++%LINES.length]); });
+  function setMode(m){ mode=m; mT=performance.now(); if(reduce) draw(performance.now()); }
+  function wear(o){ R.hat.innerHTML=''; R.neck.innerHTML=''; R.eyes.innerHTML=''; var it=ITEMS[o]; if(it) R[it[0]].innerHTML=it[1]; }
+  function wake(){ idleAt=Date.now(); if(asleep){ asleep=false; setMode('wave'); talk('Ой, я задремал! Ты вернулся!'); } }
+  bd.addEventListener('click',function(){ if(asleep){ wake(); return; } idleAt=Date.now(); setMode(lineI%3===2?'oops':'happy'); talk(LINES[lineI++%LINES.length]); });
   [].forEach.call(document.querySelectorAll('.outfits .chip'),function(c){ c.addEventListener('click',function(){
     [].forEach.call(document.querySelectorAll('.outfits .chip'),function(x){ x.setAttribute('aria-pressed',x===c?'true':'false'); });
-    bd.dataset.o=c.dataset.o; wake(); act('happy'); talk(OUT[c.dataset.o]); }); });
-  if(!reduce){
-    window.addEventListener('pointermove',function(e){ var r=bd.getBoundingClientRect(); if(r.bottom<0||r.top>innerHeight) return; var dx=e.clientX-(r.left+r.width/2), dy=e.clientY-(r.top+r.height*.42), d=Math.max(1,Math.hypot(dx,dy)), k=Math.min(1,d/260);
-      bp.style.transform='translate('+(dx/d*4.5*k).toFixed(1)+'px,'+(dy/d*5*k).toFixed(1)+'px)'; if(asleep&&d<200) wake(); },{passive:true});
-    (function bl(){ setTimeout(function(){ if(!asleep){ bd.classList.add('blink'); setTimeout(function(){ bd.classList.remove('blink'); },150); } bl(); },2400+Math.random()*3000); })();
+    wear(c.dataset.o); wake(); setMode('happy'); talk(OUT[c.dataset.o]); }); });
+  window.addEventListener('pointermove',function(e){ var r=bd.getBoundingClientRect(); var cx=r.left+r.width/2, cy=r.top+r.height*.55, dx=e.clientX-cx, dy=e.clientY-cy, d=Math.max(1,Math.hypot(dx,dy)), k=Math.min(1,d/240);
+    lookT.x=dx/d*k; lookT.y=dy/d*k; if(asleep&&d<180) wake(); },{passive:true});
+  ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){ window.addEventListener(ev,function(){ if(!asleep) idleAt=Date.now(); },{passive:true}); });
+  if('IntersectionObserver' in window) new IntersectionObserver(function(es){ visible=es[0].isIntersecting; if(visible&&!bd.dataset.hi){ bd.dataset.hi=1; setTimeout(function(){ setMode('wave'); talk('Привет! Я Ворди. Нажми на меня!'); },300); } },{threshold:.4}).observe(bd);
+  var f=function(n){ return n.toFixed(2); };
+  function armPath(sx,sy,ang,len,bend){ var hx=sx+Math.cos(ang)*len, hy=sy+Math.sin(ang)*len, mx=(sx+hx)/2+Math.cos(ang+Math.PI/2)*bend, my=(sy+hy)/2+Math.sin(ang+Math.PI/2)*bend; return [hx,hy,'M'+f(sx)+' '+f(sy)+'Q'+f(mx)+' '+f(my)+' '+f(hx)+' '+f(hy)]; }
+  function draw(now){
+    var t=reduce?0:(now-t0)/1000, e=reduce?.3:(now-mT)/1000;
+    if(!asleep&&Date.now()-idleAt>14000){ asleep=true; mode='sleep'; mT=now; talk('Zzz… Нажми, чтобы разбудить.'); }
+    if((mode==='happy'&&e>1.1)||(mode==='oops'&&e>.9)||(mode==='wave'&&e>1.8)){ mode='idle'; mT=now; e=0; }
+    var br=Math.sin(t*(asleep?1.6:2.4)), lift=0, sx=1, sy=1, tilt=Math.sin(t*1.1)*1.6, footUp=0;
+    if(mode==='happy'&&!reduce){ if(e<.12){ var q=e/.12; sx=1+.1*q; sy=1-.12*q; } else if(e<.62){ var p=(e-.12)/.5; lift=30*Math.sin(Math.PI*p); footUp=lift*.85; sx=1-.06*Math.sin(Math.PI*p); sy=1+.08*Math.sin(Math.PI*p); } else if(e<.8){ var r=(e-.62)/.18; sx=1+.08*(1-r); sy=1-.1*(1-r); } }
+    if(mode==='oops'&&!reduce) tilt+=Math.sin(e*28)*6*Math.max(0,1-e/.9);
+    if(asleep){ tilt=-4; sy=1+br*.015; sx=1-br*.012; } else { sy*=1+br*.012; sx*=1-br*.008; }
+    var by=-18-lift+(asleep?1.5:0);
+    R.body.setAttribute('transform','translate(0 '+f(by)+') rotate('+f(tilt)+' 0 -2) scale('+f(sx)+' '+f(sy)+')');
+    var hipY=-23.5-lift, fy=-5-footUp;
+    R.legL.setAttribute('d','M-13 '+f(hipY)+'L-15 '+f(fy)); R.legR.setAttribute('d','M13 '+f(hipY)+'L15 '+f(fy));
+    R.footL.setAttribute('cy',f(fy+.4)); R.footR.setAttribute('cy',f(fy+.4));
+    R.shadow.setAttribute('rx',f(25*(1-lift/60))); R.shadow.setAttribute('opacity',f(.16*(1-lift/50)));
+    /* arms: angle from the shoulder, 0 = to the right, PI/2 = straight down */
+    var down=Math.PI/2+.25, sw=Math.sin(t*2.4)*.05, aL=down+.18+sw, aR=Math.PI-down-.18-sw;
+    if(mode==='wave') aR=-0.9+Math.sin(e*12)*.45;
+    if(mode==='happy'&&e>.1&&e<.8){ aL=Math.PI+.9; aR=-.9; }
+    if(mode==='oops'){ aL=Math.PI-.4; aR=.4; }
+    if(asleep){ aL=down+.3; aR=Math.PI-down-.3; }
+    var L=armPath(-33,-40,aL,23,aL>Math.PI/2?-4:4), Rr=armPath(33,-40,aR,23,aR<Math.PI/2?4:-4);
+    R.armL.setAttribute('d',L[2]); R.handL.setAttribute('cx',f(L[0])); R.handL.setAttribute('cy',f(L[1]));
+    R.armR.setAttribute('d',Rr[2]); R.handR.setAttribute('cx',f(Rr[0])); R.handR.setAttribute('cy',f(Rr[1]));
+    /* eyes follow the pointer, blink, squint with joy, close in sleep */
+    look.x+=(lookT.x-look.x)*.15; look.y+=(lookT.y-look.y)*.15;
+    R.face.setAttribute('transform','translate('+f(look.x*4)+' '+f(look.y*2.5)+')');
+    [pupL,pupR].forEach(function(pp){ pp.setAttribute('cx',f(look.x*1.9)); pp.setAttribute('cy',f(look.y*2.2)); });
+    [hlL,hlR].forEach(function(h){ h.setAttribute('cx',f(-1.9+look.x*1.2)); h.setAttribute('cy',f(-4+look.y*1.2)); });
+    if(!reduce&&now>blinkAt){ blinkP=1; blinkAt=now+2200+Math.random()*3200; }
+    var bl=blinkP>0?Math.abs(Math.cos((1-blinkP)*Math.PI)):1; blinkP=Math.max(0,blinkP-.12);
+    var joy=mode==='happy'&&e>.1&&e<.9, shut=asleep, ey=shut||joy?0:Math.max(.08,bl);
+    R.eyeL.setAttribute('transform','translate(-10.5 -43) scale(1 '+f(ey)+')'); R.eyeR.setAttribute('transform','translate(10.5 -43) scale(1 '+f(ey)+')');
+    R.eyeL.setAttribute('opacity',shut||joy?0:1); R.eyeR.setAttribute('opacity',shut||joy?0:1);
+    R.closed.setAttribute('opacity',shut?1:0); R.joy.setAttribute('opacity',joy?1:0);
+    R.mouth.setAttribute('d',asleep?MOUTH.sleep:mode==='happy'||mode==='wave'?MOUTH.happy:mode==='oops'?MOUTH.oh:MOUTH.idle);
+    for(var z=0;z<3;z++){ var ph=((t*.6)+z/3)%1; R.zz[z].setAttribute('opacity',asleep?f(reduce?1:Math.sin(ph*Math.PI)):0); R.zz[z].setAttribute('transform','translate(0 '+f(-ph*8)+')'); }
   }
-  idle=Date.now();
-  ['pointerdown','keydown','scroll','touchstart'].forEach(function(ev){ window.addEventListener(ev,function(){ if(!asleep) idle=Date.now(); },{passive:true}); });
-  setInterval(function(){ if(!asleep&&Date.now()-idle>14000){ var r=bd.getBoundingClientRect(); if(r.bottom>0&&r.top<innerHeight){ asleep=true; bd.classList.add('sleep'); talk('Zzz… Нажми, чтобы разбудить.'); } } },1500);
-  var wv=false; if('IntersectionObserver' in window) new IntersectionObserver(function(es){ if(es[0].isIntersecting&&!wv){ wv=true; setTimeout(function(){ act('wave',1600); talk('Привет! Я Ворди. Нажми на меня!'); },300); } },{threshold:.5}).observe(bd);
+  function frame(now){ requestAnimationFrame(frame); if(visible) draw(now); }
+  draw(performance.now()); if(!reduce) requestAnimationFrame(frame); else setInterval(function(){ draw(performance.now()); },1500);
 
   /* sticky start button on phones */
   var go=document.getElementById('go'), st=document.getElementById('stick');
