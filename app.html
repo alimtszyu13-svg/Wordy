@@ -8819,7 +8819,57 @@ GL.push(
   choice:[["The film was long. ___ , it was worth it.",["By the way","Having said that","As a result","For example"],1],["___ , I didn't know him at all. (на самом деле)",["As a matter of fact","Mind you","Anyway","Admittedly not"],0],
    ["___ , I made a mistake. I'm sorry.",["Admittedly","By the way","Mind you","Furthermore"],0],["Enough about work. ___ , how was your holiday?",["Anyway","Admittedly","Consequently","Granted"],0]]}
 );
-{ const ORDER=['g1','dem','imp','pron','can','qw','freq','art','pl','there','hgot','poss','g2','likeing','g3','waswere',
+/* ---------- Старт с нуля: алфавит, правила чтения, транскрипция, порядок слов, числа ---------- */
+GL.push(
+ {id:"abc",cefr:"A1",title:"Алфавит",ru:"26 букв, их названия и заглавные буквы",
+  intro:"В английском алфавите 26 букв: 5 гласных (a, e, i, o, u), буква y, которая бывает и гласной, и согласной, и 20 согласных. Название буквы и её звук в словах часто не совпадают: буква A называется [эй], а в слове cat звучит как [э]. Названия букв нужны, чтобы продиктовать имя, почту или пароль.",
+  formula:[["A–Z","A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"],["Гласные","A · E · I · O · U (+ Y)"],["Спросить","How do you spell it? — Как это пишется?"]],
+  examples:[["How do you spell your name? — A-I-B-E-K.","Как пишется твоё имя? — A-I-B-E-K."],["My email is asel at gmail dot com.","Моя почта asel@gmail.com."],["Bella — B, E, double L, A.","Bella — B, E, две L, A."]],
+  tip:"Чаще всего путают E [и:] и I [ай], G [джи:] и J [джей], A [эй] и R [а:]. Две одинаковые буквы подряд называют double: double L, double O.",
+  typed:[["A, B, C, ___ (следующая буква)","буква",["d"]],["X, Y, ___ (последняя буква)","буква",["z"]],["Сколько букв в английском алфавите? ___","число",["26","twenty-six","twenty six"]],
+   ["Знак @ в адресе: asel ___ gmail.com","как читается @",["at"]],["Точка в адресе: gmail ___ com","как читается точка",["dot"]],["Две L подряд: ___ L","как сказать",["double"]]],
+  choice:[["Как называется буква E?",["[и:]","[е]","[ай]","[э]"],0],["Как называется буква I?",["[и:]","[ай]","[эй]","[ой]"],1],
+   ["Какая буква называется [джей]?",["G","J","Y","H"],1],["Что в английском всегда пишется с заглавной буквы?",["дни недели","все существительные","времена года","слово you"],0]]},
+ {id:"rules",cefr:"A1",title:"Правила чтения",ru:"открытый и закрытый слог, sh, ch, th, ee, oo",
+  intro:"Английские слова читаются не буква за буквой, а по правилам. Главное: гласная в закрытом слоге (cat, pen) звучит коротко, а в открытом, где на конце немая e (cake, Pete), — как своё название в алфавите. Добавь к этому десяток буквосочетаний — sh, ch, th, ee, oo — и ты прочитаешь большинство простых слов.",
+  formula:[["Закрытый слог","cat [æ] · pen [e] · sit [ɪ] · hot [ɒ] · cut [ʌ]"],["Открытый слог (немая e)","cake [eɪ] · Pete [iː] · time [aɪ] · home [əʊ] · cute [juː]"],["Сочетания","sh [ʃ] · ch [tʃ] · th [θ / ð] · ee [iː] · oo [uː]"]],
+  examples:[["cat — cake","кот — торт"],["kit — kite","набор — воздушный змей"],["hop — hope","прыгать — надежда"],["cub — cube","детёныш — кубик"]],
+  tip:"Немая e на конце слова не читается, но «открывает» гласную перед собой: hat → hate, not → note. Есть исключения, которые просто запоминают: have, give, live, come, love.",
+  typed:[["Добавь немую e: kit → ___","новое слово",["kite"]],["hat → ___ (ненавидеть)","новое слово",["hate"]],["not → ___ (записка)","новое слово",["note"]],
+   ["cub → ___ (кубик)","новое слово",["cube"]],["Звук [ш] пишется буквами ___","две буквы",["sh"]],["Звук [ч] в слове chair пишется буквами ___","две буквы",["ch"]]],
+  choice:[["Как читается a в слове name?",["[эй]","[э]","[а]","[о]"],0],["В каком слове i читается [ай]?",["sit","fish","time","milk"],2],
+   ["Как читается ee в слове green?",["[и:]","[е]","[ей]","[э]"],0],["Какая буква не читается в слове know?",["k","n","o","w"],0]]},
+ {id:"ipa",cefr:"A1",title:"Звуки и транскрипция",ru:"как читать значки вроде /θɪŋk/",
+  intro:"Транскрипция — запись звуков слова. В Wordy она стоит рядом с каждым словом, например /ˈwɜːdi/. Большинство значков похожи на латинские буквы, особых — около 15. Знак ː означает долгий звук, а штрих ˈ ставится перед ударным слогом.",
+  formula:[["Долгие гласные","iː · uː · ɑː · ɔː · ɜː"],["Особые согласные","θ · ð · ʃ · ʒ · tʃ · dʒ · ŋ · w · j"],["Ударение","ˈ перед ударным слогом: /ˈteɪbl/"]],
+  examples:[["think /θɪŋk/ — this /ðɪs/","думать — это"],["ship /ʃɪp/ — sheep /ʃiːp/","корабль — овца"],["very /ˈveri/ — we /wiː/","очень — мы"]],
+  tip:"Русскоязычным важнее всего три вещи: th (кончик языка между зубами, а не [с] или [з]), w (губы трубочкой, а не [в]) и долгота звука: ship и sheep — разные слова.",
+  typed:[["Звук /θ/ пишется буквами ___","две буквы",["th"]],["Звук /ʃ/ пишется буквами ___","две буквы",["sh"]],["Звук /ŋ/ в слове sing пишется буквами ___","две буквы",["ng"]],
+   ["Звук /j/ в слове yes звучит как русская буква ___","одна буква",["й"]],["Знак ː после гласной значит, что звук ___","долгий или короткий",["долгий"]],["Знак ˈ ставится ___ ударным слогом","перед или после",["перед"]]],
+  choice:[["Какое слово записано как /ʃiːp/?",["ship","sheep","cheap","shop"],1],["/wɜːk/ — это…",["work","walk","week","word"],0],
+   ["/ðɪs/ — это…",["this","these","thin","dish"],0],["Где ударение в /əˈbaʊt/?",["на первом слоге","на втором слоге","на обоих","его нет"],1]]},
+ {id:"svo",cefr:"A1",title:"Порядок слов",ru:"кто → что делает → что → где → когда",
+  intro:"По-русски можно сказать и «Мама читает книгу», и «Книгу читает мама». В английском порядок почти всегда один: кто + действие + что + где + когда. А подлежащее обязательно: нельзя просто сказать «Is cold» или «Live in Osh».",
+  formula:[["Схема","Кто + глагол + что + где + когда"],["Пример","She reads books in the park every day."],["Местоимения","I · you · he · she · it · we · they"]],
+  examples:[["My mum cooks dinner at home every evening.","Мама каждый вечер готовит ужин дома."],["It's late.","Поздно."],["They play football after school.","Они играют в футбол после школы."]],
+  tip:"Предметы — это it, а не he или she: The phone is new. It is fast. You — это и «ты», и «вы».",
+  typed:[["___ is raining. (подлежащее)","местоимение",["it"]],["My brother likes pizza. → ___ likes pizza.","местоимение",["he"]],["Asel and I are friends. → ___ are friends.","местоимение",["we"]],
+   ["The phone is new. → ___ is new.","местоимение",["it"]],["My parents work in Osh. → ___ work in Osh.","местоимение",["they"]],["Mrs Smith is a teacher. → ___ is a teacher.","местоимение",["she"]]],
+  choice:[["Выбери правильный порядок слов:",["Football play I.","I play football.","Play I football.","I football play."],1],
+   ["Выбери правильное предложение:",["She drinks coffee in the morning.","She in the morning drinks coffee.","Drinks she coffee in the morning.","She drinks in the morning coffee."],0],
+   ["Как сказать «Холодно»?",["Is cold.","It is cold.","Cold is.","It cold."],1],["Как заменить the table местоимением?",["he","she","it","they"],2]]},
+ {id:"nums",cefr:"A1",title:"Числа, даты и время",ru:"twenty-one, the 5th of May, half past six",
+  intro:"Числа нужны каждый день: возраст, цены, телефон, время, даты. Количественные числа (one, two, three) отвечают на вопрос «сколько?», порядковые (first, second, third) — на «который по счёту?» и нужны в датах.",
+  formula:[["13–19 и 30–90","thirteen /ˌθɜːˈtiːn/ ≠ thirty /ˈθɜːti/"],["Даты","the fifth of May · May 5th"],["Время","It's half past six · It's quarter to nine"]],
+  examples:[["I was born in 2010 (two thousand and ten).","Я родился в 2010 году."],["My birthday is on the 3rd of March.","Мой день рождения 3 марта."],["It's twenty past seven.","Сейчас 7:20."]],
+  tip:"В числах на -teen ударение в конце (fifTEEN), в десятках на -ty — в начале (FIFty). Так их различают на слух.",
+  typed:[["21 = twenty-___","число",["one"]],["3rd = ___","порядковое",["third"]],["12th = ___","порядковое",["twelfth"]],
+   ["7:30 = half past ___","время",["seven"]],["8:45 = quarter ___ nine","время",["to"]],["100 = one ___","число",["hundred"]]],
+  choice:[["15 —",["fifty","fifteen","fiveteen","fifteenth"],1],["Как прочитать дату 1 May?",["the one of May","the first of May","May one of","first May of"],1],
+   ["6:15 —",["quarter past six","quarter to six","six past quarter","half past six"],0],["Как обычно читают год 2025?",["twenty twenty-five","two zero two five","twenty hundred twenty-five","two thousand twenty-five hundred"],0]]}
+);
+
+{ const ORDER=['abc','rules','ipa','svo','g1','dem','imp','pron','can','qw','nums','freq','art','pl','there','hgot','poss','g2','likeing','g3','waswere',
   'g4','g5','g6','prepl','atin','some','few','prep','too','adv','asas','conj','posspron','wlike','g10','pcfut','g12','g11','haveto',
   'g7','g8','g9','edadj','subjq','allowed','tags','sodoi','zero','cond1','timec','maymight','cond2','quant','compadv','pass','ger','purpose','makelet','rel','refl','sosuch','phr','indq',
   'ppc','ppc2','narr','cond3','modpast','needn','rep','repq','used','deduct','hadbetter','futc','futpast','pass3','gerinf2','provided','nondef','contrast','each','adjorder',
@@ -9017,6 +9067,219 @@ function GrammarMap({st,onBack,open}){
    Exercise items — gap:[sent___,hint,[answers],why] · choice:[sent,[opts],i,why] · trans:[source,[answers],why]
    order:[[answers],why] · error:[sent with *wrong part*,fix|null,why] · tr:[ru,[answers]] */
 const GBOOK={};
+/* ---------- Старт с нуля: теория и упражнения ---------- */
+GBOOK.abc={
+ goal:"Знать 26 букв и их названия, уметь продиктовать по буквам имя и почту и знать, какие слова пишутся с заглавной буквы.",
+ sections:[
+  {h:"26 букв",b:[
+   ['p',"Русские подсказки в скобках примерные: точнее звучание услышишь, если нажмёшь на динамик рядом с примерами."],
+   ['tbl',["Буква","Название","Буква","Название"],[["A a","[эй]","N n","[эн]"],["B b","[би:]","O o","[оу]"],["C c","[си:]","P p","[пи:]"],["D d","[ди:]","Q q","[кью:]"],["E e","[и:]","R r","[а:]"],["F f","[эф]","S s","[эс]"],["G g","[джи:]","T t","[ти:]"],["H h","[эйч]","U u","[ю:]"],["I i","[ай]","V v","[ви:]"],["J j","[джей]","W w","[дабл-ю:]"],["K k","[кей]","X x","[экс]"],["L l","[эл]","Y y","[уай]"],["M m","[эм]","Z z","[зэд] (брит.) / [зи:] (амер.)"]]],
+   ['ex',[["A, B, C, D, E, F, G","первые семь букв"],["H, I, J, K, L, M, N","следующие семь"],["O, P, Q, R, S, T, U","ещё семь"],["V, W, X, Y, Z","последние пять"]]]]},
+  {h:"Гласные и согласные",b:[
+   ['ul',["**Гласные:** a, e, i, o, u. Буква **y** бывает гласной (my, gym) и согласной (yes, you).","**Согласные:** все остальные — b, c, d, f, g, h и так далее.","**Название ≠ звук.** Буква A называется [эй], а в слове cat звучит [э]. Как читаются буквы в словах — в следующем уроке, «Правила чтения»."]],
+   ['key',"Чаще всего путают пары: **E [и:] и I [ай]**, **G [джи:] и J [джей]**, **A [эй] и R [а:]**. Повтори их отдельно."]]},
+  {h:"Диктуем по буквам",b:[
+   ['p',"Когда человек не понял твоё имя или почту, его спросят **How do you spell it?** — «Как это пишется?». В ответ называют буквы по одной."],
+   ['tbl',["Знак","Как сказать","Пример"],[["две одинаковые буквы","double","Anna — A, double N, A"],["@","at","ali at mail dot ru"],[".","dot","gmail dot com"],["-","dash / hyphen","wordy dash app"],["_","underscore","asel underscore 07"]]],
+   ['ex',[["How do you spell your surname? — S-M-I-T-H.","Как пишется твоя фамилия? — S-M-I-T-H."],["Can you spell that, please?","Можете продиктовать по буквам?"],["My email is timur at gmail dot com.","Моя почта timur@gmail.com."]]]]},
+  {h:"Заглавные буквы",b:[
+   ['p',"В английском заглавных букв больше, чем в русском. С большой буквы пишут:"],
+   ['ul',["**I** — «я», всегда, в любом месте предложения.","**Имена, города, страны:** Aibek, Bishkek, Kyrgyzstan.","**Языки и национальности:** English, Russian, Kyrgyz.","**Дни недели и месяцы:** Monday, May."]],
+   ['note',"Времена года пишут со строчной: **summer, winter**."],
+   ['ex',[["I speak English and Russian.","Я говорю по-английски и по-русски."],["See you on Monday!","Увидимся в понедельник!"],["My birthday is in July.","Мой день рождения в июле."]]]]}],
+ mistakes:[["i am from Osh.","I am from Osh.","I всегда с большой буквы."],["I speak english.","I speak English.","Языки — с заглавной."],["See you on monday.","See you on Monday.","Дни недели — с заглавной."],["It's cold in Winter.","It's cold in winter.","Времена года — со строчной."],["How do you write your name? (про буквы)","How do you spell your name?","Назвать по буквам — spell."]],
+ summary:["26 букв: 5 гласных (a, e, i, o, u), y бывает гласной и согласной.","Название буквы и её звук в словах часто разные.","How do you spell it? — диктуем по буквам: double, at, dot.","С большой буквы: I, имена, страны, языки, дни недели, месяцы."],
+ ex:[
+  {t:'gap',h:"Какая буква дальше",q:"Впиши букву, которая идёт следующей по алфавиту.",items:[
+   ["A, B, C, ___","буква",["d"],"A B C D."],["H, I, J, ___","буква",["k"],"H I J K."],["P, Q, R, ___","буква",["s"],"P Q R S."],
+   ["U, V, W, ___","буква",["x"],"U V W X."],["L, M, N, ___","буква",["o"],"L M N O."],["E, F, G, ___","буква",["h"],"E F G H."]]},
+  {t:'choice',h:"Названия букв",q:"Выбери букву по её названию.",items:[
+   ["[эйч] — это буква…",["A","H","E","I"],1,"H называется [эйч]."],["[кью:] — это буква…",["K","Q","U","C"],1,"Q — [кью:]."],
+   ["[уай] — это буква…",["W","Y","I","V"],1,"Y — [уай]."],["[а:] — это буква…",["A","R","O","E"],1,"R по-британски называется [а:]."],
+   ["[джи:] — это буква…",["G","J","Z","D"],0,"G — [джи:], а J — [джей]."],["[дабл-ю:] — это буква…",["U","V","W","Y"],2,"W — «двойная U»."]]},
+  {t:'choice',h:"Заглавные буквы",q:"Выбери предложение без ошибок.",items:[
+   ["Где всё написано правильно?",["I live in bishkek.","I live in Bishkek.","i live in Bishkek.","I Live In Bishkek."],1,"Город — с заглавной, остальное со строчной."],
+   ["Где всё написано правильно?",["We speak Kyrgyz and Russian.","We speak kyrgyz and russian.","we speak Kyrgyz and Russian.","We Speak Kyrgyz And Russian."],0,"Языки — с заглавной."],
+   ["Где всё написано правильно?",["My birthday is in May.","My birthday is in may.","my birthday is in May.","My Birthday Is In May."],0,"Месяцы — с заглавной."],
+   ["Где всё написано правильно?",["I love Summer.","I love summer.","i love summer.","I Love Summer."],1,"Времена года — со строчной."],
+   ["Где всё написано правильно?",["Today is friday.","today is Friday.","Today is Friday.","Today Is Friday."],2,"День недели — с заглавной."]]},
+  {t:'error',h:"Найди ошибку",q:"Нажми на неправильное слово. Если ошибки нет, нажми «Ошибки нет».",items:[
+   ["My friend is from *kazakhstan*.","Kazakhstan","Страны — с заглавной."],["Every day *i* read a book.","I","I всегда заглавная."],
+   ["We have English on Tuesday.",null,"Всё верно."],["She speaks *french* very well.","French","Языки — с заглавной."],["Our holidays start in June.",null,"Всё верно: месяцы с заглавной."]]},
+  {t:'gap',h:"Продиктуй по буквам",q:"Впиши слово, которое пропущено.",items:[
+   ["ali@mail.ru → ali ___ mail dot ru","как читается @",["at"],"@ = at."],["gmail.com → gmail ___ com","как читается точка",["dot"],". = dot."],
+   ["Anna → A, ___ N, A","две одинаковые",["double"],"Две N подряд — double N."],["How do you ___ your surname?","назвать по буквам",["spell"],"spell — назвать буквы по порядку."]]},
+  {t:'tr',h:"Переведи на английский",q:"Напиши перевод. Если твой вариант не совпал с образцом, но ты уверен, что он верный, отметь это.",items:[
+   ["Как пишется твоё имя?",["How do you spell your name?","How do you spell your first name?"]],
+   ["Я говорю по-русски и по-английски.",["I speak Russian and English.","I speak English and Russian."]],
+   ["Мой день рождения в апреле.",["My birthday is in April.","My birthday's in April."]]]}]};
+
+GBOOK.rules={
+ goal:"Читать простые незнакомые слова по правилам: открытый и закрытый слог, немая e, основные буквосочетания и немые буквы.",
+ sections:[
+  {h:"Пять гласных — два звука",b:[
+   ['p',"Каждая гласная читается по-разному в **закрытом** слоге (после неё согласная: cat, pen) и в **открытом** (после неё ещё одна гласная, чаще всего немая e: cake, Pete). В открытом слоге гласная звучит так, как называется в алфавите."],
+   ['tbl',["Буква","Закрытый слог","Открытый слог"],[["a","cat, bag — [æ] открытое э","name, cake — [eɪ] эй"],["e","pen, red — [e] э","he, Pete — [iː] и:"],["i","sit, big — [ɪ] короткое и","time, five — [aɪ] ай"],["o","hot, dog — [ɒ] о","home, go — [əʊ] оу"],["u","cut, bus — [ʌ] а","cute, music — [juː] ю:"],["y","gym — [ɪ]","my, fly — [aɪ]"]]],
+   ['key',"Немая **e** в конце слова не читается, но «открывает» гласную перед собой: hat → hate, kit → kite, hop → hope."],
+   ['ex',[["cat — cake","кот — торт"],["pen — Pete","ручка — Пит"],["sit — site","сидеть — участок"],["not — note","не — записка"],["cut — cute","резать — милый"]]]]},
+  {h:"Сочетания согласных",b:[
+   ['tbl',["Буквы","Звук","Примеры"],[["sh","[ʃ] ш","ship, fish"],["ch, tch","[tʃ] ч","chair, watch"],["th","[θ] или [ð]","think, three · this, mother"],["ph","[f] ф","phone, photo"],["wh","[w]","what, white"],["ck","[k] к","back, black"],["ng","[ŋ] носовой н","sing, long"],["qu","[kw] кв","queen, quick"]]],
+   ['note',"**c** перед e, i, y читается [s]: city, centre, cycle. В остальных случаях — [k]: cat, cup, clock. **g** перед e, i, y часто читается [dʒ]: gym, page, giant, а иначе — [g]: go, big. Исключения: get, give, girl."],
+   ['ex',[["ship — chip","корабль — чипс"],["think — this","думать — это"],["city — cat","город — кот"],["page — game","страница — игра"]]]]},
+  {h:"Сочетания гласных",b:[
+   ['tbl',["Буквы","Звук","Примеры"],[["ee, ea","[iː] долгое и","see, tea, meet"],["oo","[uː] долгое у или [ʊ] короткое у","food, moon · book, look"],["ai, ay","[eɪ] эй","rain, day"],["oa, ow","[əʊ] оу","boat, snow"],["ou, ow","[aʊ] ау","house, now"],["oi, oy","[ɔɪ] ой","coin, boy"],["ar","[ɑː] долгое а","car, park"],["or","[ɔː] долгое о","fork, short"],["er, ir, ur","[ɜː] как ё в «мёд»","her, bird, turn"]]],
+   ['ex',[["meet — moon — book","встречать — луна — книга"],["rain — boat — house","дождь — лодка — дом"],["car — fork — bird","машина — вилка — птица"]]]]},
+  {h:"Немые буквы и исключения",b:[
+   ['ul',["**kn** — k не читается: know, knife, knee.","**wr** — w не читается: write, wrong.","**mb** — b не читается: climb, comb.","**gh** чаще всего не читается: night, light, daughter.","**h** не читается в hour, honest."]],
+   ['p',"Некоторые частые слова нарушают правила, их просто запоминают: **have, give, live, come, love** (немая e не открывает слог), **one, two, said, friend, women, busy**."],
+   ['key',"Сомневаешься, как читается слово, — смотри транскрипцию рядом с ним и нажимай на динамик. Как читать транскрипцию — в следующем уроке."]]}],
+ mistakes:[["knife → [кнайф]","[найф]","k перед n не читается."],["cake → [каке]","[кейк]","Немая e не читается и открывает a."],["city → [кити]","[сити]","c перед i читается [s]."],["have → [хейв]","[хэв]","Исключение: e не открывает a."],["night → [нигхт]","[найт]","gh не читается, i звучит [ай]."]],
+ summary:["Закрытый слог — короткий звук (cat), открытый с немой e — как название буквы (cake).","sh = ш, ch = ч, th — особый звук, ph = ф, ck = к, ng — носовой н.","ee/ea = и:, ai/ay = эй, oa = оу, ou = ау, oy = ой.","Немые буквы: kn, wr, mb, gh. Исключения запоминай."],
+ ex:[
+  {t:'choice',h:"Открытый или закрытый слог",q:"Выбери слово с нужным звуком.",items:[
+   ["В каком слове a читается [эй]?",["map","plane","hat","bag"],1,"plane: a + согласная + e → [eɪ]."],["В каком слове o читается [оу]?",["dog","box","nose","hot"],2,"nose: открытый слог → [əʊ]."],
+   ["В каком слове u читается [ю:]?",["bus","cup","tube","sun"],2,"tube: открытый слог → [juː]."],["В каком слове e читается [и:]?",["bed","ten","these","pen"],2,"these: открытый слог → [iː]."],
+   ["В каком слове i звучит коротко?",["bike","fine","milk","nine"],2,"milk: закрытый слог → [ɪ]."],["В каком слове y читается [ай]?",["gym","sky","myth","system"],1,"sky: y на конце ударного слога → [aɪ]."]]},
+  {t:'gap',h:"Добавь немую e",q:"Добавь e на конец слова и впиши новое слово.",items:[
+   ["hop → ___ (надеяться)","+ e",["hope"],"o открывается: /həʊp/."],["kit → ___ (воздушный змей)","+ e",["kite"],"i открывается: /kaɪt/."],["can → ___ (тростник)","+ e",["cane"],"a открывается: /keɪn/."],
+   ["us → ___ (использовать)","+ e",["use"],"u открывается: /juːz/."],["pin → ___ (сосна)","+ e",["pine"],"i открывается: /paɪn/."],["tap → ___ (лента, скотч)","+ e",["tape"],"a открывается: /teɪp/."]]},
+  {t:'choice',h:"Какой это звук",q:"Выбери, как читаются выделенные буквы.",items:[
+   ["sh в слове shop",["[ʃ] — ш","[s] — с","[tʃ] — ч","[ʒ] — ж"],0,"sh = [ʃ]."],["ch в слове chair",["[ʃ] — ш","[tʃ] — ч","[k] — к","[h] — х"],1,"ch = [tʃ]."],
+   ["ph в слове photo",["[p] — п","[f] — ф","[ph] — пх","[v] — в"],1,"ph = [f]."],["c в слове city",["[k] — к","[s] — с","[tʃ] — ч","[ts] — ц"],1,"c перед i = [s]."],
+   ["g в слове gym",["[g] — г","[dʒ] — дж","[ʒ] — ж","[h] — х"],1,"g перед y = [dʒ]."],["oo в слове moon",["[uː] — долгое у","[ɒ] — о","[ʊ] — короткое у","[ɔː] — долгое о"],0,"moon /muːn/."]]},
+  {t:'choice',h:"Немые буквы",q:"Какая буква в слове не читается?",items:[
+   ["write",["w","r","i","t"],0,"wr: w не читается."],["climb",["c","l","m","b"],3,"mb: b не читается."],["hour",["h","o","u","r"],0,"В hour h не читается."],
+   ["knee",["k","n","первая e","вторая e"],0,"kn: k не читается."],["night",["n","i","gh","t"],2,"gh не читается."]]},
+  {t:'gap',h:"Какие буквы",q:"Впиши буквосочетание, которым записан звук.",items:[
+   ["Звук [ŋ] в слове sing пишется: ___","две буквы",["ng"],"ng = [ŋ]."],["Звук [θ] в слове three пишется: ___","две буквы",["th"],"th = [θ]."],
+   ["Звук [iː] в слове tea пишется: ___","две буквы",["ea"],"ea = [iː]."],["Звук [aʊ] в слове house пишется: ___","две буквы",["ou"],"ou = [aʊ]."],
+   ["Звук [ɔɪ] в слове boy пишется: ___","две буквы",["oy"],"oy = [ɔɪ]."],["Звуки [kw] в слове queen пишутся: ___","две буквы",["qu"],"qu = [kw]."]]}]};
+
+GBOOK.ipa={
+ goal:"Уверенно читать транскрипцию в Wordy и словарях: долгие и краткие гласные, звуки, которых нет в русском, и знак ударения.",
+ sections:[
+  {h:"Зачем нужна транскрипция",b:[
+   ['p',"Английское написание часто не подсказывает, как читать: **through, though, tough** выглядят похоже, а звучат совсем по-разному. Транскрипция показывает точное звучание. Её пишут в косых /…/ или квадратных […] скобках."],
+   ['key',"Двоеточие **ː** после гласной — звук долгий: /siː/. Штрих **ˈ** — следующий слог ударный: /ˈteɪbl/."]]},
+  {h:"Гласные",b:[
+   ['tbl',["Значок","Как звучит","Пример"],[["iː","долгое и","see /siː/"],["ɪ","короткое и, ближе к ы","sit /sɪt/"],["e","э","bed /bed/"],["æ","открытое э, рот широко","cat /kæt/"],["ʌ","короткое а","cup /kʌp/"],["ɑː","долгое глубокое а","car /kɑː/"],["ɒ","короткое о","hot /hɒt/"],["ɔː","долгое о","door /dɔː/"],["ʊ","короткое у","book /bʊk/"],["uː","долгое у","food /fuːd/"],["ɜː","как ё в «мёд», без й","bird /bɜːd/"],["ə","слабый безударный звук","about /əˈbaʊt/"]]],
+   ['tbl',["Двугласные","Звучание","Пример"],[["eɪ","эй","day /deɪ/"],["aɪ","ай","my /maɪ/"],["ɔɪ","ой","boy /bɔɪ/"],["əʊ","оу","go /ɡəʊ/"],["aʊ","ау","now /naʊ/"],["ɪə","иэ","here /hɪə/"],["eə","эа","there /ðeə/"]]],
+   ['ex',[["ship — sheep","корабль — овца"],["full — fool","полный — дурак"],["cat — cut","кот — резать"],["bed — bad","кровать — плохой"]]]]},
+  {h:"Согласные, которых нет в русском",b:[
+   ['tbl',["Значок","Как произносить","Пример"],[["θ","глухой: кончик языка между зубами, выдох","think, three"],["ð","то же, но звонко","this, mother"],["w","губы трубочкой, потом раскрыть","we, window"],["h","лёгкий выдох, не хриплое х","hat, home"],["ŋ","н задней частью языка, через нос","sing, long"],["r","язык не вибрирует, кончик загнут","red, right"],["ʃ / ʒ","мягкие ш / ж","she · usually"],["tʃ / dʒ","ч / дж","chair · job"],["j","й","yes /jes/"]]],
+   ['note',"**j** в транскрипции — это звук **й**, а не «дж»: yes /jes/, you /juː/. «Дж» записывают как **dʒ**: job /dʒɒb/."],
+   ['ex',[["three /θriː/","три"],["this /ðɪs/","это"],["we /wiː/","мы"],["sing /sɪŋ/","петь"],["yes /jes/","да"]]]]},
+  {h:"Ударение",b:[
+   ['p',"Штрих **ˈ** стоит перед ударным слогом. Иногда он переезжает в родственных словах, поэтому смотри транскрипцию каждого слова."],
+   ['ex',[["photograph /ˈfəʊtəɡrɑːf/","фотография (снимок)"],["photography /fəˈtɒɡrəfi/","фотография (занятие)"],["begin /bɪˈɡɪn/","начинать"],["money /ˈmʌni/","деньги"]]],
+   ['key',"В Wordy у каждого слова есть транскрипция и динамик. Слушай и сверяй звук со значками — так они запоминаются быстрее всего."]]}],
+ mistakes:[["three → [сри:]","/θriː/","th — кончик языка между зубами, а не [с]."],["we → [ви:]","/wiː/","w — губы трубочкой, а не [в]."],["sheep и ship звучат одинаково","/ʃiːp/ — /ʃɪp/","Долгота меняет смысл слова."],["yes /jes/ → [джес]","[йес]","j в транскрипции — это й."],["hello → [хэллоу] с хрипом","/həˈləʊ/","h — лёгкий выдох."]],
+ summary:["ː — долгий звук, ˈ — перед ударным слогом.","Пары по долготе меняют смысл: ship / sheep, full / fool.","θ и ð — язык между зубами; w — губы трубочкой; h — лёгкий выдох.","j = й, dʒ = дж, ŋ — носовой н."],
+ ex:[
+  {t:'choice',h:"Какое это слово",q:"Выбери слово по транскрипции.",items:[
+   ["/bʊk/",["book","boot","back","bake"],0,"ʊ — короткое у."],["/kʌp/",["cap","cup","cop","cope"],1,"ʌ — короткое а."],["/fɪʃ/",["fish","feet","fresh","fix"],0,"ɪ + ʃ."],
+   ["/naɪt/",["note","night","net","neat"],1,"aɪ — ай."],["/ˈwɔːtə/",["water","waiter","winter","weather"],0,"ɔː — долгое о."],["/θæŋk/",["tank","thank","think","sank"],1,"θ + æ + ŋk."],
+   ["/jɑːd/",["yard","jar","yarn","guard"],0,"j = й."],["/ʃʊə/",["sure","shoe","shore","share"],0,"sure /ʃʊə/."]]},
+  {t:'choice',h:"Долгий или короткий",q:"Выбери правильный вариант.",items:[
+   ["Где записан долгий звук?",["/sɪt/","/siːt/","/sɪk/","/bɪt/"],1,"ː — долгий."],["/fʊl/ — это…",["fool","full","fill","feel"],1,"Короткое ʊ — full."],
+   ["/fuːl/ — это…",["full","fool","fall","fill"],1,"Долгое uː — fool."],["/bæd/ — это…",["bed","bad","bud","bird"],1,"æ — открытое э."],["/bɜːd/ — это…",["bird","bed","board","bud"],0,"ɜː — как ё в «мёд»."]]},
+  {t:'gap',h:"Где ударение",q:"Впиши номер ударного слога: 1 или 2.",items:[
+   ["/ˈteɪbl/ table — ударный слог № ___","1 или 2",["1","первый"],"ˈ стоит перед первым слогом."],["/əˈbaʊt/ about — ударный слог № ___","1 или 2",["2","второй"],"ˈ перед вторым слогом."],
+   ["/ˈfəʊtəɡrɑːf/ photograph — ударный слог № ___","1 или 2",["1","первый"],"Ударение на первый слог."],["/fəˈtɒɡrəfi/ photography — ударный слог № ___","1 или 2",["2","второй"],"Ударение переехало на второй слог."],
+   ["/bɪˈɡɪn/ begin — ударный слог № ___","1 или 2",["2","второй"],"be-GIN."],["/ˈmʌni/ money — ударный слог № ___","1 или 2",["1","первый"],"MO-ney."]]},
+  {t:'gap',h:"Буквы и значки",q:"Впиши буквы, которыми обычно пишется звук.",items:[
+   ["/θ/ → ___","две буквы",["th"],"three, think."],["/ʃ/ → ___","две буквы",["sh"],"she, fish."],["/ŋ/ → ___","две буквы",["ng"],"sing, long."],
+   ["/tʃ/ → ___","две буквы",["ch"],"chair, cheap."],["/j/ в слове yes звучит как русская ___","одна буква",["й"],"j = й."]]}]};
+
+GBOOK.svo={
+ goal:"Строить английское предложение в правильном порядке и не пропускать подлежащее; знать личные местоимения.",
+ sections:[
+  {h:"Главное правило: кто → действие → что",b:[
+   ['p',"В русском смысл держится на окончаниях, поэтому слова можно переставлять. В английском окончаний почти нет, и смысл держится на **порядке слов**. The dog bit the man (собака укусила человека) ≠ The man bit the dog (человек укусил собаку)."],
+   ['tbl',["Кто","Действие","Что / кого","Где","Когда"],[["I","drink","tea","at home","every morning."],["My sister","studies","English","at school","on Mondays."],["They","play","football","in the park","after school."]]],
+   ['key',"Глагол стоит **сразу после подлежащего**, дополнение — **после глагола**. Место — перед временем."],
+   ['ex',[["I drink tea at home every morning.","Каждое утро я пью чай дома."],["My sister studies English at school.","Сестра учит английский в школе."]]]]},
+  {h:"Подлежащее обязательно",b:[
+   ['p',"По-русски можно сказать «Холодно», «Люблю тебя», «Живу в Оше». В английском у каждого предложения есть подлежащее."],
+   ['tbl',["Русский","Английский"],[["Холодно.","It's cold."],["Уже поздно.","It's late."],["Люблю тебя.","I love you."],["Живу в Оше.","I live in Osh."],["Идёт дождь.","It's raining."]]],
+   ['note',"Когда «кто» нет (погода, время, расстояние), подлежащим становится пустое **it**: It's five o'clock. It's 3 km to the station."]]},
+  {h:"Личные местоимения",b:[
+   ['tbl',["Русский","Английский","Пример"],[["я","I (всегда заглавная)","I am Ali."],["ты, вы","you","You are right."],["он","he","He is my brother."],["она","she","She is a doctor."],["оно, это (предметы, животные, погода)","it","It is new."],["мы","we","We are friends."],["они (люди и предметы)","they","They are expensive."]]],
+   ['note',"Предметы — всегда **it**, даже если по-русски «он» или «она»: The table is old. **It** is old. Домашних животных, которых любят, часто называют he или she."]]},
+  {h:"Где и когда — в конце",b:[
+   ['p',"Место и время обычно стоят в конце предложения: сначала **где**, потом **когда**. Время можно вынести в начало: **Every morning** I drink tea."],
+   ['ex',[["We have lunch at school at one o'clock.","Мы обедаем в школе в час."],["On Sundays my dad cooks plov.","По воскресеньям папа готовит плов."]]],
+   ['key',"Слова always, usually, often, never встают **перед** глаголом: I **always** get up early. Подробнее — в уроке «Наречия частотности»."]]}],
+ mistakes:[["Is cold today.","It is cold today.","Нужно подлежащее it."],["English I study every day.","I study English every day.","Сначала кто, потом действие, потом что."],["My mother she works in a bank.","My mother works in a bank.","Не повторяй подлежащее."],["The table is old. He is old.","The table is old. It is old.","Предметы — it."],["I very like music.","I like music very much.","very much — в конце."]],
+ summary:["Порядок: кто + глагол + что + где + когда.","Подлежащее обязательно; для погоды и времени — it.","I · you · he · she · it · we · they; предметы — it.","Наречия частоты — перед глаголом."],
+ ex:[
+  {t:'order',h:"Собери предложение",q:"Собери предложение из слов.",items:[
+   [["I drink tea every morning."],"Кто + действие + что + когда."],[["My brother plays the guitar."],"Подлежащее, глагол, дополнение."],[["We study English at school."],"Сначала что, потом где."],
+   [["They live in a small flat."],"Кто + действие + где."],[["She works in a hospital in Osh."],"Где — в конце."],[["It is very cold today."],"Подлежащее it для погоды."]]},
+  {t:'gap',h:"Какое местоимение",q:"Замени выделенное местоимением.",items:[
+   ["Aibek is my friend. ___ is fifteen.","местоимение",["he"],"Aibek → he."],["My sister and I like music. ___ go to concerts.","местоимение",["we"],"Я и сестра → we."],
+   ["This bag is heavy. ___ is full of books.","местоимение",["it"],"Предмет → it."],["Asel lives in Bishkek. ___ is a student.","местоимение",["she"],"Asel → she."],
+   ["The children are in the park. ___ are playing.","местоимение",["they"],"Children → they."],["Look out of the window! ___ is snowing.","местоимение",["it"],"Погода → it."]]},
+  {t:'choice',h:"Правильный порядок",q:"Выбери правильное предложение.",items:[
+   ["Где правильный порядок слов?",["I like very much apples.","I like apples very much.","Very much I like apples.","I very much apples like."],1,"very much — в конце."],
+   ["Где правильный порядок слов?",["My father works in a bank.","Works my father in a bank.","My father in a bank works.","In a bank works my father."],0,"Кто + действие + где."],
+   ["Где правильный порядок слов?",["We play tennis on Saturdays.","We on Saturdays play tennis.","Tennis we play on Saturdays.","Play we tennis on Saturdays."],0,"Время — в конце."],
+   ["Где правильный порядок слов?",["Is raining.","It raining.","It is raining.","Raining it is."],2,"Погода — It is."],
+   ["Где правильный порядок слов?",["She speaks three languages.","She three languages speaks.","Speaks she three languages.","Three languages speaks she."],0,"Кто + действие + что."]]},
+  {t:'error',h:"Найди ошибку",q:"Нажми на неправильное слово. Если ошибки нет, нажми «Ошибки нет».",items:[
+   ["*Is* hot in summer.","It is","Нужно подлежащее: It is hot."],["I have a new phone. *He* is very fast.","It","Предмет — it."],
+   ["We play football on Saturdays.",null,"Всё верно."],["My father *he* is a driver.","—","he лишнее: My father is a driver."],["They live in Talas.",null,"Всё верно."]]},
+  {t:'tr',h:"Переведи на английский",q:"Напиши перевод. Если твой вариант не совпал с образцом, но ты уверен, что он верный, отметь это.",items:[
+   ["Сегодня холодно.",["It's cold today.","It is cold today.","Today it's cold.","Today it is cold."]],["Я люблю тебя.",["I love you."]],
+   ["Мы живём в Бишкеке.",["We live in Bishkek."]],["Это мой телефон. Он новый.",["This is my phone. It's new.","This is my phone. It is new."]]]}]};
+
+GBOOK.nums={
+ goal:"Называть и понимать числа до миллиона, порядковые числа, даты, годы и время.",
+ sections:[
+  {h:"Числа от 0 до 100",b:[
+   ['tbl',["","","",""],[["0 zero","1 one","2 two","3 three"],["4 four","5 five","6 six","7 seven"],["8 eight","9 nine","10 ten","11 eleven"],["12 twelve","13 thirteen","14 fourteen","15 fifteen"],["16 sixteen","17 seventeen","18 eighteen","19 nineteen"],["20 twenty","30 thirty","40 forty","50 fifty"],["60 sixty","70 seventy","80 eighty","90 ninety"]]],
+   ['p',"Составные числа пишут через дефис: **twenty-one, thirty-five, ninety-nine**. 100 — **one hundred** (или a hundred)."],
+   ['key',"**-teen** (13–19) — ударение в конце: fifTEEN. **-ty** (20–90) — в начале: FIFty. Так их различают на слух."],
+   ['note',"Частые ошибки в написании: **forty** (без u), **fifteen / fifty** (fif-, не five-), **eighteen** (одна t), **ninety** (с e)."],
+   ['ex',[["thirteen — thirty","13 — 30"],["fifteen — fifty","15 — 50"],["twenty-one, thirty-two, forty-three","21, 32, 43"]]]]},
+  {h:"Большие числа, годы, цены",b:[
+   ['ul',["**hundred, thousand, million** после числа — без -s: two hundred people, five thousand som.","В британском варианте после hundred добавляют **and**: 125 — one hundred and twenty-five.","**Годы** читают парами: 1998 — nineteen ninety-eight; 2010 — two thousand and ten или twenty ten; 2025 — twenty twenty-five.","**Цены:** $5.99 — five ninety-nine или five dollars ninety-nine.","**Телефон** — по одной цифре, 0 — «oh», две одинаковые — double: 0555 — oh double five five."]],
+   ['ex',[["two hundred and fifty","250"],["three thousand people","3000 человек"],["nineteen ninety-eight","1998"],["twenty twenty-five","2025"]]]]},
+  {h:"Порядковые числа и даты",b:[
+   ['tbl',["Число","Порядковое","Сокращение"],[["1","first","1st"],["2","second","2nd"],["3","third","3rd"],["4","fourth","4th"],["5","fifth","5th"],["8","eighth","8th"],["9","ninth","9th"],["12","twelfth","12th"],["20","twentieth","20th"],["21","twenty-first","21st"]]],
+   ['p',"Остальные порядковые — число + **th**: sixth, seventh, tenth. В датах всегда порядковые: пишут **5 May** или **May 5**, а говорят **the fifth of May** или **May the fifth**."],
+   ['key',"Предлоги: **on** + день или дата (on Monday, on the 5th of May), **in** + месяц или год (in May, in 2010), **at** + время (at 7 o'clock)."]]},
+  {h:"Который час",b:[
+   ['tbl',["Время","Как сказать","Проще"],[["7:00","seven o'clock","seven"],["7:10","ten past seven","seven ten"],["7:15","quarter past seven","seven fifteen"],["7:30","half past seven","seven thirty"],["7:45","quarter to eight","seven forty-five"],["7:50","ten to eight","seven fifty"]]],
+   ['p',"**past** — «после» (с 1-й по 30-ю минуту), **to** — «до» следующего часа (с 31-й по 59-ю). **a.m.** — до полудня, **p.m.** — после."],
+   ['ex',[["What time is it? — It's half past six.","Который час? — Половина седьмого."],["The lesson starts at quarter to nine.","Урок начинается без четверти девять."]]]]}],
+ mistakes:[["two hundreds people","two hundred people","После числа hundred без -s."],["fourty","forty","Без u."],["the five of May","the fifth of May","В датах — порядковые числа."],["half past seven (= 6:30)","half past six","half past + текущий час."],["on May","in May","Месяц — in, дата — on."],["I have 15 years.","I'm 15.","Возраст — с to be."]],
+ summary:["-teen: ударение в конце, -ty: в начале.","hundred / thousand без -s после числа.","Даты: the fifth of May; on + дата, in + месяц и год.","Время: past до половины, to после; at + время."],
+ ex:[
+  {t:'gap',h:"Напиши словами",q:"Напиши число словами.",items:[
+   ["14 = ___","словами",["fourteen"],"four + teen."],["40 = ___","словами",["forty"],"Без u: forty."],["99 = ___","словами",["ninety-nine","ninety nine"],"Через дефис."],
+   ["11 = ___","словами",["eleven"],"eleven."],["300 = three ___","словами",["hundred"],"Без -s."],["1st = ___","словами",["first"],"first."],
+   ["5th = ___","словами",["fifth"],"five → fifth."],["9th = ___","словами",["ninth"],"Без e: ninth."],["20th = ___","словами",["twentieth"],"y → ie + th."]]},
+  {t:'choice',h:"Который час",q:"Выбери, как сказать время.",items:[
+   ["7:15",["quarter past seven","quarter to seven","seven past quarter","half past seven"],0,"15 минут после семи."],["10:30",["half past ten","half to eleven","ten half","half past eleven"],0,"half past + текущий час."],
+   ["4:45",["quarter past four","quarter to five","forty-five past four","quarter to four"],1,"Без четверти пять."],["9:05",["five past nine","five to nine","nine past five","nine five o'clock"],0,"5 минут после девяти."],
+   ["11:50",["ten to twelve","ten past eleven","fifty past eleven","ten to eleven"],0,"Без десяти двенадцать."],["3:00",["three o'clock","three hours","three o'clocks","o'clock three"],0,"Ровно — o'clock."]]},
+  {t:'gap',h:"Предлоги с датами и временем",q:"Впиши on, in или at.",items:[
+   ["My birthday is ___ the 2nd of June.","on / in / at",["on"],"Дата — on."],["School starts ___ September.","on / in / at",["in"],"Месяц — in."],
+   ["I was born ___ 2010.","on / in / at",["in"],"Год — in."],["The lesson starts ___ 9 o'clock.","on / in / at",["at"],"Время — at."],["We have a test ___ Monday.","on / in / at",["on"],"День недели — on."]]},
+  {t:'tr',h:"Переведи на английский",q:"Напиши перевод. Если твой вариант не совпал с образцом, но ты уверен, что он верный, отметь это.",items:[
+   ["Мне пятнадцать лет.",["I'm fifteen.","I am fifteen.","I'm fifteen years old.","I am fifteen years old.","I'm 15.","I am 15.","I'm 15 years old.","I am 15 years old."]],
+   ["Сейчас половина восьмого.",["It's half past seven.","It is half past seven.","It's seven thirty.","It is seven thirty."]],
+   ["Мой день рождения 10 мая.",["My birthday is on the tenth of May.","My birthday is on May the tenth.","My birthday is on the 10th of May.","My birthday is on May 10th.","My birthday is on May tenth.","My birthday is on 10 May.","My birthday is on May 10.","My birthday is the tenth of May."]]]}]};
+
+Object.assign(SIMPLE,{
+ abc:["Букв всего 26 — меньше, чем в русском. Хитрость в том, что у каждой буквы есть «имя» (A — эй) и «голос» в словах (в cat она звучит как э). Имена нужны, чтобы диктовать: Anna — A, double N, A.","26 букв. Имя буквы ≠ её звук. How do you spell it? — диктуем по буквам."],
+ rules:["Представь, что немая e на конце — это волшебная палочка: она молчит, но заставляет гласную перед собой сказать своё имя. cat → cake: a «назвала себя» [эй].","Без e — короткий звук (cat), с e на конце — как имя буквы (cake). sh = ш, ch = ч."],
+ ipa:["Транскрипция — это подсказка, как слово звучит. Двоеточие — тяни звук подольше, штрих — сюда ударение. Остальные значки выучишь за неделю, если будешь нажимать на динамик и смотреть на них.","ː — долго, ˈ — ударение, θ — язык между зубами, j — это й."],
+ svo:["Английское предложение — как поезд: впереди всегда паровоз (кто), за ним первый вагон (что делает), потом остальные (что, где, когда). Вагоны нельзя переставлять, и паровоз нельзя отцепить: даже погоде нужен свой паровоз — it.","Кто + делает + что + где + когда. Без подлежащего нельзя: It's cold."],
+ nums:["Числа 13–19 «кричат» в конце (fifTEEN), а 20, 30… — в начале (FIFty). В датах всегда «который по счёту»: the fifth of May. Время — сколько минут после часа (past) или до следующего (to).","-teen ≠ -ty. Даты: the 5th of May. 7:30 = half past seven."]
+});
+
 GBOOK.g2={
  goal:"Научиться говорить о привычках, фактах, расписаниях и постоянных ситуациях, правильно строить утверждения, отрицания и вопросы.",
  sections:[
@@ -14454,7 +14717,8 @@ function Achievements({st}){
 const uKnown=(st,u)=>!!st.level&&lvlIdx(u.cefr)<lvlIdx(st.level);
 const gKnown=(st,i)=>!!st.level&&lvlIdx(GL[i].cefr)<lvlIdx(st.level);
 const isInt=st=>false; /* «Интенсив» убран: открыто всё до выбранного уровня, уровень меняется свободно */
-const gOpen=(st,i)=>isInt(st)||!(st.level&&lvlIdx(GL[i].cefr)>lvlIdx(st.level))&&(i===0||gKnown(st,i)||gKnown(st,i-1)||(((st.gstars||{})[GL[i-1].id]||0)>=1));
+const G_START=new Set(['abc','rules','ipa','svo']);
+const gOpen=(st,i)=>isInt(st)||!(st.level&&lvlIdx(GL[i].cefr)>lvlIdx(st.level))&&(i===0||G_START.has(GL[i].id)||G_START.has(GL[i-1].id)||gKnown(st,i)||gKnown(st,i-1)||(((st.gstars||{})[GL[i].id]||0)>=1)||(((st.gstars||{})[GL[i-1].id]||0)>=1));
 function gCurrent(st){ const gs=st.gstars||{}; const i=GL.findIndex((l,k)=>!gKnown(st,k)&&!((gs[l.id]||0)>=1)); return i<0?GL.length-1:i; }
 function pickDaily(st){
   const li=lvlIdx(st.level||'A1'), n=st.dailyNew||10;
