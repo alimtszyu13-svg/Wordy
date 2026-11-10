@@ -36,8 +36,9 @@ window.WORDY_FIREBASE={
   appId:"1:682932950136:web:1f13b1f1f18516b537098d"
 };
 /* AI on the website: Gemini through Firebase AI Logic (Gemini Developer API, works on the free Spark plan).
-   recaptcha = reCAPTCHA v3 site key registered in Firebase App Check (public by design); empty = App Check not set up yet. */
-window.WORDY_AI={sdk:'13.1.0',model:'gemini-3.8-flash',audioModel:'gemini-3.8-flash',recaptcha:'6LeBYBkuAAAAAMvinDHi4px_W9dgWVXpqAW7_v52',recaptchaEnterprise:false};
+   recaptcha = Fraud Defense (reCAPTCHA Enterprise) site key registered in Firebase App Check (public by design).
+   models = tried in order: when one is overloaded or slow, the next one answers. */
+window.WORDY_AI={sdk:'13.1.0',models:['gemini-3.6-flash','gemini-3.8-flash','gemini-3.5-flash-lite'],recaptcha:'6LfsWBkuAAAAACfCXJHgtgvkBGhAA2d620gDEZFc',recaptchaEnterprise:true};
 if('serviceWorker' in navigator && location.protocol==='https:') window.addEventListener('load',function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
 </script>
 </head><body>
@@ -23354,7 +23355,7 @@ function playScript(script,voices,onLine,onEnd){
 /* ---------- AI for Writing / Speaking feedback ----------
    Inside a Claude artifact: Claude (sample). On the website: Gemini through Firebase AI Logic.
    Both give the same interface: ai.json(prompt, media?) → Promise<object>; media = [{mime,data(base64)}] (Gemini only). */
-function geminiAI(){ const C=window.WORDY_AI; if(!C||!C.model||!window.WORDY_FIREBASE) return null;
+function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODELS.length||!window.WORDY_FIREBASE) return null;
   let mp=null;
   const load=()=>mp||(mp=(async()=>{ const b='https://www.gstatic.com/firebasejs/'+C.sdk+'/';
     const [A,AI,AC]=await Promise.all([import(b+'firebase-app.js'),import(b+'firebase-ai.js'),C.recaptcha?import(b+'firebase-app-check.js'):null]);
@@ -23362,21 +23363,26 @@ function geminiAI(){ const C=window.WORDY_AI; if(!C||!C.model||!window.WORDY_FIR
     if(AC){ if(/^(localhost|127\.)/.test(location.hostname)) self.FIREBASE_APPCHECK_DEBUG_TOKEN=true;
       AC.initializeAppCheck(app,{provider:C.recaptchaEnterprise?new AC.ReCaptchaEnterpriseProvider(C.recaptcha):new AC.ReCaptchaV3Provider(C.recaptcha),isTokenAutoRefreshEnabled:true}); }
     const ai=AI.getAI(app,{backend:new AI.GoogleAIBackend()}), cfg={responseMimeType:'application/json'};
-    return {text:AI.getGenerativeModel(ai,{model:C.model,generationConfig:cfg}),audio:AI.getGenerativeModel(ai,{model:C.audioModel||C.model,generationConfig:cfg})};
+    return {get:(m,au)=>AI.getGenerativeModel(ai,{model:m,generationConfig:cfg},{timeout:au?60000:35000})};
   })().catch(e=>{ mp=null; console.warn('Gemini SDK',e); throw {code:'load_failed'}; }));
   const parse=t=>{ try{ return JSON.parse(t); }catch(e){} const m=String(t||'').match(/\{[\s\S]*\}/); if(m){ try{ return JSON.parse(m[0]); }catch(e){} } throw {code:'invalid_json'}; };
   const code=e=>{ const x=String((e&&e.code)||'')+' '+String((e&&e.message)||e||'');
     return /api-not-enabled|app-check|appcheck|API key|PERMISSION_DENIED|403|401/i.test(x)?'not_configured':/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(x)?'rate_limited'
       :/SAFETY|blocked|PROHIBITED/i.test(x)?'refused':/Failed to fetch|NetworkError|network|offline/i.test(x)?'offline':/too large|payload|413/i.test(x)?'too_big':'error'; };
+  const busy=e=>/\b(500|502|503|504)\b|high demand|overloaded|UNAVAILABLE|timed? ?out|abort|DEADLINE/i.test(String((e&&e.message)||e||''));
+  let first=0; /* after an overload, start from the model that answered */
   return {gemini:true,json:async(prompt,media)=>{ const M=await load(), parts=[{text:prompt}], au=!!(media&&media.length);
     if(au) media.forEach(x=>parts.push({inlineData:{mimeType:x.mime,data:x.data}}));
-    let r; try{ r=await (au?M.audio:M.text).generateContent(parts); }catch(e){ console.warn('Gemini',e); throw {code:code(e)}; }
-    let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } return parse(t); }};
+    let last=null;
+    for(let k=0;k<MODELS.length;k++){ const i=(first+k)%MODELS.length; let r;
+      try{ r=await M.get(MODELS[i],au).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); last=e; if(busy(e)) continue; throw {code:code(e)}; }
+      first=i; let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } return parse(t); }
+    throw {code:busy(last)?'busy':code(last)}; }};
 }
 let _samplePromise=null;
 const getSample=()=>_samplePromise||(_samplePromise=((window.claude&&typeof window.claude.use==='function')?window.claude.use('sample').catch(()=>null):Promise.resolve(null)).then(x=>x||geminiAI()));
 function useSample(){ const [s,setS]=useState(undefined); useEffect(()=>{ let on=true; getSample().then(x=>{ if(on) setS(()=>x||null); }); /* sample is a function: wrap so React does not call it as an updater */ return ()=>{ on=false; }; },[]); return s; }
-const AI_ERR={not_configured:'ИИ-проверка на сайте ещё настраивается. Пока смотри образец ответа и чек-лист ниже.',rate_limited:'Слишком много проверок подряд. Подожди минуту и попробуй снова.',offline:'Нет связи с сервером ИИ. Проверь интернет и попробуй снова.',load_failed:'Не удалось загрузить модуль ИИ. Обнови страницу и попробуй снова.',too_big:'Запись слишком длинная для проверки. Попробуй ответ покороче.',no_audio:'Запись голоса не получилась: на некоторых телефонах микрофон занят распознаванием речи. Попробуй ещё раз или с компьютера.',not_granted:'Проверка ИИ не разрешена в этом окне. Ниже — образец ответа и чек-лист для самопроверки.',sampling_disabled:'Проверка ИИ недоступна для этого аккаунта.',
+const AI_ERR={busy:'Сервер ИИ сейчас перегружен. Попробуй ещё раз через минуту.',not_configured:'ИИ-проверка на сайте ещё настраивается. Пока смотри образец ответа и чек-лист ниже.',rate_limited:'Слишком много проверок подряд. Подожди минуту и попробуй снова.',offline:'Нет связи с сервером ИИ. Проверь интернет и попробуй снова.',load_failed:'Не удалось загрузить модуль ИИ. Обнови страницу и попробуй снова.',too_big:'Запись слишком длинная для проверки. Попробуй ответ покороче.',no_audio:'Запись голоса не получилась: на некоторых телефонах микрофон занят распознаванием речи. Попробуй ещё раз или с компьютера.',not_granted:'Проверка ИИ не разрешена в этом окне. Ниже — образец ответа и чек-лист для самопроверки.',sampling_disabled:'Проверка ИИ недоступна для этого аккаунта.',
   session_expired:'Нужно заново войти в Claude.',invalid_json:'Не получилось разобрать ответ проверки. Попробуй ещё раз.',refused:'Проверка отклонила этот текст. Измени ответ и попробуй снова.',cancelled:'Проверка остановлена.'};
 const aiErr=e=>AI_ERR[e&&e.code]||'Проверка временно недоступна. Попробуй ещё раз.';
 const clampB=x=>{ x=Math.round(Number(x)*2)/2; return isNaN(x)?null:Math.max(0,Math.min(9,x)); };
