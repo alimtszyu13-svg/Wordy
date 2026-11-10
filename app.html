@@ -179,6 +179,7 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .trow header{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .trow b{font-family:var(--f-display);font-size:18px}
 .hard{display:grid;gap:8px}
+.mk-tr{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
 .pr-ai-row{display:grid;gap:8px;justify-items:start;margin-top:10px}
 .pr-ai{margin-top:12px}
 .vgroup{border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);margin-bottom:10px}
@@ -19293,9 +19294,9 @@ const askPrompt=(lv,lvl,quote,q,exercise)=>'You are a friendly, precise English 
   +'Answer in Russian, simply and accurately, in 2-5 short sentences, as a good teacher would. Then give 2 short natural English examples with Russian translations, and one practical tip. Stay on English grammar and vocabulary; if the question is unrelated to learning English, politely say you can only help with English.'
   +(exercise?'\nIMPORTANT: the learner is in the middle of an exercise that has not been checked yet. Do NOT reveal the answer, do NOT say which option is correct, and do not rewrite the sentence correctly. Explain only the rule behind it and give a hint that helps them decide themselves.':'')
   +'\nReply with ONLY JSON: {"text":"объяснение","examples":[{"en":"...","ru":"..."}],"tip":"совет"}';
-function AskSheet({lv,lvl,ask,onClose}){ const ai=useSample(); const [q,setQ]=useState(ask.quote?'Объясни, пожалуйста':''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
+function AskSheet({lv,lvl,ask,onClose,mk,defQ}){ const ai=useSample(); const [q,setQ]=useState(ask.quote?(defQ||'Объясни, пожалуйста'):''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
   const go=async()=>{ if(!ai||busy||!q.trim()) return; setBusy(true); setErr(null); setAns(null); W('react','think');
-    try{ const j=await ai.json(askPrompt(lv,lvl,ask.quote,q,ask.exercise)); if(!j||typeof j!=='object') throw {code:'invalid_json'};
+    try{ const j=await ai.json(mk?mk(ask.quote,q):askPrompt(lv,lvl,ask.quote,q,ask.exercise)); if(!j||typeof j!=='object') throw {code:'invalid_json'};
       setAns({text:String(j.text||''),examples:Array.isArray(j.examples)?j.examples.filter(e=>e&&e.en).slice(0,3).map(e=>({en:String(e.en),ru:String(e.ru||'')})):[],tip:String(j.tip||'')}); SFX('pop'); W('react','happy'); }
     catch(e){ setErr(aiErr(e)); W('react','encourage'); } setBusy(false); };
   useEffect(()=>{ if(ai&&ask.quote&&ask.auto) go(); },[ai]);
@@ -19312,13 +19313,21 @@ function AskSheet({lv,lvl,ask,onClose}){ const ai=useSample(); const [q,setQ]=us
       ${ans.examples.length?html`<ul className="bk-ex">${ans.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en} onClick=${()=>speak(e.en)}>${I.speaker()}</button>`:html`<span></span>`}<div><b lang="en">${e.en}</b><span>${e.ru}</span></div></li>`)}</ul>`:null}
       ${ans.tip?html`<div className="bk-key"><b>Совет</b><p>${ans.tip}</p></div>`:null}</div>`:null}
   </div></div>`; return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
-function useAskSel(on){ const [sel,setSel]=useState(null);
+function useAskSel(on,scope){ const [sel,setSel]=useState(null);
   useEffect(()=>{ if(!on){ setSel(null); return; } let t=null; const f=()=>{ clearTimeout(t); t=setTimeout(()=>{ const s=window.getSelection&&window.getSelection(); const txt=s?String(s).trim():'';
       if(!s||!s.rangeCount||txt.length<2||txt.length>300){ setSel(null); return; } const n=s.getRangeAt(0).commonAncestorContainer, el=n.nodeType===1?n:n.parentElement;
-      if(!el||!el.closest('.bk,.bk-page')||el.closest('input,textarea')){ setSel(null); return; } const it=el.closest('.bk-it');
+      if(!el||!el.closest(scope||'.bk,.bk-page')||el.closest('input,textarea')){ setSel(null); return; } const it=el.closest('.bk-it');
       setSel({quote:txt,exercise:!!(it&&!it.classList.contains('good')&&!it.classList.contains('bad'))}); },180); };
     document.addEventListener('selectionchange',f); return ()=>{ clearTimeout(t); document.removeEventListener('selectionchange',f); }; },[on]);
   return [sel,setSel]; }
+/* «Спроси Ворди» for any English text (readers, checked tests): select a word, phrase or whole sentence */
+const readAskPrompt=(lvl,quote,q)=>'You are a friendly, precise English tutor for a Russian-speaking learner (CEFR '+(lvl||'B1')+'). The learner selected this from an English text: "'+String(quote).slice(0,400)+'"\n'
+  +'Learner\'s question (may be in Russian): "'+String(q||'Переведи и объясни').slice(0,500)+'"\n'
+  +'Answer in Russian, simply and accurately: give a natural Russian translation of the selection, explain hard words, phrases or idioms, and point out any grammar worth noticing (2-6 short sentences in total). Then give 2 short natural English examples using the key word or structure, with Russian translations, and one practical tip. If the question is unrelated to learning English, politely say you can only help with English.'
+  +'\nReply with ONLY JSON: {"text":"объяснение","examples":[{"en":"...","ru":"..."}],"tip":"совет"}';
+function TextAsk({on,scope,level}){ const [ask,setAsk]=useState(null); const [sel,setSel]=useAskSel(on&&!ask,scope);
+  return html`${sel?html`<button className="ask-pill enter" id="text-ask-pill" onMouseDown=${e=>e.preventDefault()} onClick=${()=>{ SFX('pop'); setAsk({...sel,exercise:false,auto:true}); setSel(null); }}><span aria-hidden="true">💡</span>Спросить Ворди: «${sel.quote.length>26?sel.quote.slice(0,26)+'…':sel.quote}»</button>`:null}
+    ${ask?html`<${AskSheet} lv=${{title:'Reading',ru:'текст',cefr:level}} lvl=${level} ask=${ask} defQ="Переведи и объясни" mk=${(qt,q)=>readAskPrompt(level,qt,q)} onClose=${()=>setAsk(null)}/>`:null}`; }
 
 
 /* ---------- final test built from the textbook: 7 from this unit + 3 interleaved review ---------- */
@@ -20298,7 +20307,7 @@ function Reader({x,st,update,onExit}){
       <p>${done.sc===x.q.length?'Всё понял правильно!':'Перечитай места с ошибками и попробуй снова.'}</p>
       <div className="rewards"><span className="pill">${I.coin()} +${done.coins}</span>${done.bonus?html`<span className="pill">за ${pages.length} стр.</span>`:null}</div>
       <div className="actions"><button className="btn ghost" id="read-again" onClick=${()=>{ SFX('pop'); setAns({}); setDone(false); if(long) go(0); else window.scrollTo({top:0}); }}>${long?'Читать заново':'Ещё раз'}</button><button className="btn" id="read-done" onClick=${()=>{ SFX('tap'); onExit(); }}>К текстам</button></div></div>`:null}
-    ${word?html`<${WordSheet} w=${word} st=${st} update=${update} onClose=${()=>setWord(null)}/>`:null}${popT}
+    ${word?html`<${WordSheet} w=${word} st=${st} update=${update} onClose=${()=>setWord(null)}/>`:null}${popT}<${TextAsk} on=${true} scope=".reader" level=${st.level}/>
   </section>`;
 }
 
@@ -23371,12 +23380,12 @@ function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODE
       :/SAFETY|blocked|PROHIBITED/i.test(x)?'refused':/Failed to fetch|NetworkError|network|offline/i.test(x)?'offline':/too large|payload|413/i.test(x)?'too_big':'error'; };
   const busy=e=>/\b(500|502|503|504)\b|high demand|overloaded|UNAVAILABLE|timed? ?out|abort|DEADLINE/i.test(String((e&&e.message)||e||''));
   let first=0; /* after an overload, start from the model that answered */
-  return {gemini:true,json:async(prompt,media)=>{ const M=await load(), parts=[{text:prompt}], au=!!(media&&media.length);
+  return {gemini:true,json:async(prompt,media,opt)=>{ const M=await load(), parts=[{text:prompt}], au=!!(media&&media.length), fast=!!(opt&&opt.fast);
     if(au) media.forEach(x=>parts.push({inlineData:{mimeType:x.mime,data:x.data}}));
     let last=null;
-    for(let k=0;k<MODELS.length;k++){ const i=(first+k)%MODELS.length; let r;
+    for(let k=0;k<MODELS.length;k++){ const i=fast?(MODELS.length-1+k)%MODELS.length:(first+k)%MODELS.length; let r;
       try{ r=await M.get(MODELS[i],au).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); last=e; if(busy(e)) continue; throw {code:code(e)}; }
-      first=i; let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } return parse(t); }
+      if(!fast) first=i; let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } return parse(t); }
     throw {code:busy(last)?'busy':code(last)}; }};
 }
 let _samplePromise=null;
@@ -23561,7 +23570,7 @@ function IeltsListening({m,st:appSt,update,onExit,onNext,nextName}){
             ask=${ai&&evs[n]?()=>ai.json(whyPrompt(P.script.filter(l=>l[0]!=='--').slice(Math.max(0,evs[n].line-2),evs[n].line+3).map(l=>l[0]+': '+l[1]).join('\n'),Array.isArray(q)?q[0]+' ___ '+q[1]:q.q,q.o?q.o.join(' / '):P.box&&!Array.isArray(q)?P.box.join(' / '):null,lCorr(q,P),lAns(q,ans[n],P))):null}/>`:null}</div>`)(c++)); })()}</div>
       ${(res&&showT)||phase==='text'?html`<details className=${'mk-trans'+(res?' wt-on':'')} open onClick=${tapL}><summary>Текст записи · Part ${P.n}</summary>${res?html`<p className="wt-hint">Нажми на незнакомое слово — добавишь его в «Мои слова»</p>`:null}${P.script.filter(l=>l[0]!=='--').map(([sp,t],k)=>html`<p key=${k}><b>${P.script.some(x=>x[0]!==sp&&x[0]!=='--')?sp+': ':''}</b>${t}</p>`)}</details>`:null}
     </article>
-    ${popL}
+    ${popL}<${TextAsk} on=${!!res} scope=".mk-trans" level=${(appSt||{}).level}/>
     <${QNav} total=${total} ans=${ans} cur=${i=>i>=base&&i<base+lqs(P).length} go=${goQ} ok=${res?(i=>lsOk(allQs[i],ans[i])):null}/>
     ${phase==='text'&&!res?html`<div className="mk-foot"><button className="btn wide" id="lis-finish" onClick=${finish}>Завершить и проверить</button></div>`:null}
     ${res?html`${onNext?html`<div className="actions one"><button className="btn" id="mk-next" onClick=${onNext}>Далее: ${nextName}</button></div>`:null}<div className="actions" hidden=${!!onNext}><button className="btn ghost" onClick=${onExit}>К тестам</button><button className="btn" onClick=${()=>{ fin.current=false; setAns({}); setRes(null); setView(0); setShowT(false); setElapsed(0); setPhase('ready'); window.scrollTo({top:0}); }}>Ещё раз</button></div>`:null}`:null}
@@ -23810,7 +23819,7 @@ function IeltsReading({m,st,update,onExit,onNext,nextName}){
   return html`<section className="mk-sec mk-exam-sec">
     <div className="sess-top mk-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Reading</b><span className="muted">${answered}/${items.length} отвечено</span></div>${res?null:html`<${Timer} left=${left}/>`}</div>
     ${!res&&dAt?html`<${DraftNote} at=${dAt} onReset=${()=>{ clrA(); setAns({}); }}/>`:null}
-    ${res?html`<div className="mk-res enter" data-perch="card"><span className="phase">Reading · результат</span><span className="mk-big">${fmtB(res.band)}</span><p>${res.raw} из ${items.length} верно</p>${res.tr?html`<span className="tr-chip" id="rd-trchip">С переводчиком · ${res.tr} ${plural(res.tr,'слово','слова','слов')}</span>`:null}${res.qt?html`<${QtBreak} o=${res.qt}/>`:null}</div>`:null}${popR}
+    ${res?html`<div className="mk-res enter" data-perch="card"><span className="phase">Reading · результат</span><span className="mk-big">${fmtB(res.band)}</span><p>${res.raw} из ${items.length} верно</p>${res.tr?html`<span className="tr-chip" id="rd-trchip">С переводчиком · ${res.tr} ${plural(res.tr,'слово','слова','слов')}</span>`:null}${res.qt?html`<${QtBreak} o=${res.qt}/>`:null}</div>`:null}${popR}<${TextAsk} on=${!!res} scope=".mk-passage" level=${(st||{}).level}/>
     <div className="mk-tabs" role="tablist">${m.reading.map((p,k)=>html`<button key=${k} role="tab" aria-selected=${k===pi} onClick=${()=>{ SFX('tap'); setPi(k); window.scrollTo({top:0}); }}>Passage ${k+1}</button>`)}</div>
     <div className="mk-pane-sw" role="tablist"><button role="tab" aria-selected=${pane==='text'} onClick=${()=>setPane('text')}>Текст</button><button role="tab" aria-selected=${pane==='q'} id="rd-pane-q" onClick=${()=>setPane('q')}>Вопросы ${r0}–${r1}</button></div>
     <div className=${'mk-split pane-'+pane}>
@@ -23971,23 +23980,40 @@ async function clipsToWav(blobs,maxSec){ if(!blobs||!blobs.length) return null; 
   const g=Math.min(4,0.9/peak); for(let i=0;i<n;i++){ const x=Math.max(-1,Math.min(1,pcm[i]*g)); v.setInt16(44+i*2,x<0?x*0x8000:x*0x7FFF,true); }
   const bytes=new Uint8Array(buf); let bin=''; for(let i=0;i<bytes.length;i+=0x8000) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
   return {mime:'audio/wav',data:btoa(bin),secs:Math.round(total)}; }
-function useDictation(onText,onMetrics,onAudio){
-  const rec=useRef(null), [on,setOn]=useState(false), [fail,setFail]=useState(!SR); const cb=useRef(onText); cb.current=onText; const mcb=useRef(onMetrics); mcb.current=onMetrics;
-  const acb=useRef(onAudio); acb.current=onAudio; const recStop=useRef(null);
+/* Dictation + fluency timing + voice recording.
+   - Browser recognition gives live text and pause timing. Chrome often stops it on its own after a silence, so it is restarted until the learner presses «Стоп».
+   - The voice is recorded at the same time. If recognition gave no text (unsupported browser, blocked service, busy microphone),
+     Gemini transcribes the recording instead, keeping the learner's own mistakes. */
+const TRANSCRIBE='Transcribe the attached recording of an English learner speaking English. Write exactly the words they say, keeping their grammar mistakes, hesitations such as "um" or "uh", and repetitions; do not correct or improve anything. If there is no speech, return an empty string. Reply with ONLY JSON {"text":"..."}';
+function useDictation(onText,onMetrics,onAudio,ai){
+  const canAI=!!(CAN_REC&&ai&&ai.gemini);
+  const rec=useRef(null), [on,setOn]=useState(false), [srFail,setSrFail]=useState(!SR); const cb=useRef(onText); cb.current=onText; const mcb=useRef(onMetrics); mcb.current=onMetrics;
+  const acb=useRef(onAudio); acb.current=onAudio; const recStop=useRef(null), user=useRef(false), got=useRef(false), dead=useRef(false), live=useRef(true);
+  const [busyT,setBusyT]=useState(false), [terr,setTerr]=useState(null);
   const tm=useRef(null);
   const flush=()=>{ const x=tm.current; tm.current=null; if(!x||!x.ev.length||!mcb.current) return; const ev=x.ev, gaps=[];
     for(let i=1;i<ev.length;i++){ const g=(ev[i]-ev[i-1])/1000; if(g>=1.5) gaps.push(g); }
     const speak=Math.max(1,(ev[ev.length-1]-ev[0])/1000+0.8); mcb.current({secs:Math.round(speak),words:x.words,pauses:gaps.length,longest:gaps.length?Math.round(Math.max(...gaps)*10)/10:0,start:Math.round((ev[0]-x.t0)/100)/10}); };
+  const transcribe=async b=>{ setBusyT(true); setTerr(null);
+    try{ const w=await clipsToWav([b],300); if(!w) throw {code:'no_audio'}; const j=await ai.json(TRANSCRIBE,[w],{fast:true}); const t=String((j&&j.text)||'').trim();
+      if(t){ cb.current(t+' '); mcb.current&&mcb.current({secs:w.secs,words:wcount(t),pauses:0,longest:0,start:0}); } else if(live.current) setTerr('В записи не слышно речи. Говори ближе к микрофону и попробуй ещё раз.'); }
+    catch(e){ if(live.current) setTerr(e&&e.code==='no_audio'?'Запись получилась пустой: проверь, что микрофон разрешён и не занят другой программой.':aiErr(e)); }
+    finally{ if(live.current) setBusyT(false); } };
   const stopRec=()=>{ const f=recStop.current; recStop.current=null; f&&f(); };
-  const stop=()=>{ try{ rec.current&&rec.current.stop(); }catch(e){} stopRec(); setOn(false); };
-  const start=()=>{ if(!SR){ setFail(true); return; } try{ const r=new SR(); r.lang='en-GB'; r.continuous=true; r.interimResults=true;
-      tm.current={t0:Date.now(),ev:[],words:0};
-      r.onresult=e=>{ if(tm.current) tm.current.ev.push(Date.now()); let t=''; for(let i=e.resultIndex;i<e.results.length;i++) if(e.results[i].isFinal) t+=e.results[i][0].transcript+' '; if(t){ if(tm.current) tm.current.words+=wcount(t); cb.current(t); } };
-      r.onerror=e=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed'||e.error==='audio-capture') setFail(true); setOn(false); };
-      r.onend=()=>{ setOn(false); stopRec(); flush(); }; rec.current=r; r.start(); setOn(true);
-      if(CAN_REC&&acb.current&&!recStop.current) recStop.current=startRecorder(b=>acb.current&&acb.current(b)); }catch(e){ setFail(true); setOn(false); } };
-  useEffect(()=>()=>stop(),[]);
-  return {on,fail,start,stop};
+  const finish=()=>{ setOn(false); stopRec(); flush(); };
+  const stop=()=>{ user.current=true; try{ rec.current&&rec.current.stop(); }catch(e){} if(!rec.current||dead.current) finish(); };
+  const startSR=()=>{ const r=new SR(); r.lang='en-GB'; r.continuous=true; r.interimResults=true;
+    r.onresult=e=>{ if(tm.current) tm.current.ev.push(Date.now()); let t=''; for(let i=e.resultIndex;i<e.results.length;i++) if(e.results[i].isFinal) t+=e.results[i][0].transcript+' '; if(t){ got.current=true; if(tm.current) tm.current.words+=wcount(t); cb.current(t); } };
+    r.onerror=e=>{ if(['not-allowed','service-not-allowed','audio-capture','network','language-not-supported'].includes(e.error)){ dead.current=true; if(!canAI){ setSrFail(true); finish(); } } };
+    r.onend=()=>{ if(rec.current!==r) return; if(!user.current&&!dead.current){ try{ r.start(); return; }catch(e){} } rec.current=null; if(user.current||!canAI) finish(); };
+    rec.current=r; r.start(); };
+  const start=()=>{ if(!SR&&!canAI){ setSrFail(true); return; } user.current=false; got.current=false; dead.current=false; setTerr(null);
+    tm.current={t0:Date.now(),ev:[],words:0};
+    if(CAN_REC&&(acb.current||canAI)&&!recStop.current) recStop.current=startRecorder(b=>{ acb.current&&acb.current(b); if(canAI&&!got.current) transcribe(b); });
+    if(SR){ try{ startSR(); }catch(e){ dead.current=true; if(!canAI){ setSrFail(true); stopRec(); return; } } } else dead.current=true;
+    setOn(true); };
+  useEffect(()=>()=>{ live.current=false; user.current=true; try{ rec.current&&rec.current.stop(); }catch(e){} stopRec(); },[]);
+  return {on,fail:srFail&&!canAI,start,stop,busyT,terr};
 }
 const FILLERS=[['um','\\b(um+|uhm+|erm+)\\b'],['uh','\\b(uh+|er+|ah+)\\b'],['you know','\\byou know\\b'],['I mean','\\bi mean\\b'],['like','\\blike\\s+(?=like\\b|um\\b|uh\\b)'],['basically','\\bbasically\\b'],['kind of','\\bkind of\\b'],['sort of','\\bsort of\\b']];
 const fillersIn=txt=>{ const s=String(txt||'').toLowerCase(), o={}; FILLERS.forEach(([n,re])=>{ const c=(s.match(new RegExp(re,'g'))||[]).length; if(c) o[n]=c; }); return o; };
@@ -24014,11 +24040,11 @@ function FluPanel({s}){ if(!s) return html`<div className="mk-fb flu"><b>Бег�
     <p className="mk-note">Паузы считаются по работе распознавания речи — это примерная оценка. Некоторые «um» и «uh» распознавание не записывает.</p></div>`; }
 
 function AnswerBox({id,val,set,running,onMetrics,met,onRec,onAudio}){
-  const d=useDictation(t=>set((val||'')+t),onMetrics,onAudio);
+  const ai=useSample(); const d=useDictation(t=>set((val||'')+t),onMetrics,onAudio,ai);
   useEffect(()=>{ onRec&&onRec(d.on); },[d.on]); useEffect(()=>()=>{ onRec&&onRec(false); },[]);
   useEffect(()=>{ if(!running&&d.on) d.stop(); },[running]);
   return html`<div className="mk-ansbox">
-    ${!d.fail?html`<button className=${'btn'+(d.on?' danger':'')} id=${id+'-mic'} onClick=${()=>{ SFX('tap'); d.on?d.stop():d.start(); }}>${MI.mic()} ${d.on?'Стоп':'Ответить голосом'}</button>${d.on?html`<span className="mk-rec" aria-live="polite">● запись</span>`:null}`
+    ${!d.fail?html`<button className=${'btn'+(d.on?' danger':'')} id=${id+'-mic'} onClick=${()=>{ SFX('tap'); d.on?d.stop():d.start(); }}>${MI.mic()} ${d.on?'Стоп':'Ответить голосом'}</button>${d.on?html`<span className="mk-rec" aria-live="polite">● запись</span>`:null}${d.busyT?html`<span className="mk-rec mk-tr" role="status"><span className="mk-spin" aria-hidden="true"></span> Ворди расшифровывает запись…</span>`:null}${d.terr?html`<small className="mk-err">${d.terr}</small>`:null}`
       :html`<small className="muted">Микрофон недоступен в этом окне — напечатай ответ так, как сказал бы его вслух.</small>`}
     <textarea id=${id} data-perch="exam" className="mk-text small" value=${val||''} onChange=${e=>set(e.target.value)} placeholder=${d.fail?'Твой ответ…':'Здесь появится распознанный текст — можно поправить'} aria-label="Ответ"></textarea>${met&&!d.on?html`<${FluChips} x=${met}/>`:null}</div>`; }
 /* ---------- IELTS Speaking — full 11–14 minute format with recorded examiner ---------- */
