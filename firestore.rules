@@ -60,7 +60,7 @@ service cloud.firestore {
     // Отзывы и сообщения об ошибках: отправить может любой, прочитать — только автор Wordy в консоли Firebase.
     match /feedback/{f} {
       allow create: if request.resource.data.keys().hasOnly(['kind', 'text', 'contact', 'page', 'level', 'ua', 'uid', 'email', 'at'])
-        && request.resource.data.kind in ['bug', 'idea']
+        && request.resource.data.kind in ['bug', 'idea', 'ai']
         && request.resource.data.text is string && request.resource.data.text.size() >= 5 && request.resource.data.text.size() <= 2000
         && request.resource.data.contact is string && request.resource.data.contact.size() <= 120
         && (request.resource.data.uid == null || (signedIn() && request.resource.data.uid == uid()))

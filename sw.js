@@ -16,7 +16,10 @@ self.addEventListener('fetch',e=>{
   if(!same&&!cdn) return;
   if(same&&!/\.(css|js|png|svg|ico|webmanifest|mp3|woff2?)$/.test(u.pathname)) return;
   if(r.headers.has('range')) return; /* audio seeking: let the browser stream it */
-  e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{ if(res.ok||res.type==='opaque'){ const c=res.clone(); caches.open(V).then(x=>x.put(r,c)); } return res; })));
+  /* app code and data: /js/wordy-*.js?v=<hash> never change under one address; keep only the newest version */
+  const appJs=same&&u.pathname.startsWith('/js/');
+  e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{ if(res.ok||res.type==='opaque'){ const c=res.clone(); caches.open(V).then(x=>{ x.put(r,c);
+      if(appJs) x.keys().then(ks=>ks.forEach(k=>{ const ku=new URL(k.url); if(ku.pathname===u.pathname&&ku.search!==u.search) x.delete(k); })); }); } return res; })));
 });
 
 /* Reminders from Wordy (Firebase Cloud Messaging, data-only messages sent by functions/index.js) */
