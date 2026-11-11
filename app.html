@@ -244,9 +244,10 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .talk-in{display:grid;gap:8px;margin-top:8px}
 .talk-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end}
 .typed .talk-row{grid-template-columns:1fr auto}
-.tutor-fab{position:fixed;right:max(16px,calc((100vw - 680px)/2 + 16px));bottom:calc(200px + env(safe-area-inset-bottom));z-index:45;display:flex;align-items:center;gap:8px;padding:10px 16px 10px 12px;border-radius:999px;background:var(--surface);color:var(--ink);border:1.5px solid var(--accent);box-shadow:0 10px 24px -12px rgba(120,60,10,.55);font-weight:800;font-size:15px}
-.tutor-fab span{font-size:20px;line-height:1}.tutor-fab:active{transform:scale(.96)}
-@media (max-width:520px){.tutor-fab b{display:none}.tutor-fab{padding:11px;bottom:calc(176px + env(safe-area-inset-bottom))}.tutor-fab.mini b{display:inline}}
+/* 💡 tucked into the right screen edge, mid-height: away from Wordy's seat, the nav and the content column */
+.tutor-fab{position:fixed;right:0;top:44%;z-index:45;display:flex;align-items:center;gap:8px;height:38px;padding:0 5px 0 8px;border-radius:19px 0 0 19px;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-right:0;box-shadow:0 6px 16px -10px rgba(120,60,10,.45);font-weight:800;font-size:14px;opacity:.8;transition:opacity .2s,padding .2s}
+.tutor-fab span{font-size:16px;line-height:1}.tutor-fab b{display:none}.tutor-fab:hover,.tutor-fab:focus-visible{opacity:1;padding-right:14px}.tutor-fab:hover b,.tutor-fab:focus-visible b{display:inline}.tutor-fab:active{transform:translateX(2px)}
+.tutor-fab.mini{border-color:var(--accent);background:var(--accent);color:#fff;opacity:1}
 .sheet.tutor{position:relative;overflow:visible;height:min(62vh,520px);max-height:none;grid-template-rows:auto auto 1fr auto auto;margin-top:120px}
 .tutor-perch{position:absolute;left:0;right:0;top:0;height:6px;pointer-events:none}
 .tutor-top{display:flex;align-items:center;gap:8px}.tutor-top b{font-family:var(--f-display);font-size:18px;white-space:nowrap}.tutor-top .muted{flex:1;font-size:13px}
