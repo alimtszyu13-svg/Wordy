@@ -44,7 +44,7 @@ window.WORDY_LIVE={model:'gemini-3.1-flash-live-preview',alt:['gemini-2.5-flash-
 window.WORDY_AI={sdk:'13.1.0',models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash'],fast:'gemini-3.5-flash-lite',tts:['gemini-3.8-flash-tts','gemini-2.5-flash-preview-tts'],recaptcha:'6LfsWBkuAAAAACfCXJHgtgvkBGhAA2d620gDEZFc',recaptchaEnterprise:true};
 if('serviceWorker' in navigator && location.protocol==='https:') window.addEventListener('load',function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
 </script>
-<link rel="preload" href="/js/wordy-data.js?v=3d640f1e54" as="script"><link rel="preload" href="/js/wordy-core.js?v=c3d16c6e44" as="script">
+<link rel="preload" href="/js/wordy-data.js?v=cc67efa57c" as="script"><link rel="preload" href="/js/wordy-core.js?v=d802d8b337" as="script">
 </head><body>
 <title>Wordy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -252,7 +252,28 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .tutor-perch{position:absolute;left:0;right:0;top:0;height:6px;pointer-events:none}
 .tutor-top{display:flex;align-items:center;gap:8px}.tutor-top b{font-family:var(--f-display);font-size:18px;white-space:nowrap}.tutor-top .muted{flex:1;font-size:13px}
 .sheet.tutor .talk-log{max-height:none;min-height:0;overflow-y:auto}
-.tutor-row{grid-template-columns:1fr auto auto!important}.talk-goal[hidden]{display:none}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
+.tutor-row{grid-template-columns:1fr auto auto!important}.talk-goal[hidden]{display:none}.vl-btn{margin-bottom:8px}.with-board .call-seat{height:min(17vh,150px)!important;margin-bottom:26px!important}.with-board{gap:6px!important}.lboard .lb-task+.lb-title{margin-top:2px}
+.lboard{width:100%;max-width:560px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px;display:grid;gap:10px;box-shadow:0 14px 30px -22px rgba(120,60,10,.6);position:relative;overflow:hidden}
+.lboard::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--accent),#FFC15A)}
+.lboard.empty{opacity:.75;place-items:center;min-height:80px}
+.lb-head{display:flex;align-items:center;gap:8px}.lb-emoji{font-size:22px;line-height:1}.lb-title{font-family:var(--f-display);font-size:18px;flex:1;min-width:0}
+.lb-dots{display:flex;gap:4px}.lb-dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}.lb-dots i.cur{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.lb-dots i.ok{background:#2E9E5B}.lb-dots i.bad{background:#E0473A}
+.lb-task{background:var(--accent-soft);border-radius:16px;padding:12px 14px;animation:lbIn .4s cubic-bezier(.2,.8,.3,1.2)}
+.lb-tt{display:flex;align-items:center;gap:6px;font-weight:800;color:var(--accent-ink);font-size:14px}.lb-tt small{margin-left:auto;font-weight:700;opacity:.7}
+.lb-task>p{margin:4px 0 0;font-size:21px;font-weight:800;line-height:1.3}
+.lb-fix{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-top:8px;padding:6px 10px;border-radius:12px;background:var(--surface);font-size:15px;animation:lbIn .35s ease}.lb-fix s{color:#E0473A;text-decoration-thickness:2px}.lb-fix b{color:#2E9E5B}
+.lb-hbtn{margin-top:6px;font-size:14px}.lb-hint{margin:6px 0 0;font-size:15px}
+.lb-formula{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lb-chip{padding:7px 12px;border-radius:12px;background:var(--bg);border:1.5px solid var(--line);font-weight:800;font-size:16px}
+.lb-chip.key{background:var(--accent);border-color:var(--accent);color:#fff}.lb-plus{font-weight:800;color:var(--muted)}
+.lb-rule{margin:0;font-size:15px;color:var(--muted);line-height:1.4}
+.lb-ex{list-style:none;margin:0;padding:0;display:grid;gap:8px}.lb-ex li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center}.lb-ex li div{display:grid}.lb-ex span{color:var(--muted);font-size:14px}.lb-ex .ex-say{width:30px;height:30px}
+.lb-ex mark{background:linear-gradient(transparent 55%,rgba(255,165,50,.45) 55%);color:inherit;padding:0 1px;border-radius:2px}
+@keyframes lbIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.lb-task,.lb-fix{animation:none}}.ref-open{margin-left:auto;white-space:nowrap}.refbook .chips{margin:4px 0 10px}.ref-q{width:100%;margin-bottom:8px}.ref-note{font-size:14px;margin:0 0 10px}
+.ref-tbl{display:grid;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px}
+.ref-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1.3fr;align-items:center;gap:6px;padding:6px 6px;border-radius:12px;font-size:15px}.ref-row:nth-child(even){background:var(--bg)}
+.ref-row.head{font-size:12px;font-weight:800;color:var(--muted);background:none!important}.ref-row .ex-say{width:30px;height:30px}
+.ref-row.ger{grid-template-columns:32px 1fr;align-items:start}.ref-row.ger small{display:block;color:var(--muted);font-size:13px}.ref-g{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px}.ref-g h3{margin:2px 6px 6px;font-size:16px}.ref-g>p{margin:0 6px 6px;font-size:13px}
+@media (max-width:420px){.ref-row{grid-template-columns:28px 1fr 1fr 1fr;font-size:14px}.ref-row>span.muted{grid-column:2/-1;font-size:13px;margin-top:-4px}.ref-row.head>span:last-child{display:none}.ref-row.ger{grid-template-columns:28px 1fr}}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
 .talk-row textarea{width:100%;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:inherit;resize:vertical}
 .talk-row .mic.on{border-color:#D92D20;color:#D92D20}
 .t-hint{margin:0;font-size:13px;color:var(--muted)}
@@ -3655,8 +3676,8 @@ window.Wordy = (function(){
 })();
 </script>
 
-<script src="/js/wordy-data.js?v=3d640f1e54"></script>
-<script src="/js/wordy-core.js?v=c3d16c6e44"></script>
+<script src="/js/wordy-data.js?v=cc67efa57c"></script>
+<script src="/js/wordy-core.js?v=d802d8b337"></script>
 
 
 </body></html>

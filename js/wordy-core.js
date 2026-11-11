@@ -1188,7 +1188,29 @@ function CountUp({to,dur}){
   return v;
 }
 
-function GrammarMap({st,onBack,open}){
+/* ---------- Справочник: tables to look things up any time (not a lesson — nobody learns 97 verbs at once) ---------- */
+const GERREF=__WD[815];
+function irrRows(){ const out=[], seen={}; ((GBOOK.irr||{}).sections||[]).forEach(sec=>(sec.b||[]).forEach(b=>{ if(b[0]==='tbl'&&b[1]&&b[1][0]==='V1') b[2].forEach(r=>{ const k=r[0]; if(!seen[k]){ seen[k]=1; out.push(r.map(String)); } }); }));
+  return out.sort((a,b)=>a[0].localeCompare(b[0])); }
+function RefBook({onBack}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState('');
+  const pickTab=t=>{ SFX('tap'); setTab(t); setQ(''); try{ localStorage.setItem('wordy.ref',t); }catch(e){} };
+  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(x).toLowerCase().includes(f));
+  const say=t=>{ if(canSpeak){ speak(t); W('react','nod'); } };
+  const gl=(title,list,note)=>{ const l=list.filter(hit); return l.length?html`<div className="ref-g"><h3>${title}</h3>${note?html`<p className="muted">${note}</p>`:null}
+      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+r[2]} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${r[2]}</small></div></div>`)}</div>`:null; };
+  return html`<section className="refbook">
+    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b><span className="muted">подсматривай, когда нужно</span></div></div>
+    <div className="chips" role="tablist"><button className="chip" role="tab" id="ref-irr" aria-pressed=${tab==='irr'} onClick=${()=>pickTab('irr')}>Неправильные глаголы</button><button className="chip" role="tab" id="ref-ger" aria-pressed=${tab==='ger'} onClick=${()=>pickTab('ger')}>-ing или to</button></div>
+    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder=${tab==='irr'?'Найти: go, ушёл…':'Найти: enjoy, решать…'} onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
+    ${tab==='irr'?html`<p className="muted ref-note">${rows.length} самых нужных глаголов. Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.</p>
+        <div className="ref-tbl" role="table"><div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span></div>
+        ${rows.filter(hit).map(r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span></div>`)}
+        ${!rows.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}</div>`
+    :html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
+      ${gl('Глагол + -ing',GERREF.ing)}${gl('Глагол + to + глагол',GERREF.to)}${gl('Можно и так, и так',GERREF.both,'Смысл почти не меняется.')}${gl('Смысл меняется',GERREF.diff)}
+      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?html`<p className="empty">Не нашёл «${q}».</p>`:null}`}
+  </section>`; }
+function GrammarMap({st,onBack,open,openRef}){
   const gs=st.gstars||{};
   let cur=gCurrent(st);
   const mapRef=useRef(null), curRef=useRef(null);
@@ -1214,7 +1236,8 @@ function GrammarMap({st,onBack,open}){
   const total=gStarsTotal(st), passed=gPassed(st);
   return html`<section className="gm">
     <div className="sess-top"><button className="icon-btn" id="gmap-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button>
-      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div></div>
+      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div>
+      ${openRef?html`<button className="chip ref-open" id="gmap-ref" onClick=${()=>{ SFX('pop'); openRef(); }}>📘 Справочник</button>`:null}</div>
     <div className="ghead enter">
       <div className="ghead-main"><p className="eyebrow">Твой путь</p><h2>${passed} из ${GL.length} ${plural(GL.length,'уровень','уровня','уровней')} пройдено</h2>
         <div className="bar big"><i style=${{width:(passed/GL.length*100)+'%'}}></i></div></div>
@@ -1246,460 +1269,460 @@ function GrammarMap({st,onBack,open}){
    order:[[answers],why] · error:[sent with *wrong part*,fix|null,why] · tr:[ru,[answers]] */
 const GBOOK={};
 /* ---------- Старт с нуля: теория и упражнения ---------- */
-GBOOK.abc=__WD[815];
+GBOOK.abc=__WD[816];
 
-GBOOK.rules=__WD[816];
+GBOOK.rules=__WD[817];
 
-GBOOK.ipa=__WD[817];
+GBOOK.ipa=__WD[818];
 
-GBOOK.svo=__WD[818];
+GBOOK.svo=__WD[819];
 
-GBOOK.nums=__WD[819];
+GBOOK.nums=__WD[820];
 
-Object.assign(SIMPLE,__WD[820]);
+Object.assign(SIMPLE,__WD[821]);
 
-GBOOK.g2=__WD[821];
+GBOOK.g2=__WD[822];
 
-GBOOK.g3=__WD[822];
+GBOOK.g3=__WD[823];
 
-GBOOK.g4=__WD[823];
+GBOOK.g4=__WD[824];
 
 /*GB_MORE_START*/
-GBOOK.g1=__WD[824];
+GBOOK.g1=__WD[825];
 
-GBOOK.dem=__WD[825];
+GBOOK.dem=__WD[826];
 
-GBOOK.imp=__WD[826];
+GBOOK.imp=__WD[827];
 
-GBOOK.pron=__WD[827];
+GBOOK.pron=__WD[828];
 
-GBOOK.can=__WD[828];
+GBOOK.can=__WD[829];
 
-GBOOK.qw=__WD[829];
+GBOOK.qw=__WD[830];
 
-GBOOK.freq=__WD[830];
+GBOOK.freq=__WD[831];
 
-GBOOK.art=__WD[831];
+GBOOK.art=__WD[832];
 
-GBOOK.pl=__WD[832];
+GBOOK.pl=__WD[833];
 
-GBOOK.there=__WD[833];
+GBOOK.there=__WD[834];
 
-GBOOK.hgot=__WD[834];
+GBOOK.hgot=__WD[835];
 
-GBOOK.poss=__WD[835];
+GBOOK.poss=__WD[836];
 
-GBOOK.likeing=__WD[836];
+GBOOK.likeing=__WD[837];
 
-GBOOK.waswere=__WD[837];
+GBOOK.waswere=__WD[838];
 
-GBOOK.g5=__WD[838];
+GBOOK.g5=__WD[839];
 
-GBOOK.g6=__WD[839];
+GBOOK.g6=__WD[840];
 
-GBOOK.prepl=__WD[840];
+GBOOK.prepl=__WD[841];
 
-GBOOK.atin=__WD[841];
+GBOOK.atin=__WD[842];
 
-GBOOK.prep=__WD[842];
+GBOOK.prep=__WD[843];
 
-GBOOK.some=__WD[843];
+GBOOK.some=__WD[844];
 
-GBOOK.few=__WD[844];
+GBOOK.few=__WD[845];
 
-GBOOK.too=__WD[845];
+GBOOK.too=__WD[846];
 
-GBOOK.adv=__WD[846];
+GBOOK.adv=__WD[847];
 
-GBOOK.asas=__WD[847];
+GBOOK.asas=__WD[848];
 
-GBOOK.conj=__WD[848];
+GBOOK.conj=__WD[849];
 
-GBOOK.posspron=__WD[849];
+GBOOK.posspron=__WD[850];
 
-GBOOK.wlike=__WD[850];
+GBOOK.wlike=__WD[851];
 
-GBOOK.g10=__WD[851];
+GBOOK.g10=__WD[852];
 
-GBOOK.pcfut=__WD[852];
+GBOOK.pcfut=__WD[853];
 
-GBOOK.g12=__WD[853];
+GBOOK.g12=__WD[854];
 
-GBOOK.g11=__WD[854];
+GBOOK.g11=__WD[855];
 
-GBOOK.haveto=__WD[855];
+GBOOK.haveto=__WD[856];
 
-GBOOK.g7=__WD[856];
+GBOOK.g7=__WD[857];
 
-GBOOK.g8=__WD[857];
+GBOOK.g8=__WD[858];
 
-GBOOK.g9=__WD[858];
+GBOOK.g9=__WD[859];
 
-GBOOK.edadj=__WD[859];
+GBOOK.edadj=__WD[860];
 
-GBOOK.subjq=__WD[860];
+GBOOK.subjq=__WD[861];
 
-GBOOK.allowed=__WD[861];
+GBOOK.allowed=__WD[862];
 
-GBOOK.tags=__WD[862];
+GBOOK.tags=__WD[863];
 
-GBOOK.sodoi=__WD[863];
+GBOOK.sodoi=__WD[864];
 
-GBOOK.zero=__WD[864];
+GBOOK.zero=__WD[865];
 
-GBOOK.cond1=__WD[865];
+GBOOK.cond1=__WD[866];
 
-GBOOK.timec=__WD[866];
+GBOOK.timec=__WD[867];
 
-GBOOK.maymight=__WD[867];
+GBOOK.maymight=__WD[868];
 
-GBOOK.cond2=__WD[868];
+GBOOK.cond2=__WD[869];
 
-GBOOK.quant=__WD[869];
+GBOOK.quant=__WD[870];
 
-GBOOK.compadv=__WD[870];
+GBOOK.compadv=__WD[871];
 
-GBOOK.pass=__WD[871];
+GBOOK.pass=__WD[872];
 
-GBOOK.ger=__WD[872];
+GBOOK.ger=__WD[873];
 
-GBOOK.purpose=__WD[873];
+GBOOK.purpose=__WD[874];
 
-GBOOK.makelet=__WD[874];
+GBOOK.makelet=__WD[875];
 
-GBOOK.rel=__WD[875];
+GBOOK.rel=__WD[876];
 
-GBOOK.refl=__WD[876];
+GBOOK.refl=__WD[877];
 
-GBOOK.sosuch=__WD[877];
+GBOOK.sosuch=__WD[878];
 
-GBOOK.phr=__WD[878];
+GBOOK.phr=__WD[879];
 
-GBOOK.indq=__WD[879];
+GBOOK.indq=__WD[880];
 
-GBOOK.ppc=__WD[880];
+GBOOK.ppc=__WD[881];
 
-GBOOK.ppc2=__WD[881];
+GBOOK.ppc2=__WD[882];
 
-GBOOK.narr=__WD[882];
+GBOOK.narr=__WD[883];
 
-GBOOK.cond3=__WD[883];
+GBOOK.cond3=__WD[884];
 
-GBOOK.modpast=__WD[884];
+GBOOK.modpast=__WD[885];
 
-GBOOK.needn=__WD[885];
+GBOOK.needn=__WD[886];
 
-GBOOK.rep=__WD[886];
+GBOOK.rep=__WD[887];
 
-GBOOK.repq=__WD[887];
+GBOOK.repq=__WD[888];
 
-GBOOK.used=__WD[888];
+GBOOK.used=__WD[889];
 
-GBOOK.deduct=__WD[889];
+GBOOK.deduct=__WD[890];
 
-GBOOK.hadbetter=__WD[890];
+GBOOK.hadbetter=__WD[891];
 
-GBOOK.futc=__WD[891];
+GBOOK.futc=__WD[892];
 
-GBOOK.futpast=__WD[892];
+GBOOK.futpast=__WD[893];
 
-GBOOK.pass3=__WD[893];
+GBOOK.pass3=__WD[894];
 
-GBOOK.gerinf2=__WD[894];
+GBOOK.gerinf2=__WD[895];
 
-GBOOK.provided=__WD[895];
+GBOOK.provided=__WD[896];
 
-GBOOK.nondef=__WD[896];
+GBOOK.nondef=__WD[897];
 
-GBOOK.contrast=__WD[897];
+GBOOK.contrast=__WD[898];
 
-GBOOK.each=__WD[898];
+GBOOK.each=__WD[899];
 
-GBOOK.adjorder=__WD[899];
+GBOOK.adjorder=__WD[900];
 
-GBOOK.mixed=__WD[900];
+GBOOK.mixed=__WD[901];
 
-GBOOK.condinv=__WD[901];
+GBOOK.condinv=__WD[902];
 
-GBOOK.befut=__WD[902];
+GBOOK.befut=__WD[903];
 
-GBOOK.inv=__WD[903];
+GBOOK.inv=__WD[904];
 
-GBOOK.wish=__WD[904];
+GBOOK.wish=__WD[905];
 
-GBOOK.subj=__WD[905];
+GBOOK.subj=__WD[906];
 
-GBOOK.emph=__WD[906];
+GBOOK.emph=__WD[907];
 
-GBOOK.ellip=__WD[907];
+GBOOK.ellip=__WD[908];
 
-GBOOK.pass2=__WD[908];
+GBOOK.pass2=__WD[909];
 
-GBOOK.relad=__WD[909];
+GBOOK.relad=__WD[910];
 
-GBOOK.cleft=__WD[910];
+GBOOK.cleft=__WD[911];
 
-GBOOK.part=__WD[911];
+GBOOK.part=__WD[912];
 
-GBOOK.nominal=__WD[912];
+GBOOK.nominal=__WD[913];
 
-GBOOK.hedge=__WD[913];
+GBOOK.hedge=__WD[914];
 
-GBOOK.discourse=__WD[914];
+GBOOK.discourse=__WD[915];
 
-GBOOK.acad=__WD[915];
+GBOOK.acad=__WD[916];
 
-GBOOK.irr=__WD[916];
-SIMPLE.irr=__WD[917];
+GBOOK.irr=__WD[917];
+SIMPLE.irr=__WD[918];
 /* ---------- Теория B1–C1: «По-русски и по-английски» + ошибки ---------- */
 const GX={};
 const RU_H="По-русски и по-английски";
 const gxT=(rows,key,note)=>{const b=[['p',"Русский и английский устроены по-разному, поэтому дословный перевод здесь чаще всего подводит. Сравни:"],['tbl',["По-русски","По-английски","Почему так"],rows]]; if(key) b.push(['key',key]); if(note) b.push(['note',note]); return {h:RU_H,b}; };
 
-GX.g7={s:gxT(__WD[918],
+GX.g7={s:gxT(__WD[919],
  "В русском одно прошедшее время, в английском — два. Спроси себя: важно **когда** (Past Simple) или **что есть сейчас в результате** (Present Perfect)?",
  "Yet ставится в конце вопросов и отрицаний (Have you finished yet?), already — между have и V3 (I've already finished), just — тоже между ними (She's just left)."),
  m:[["I have already went home.","I have already gone home.","После have — V3."],["I have finished it two hours ago.","I finished it two hours ago.","Ago → Past Simple."]]};
 
-GX.g8={s:gxT(__WD[919],
+GX.g8={s:gxT(__WD[920],
  "Типичный разговор: первый вопрос — Present Perfect (Have you ever…?), все уточнения — Past Simple (When did you…? Who did you go with?).",
  "This morning, today, this week — Present Perfect, если период ещё не закончился (I've had two coffees today), и Past Simple, если закончился (I had coffee this morning — сейчас вечер)."),
  m:[["Yesterday I have met Aibek.","Yesterday I met Aibek.","Yesterday → Past Simple."],["When have you bought it?","When did you buy it?","When → Past Simple."]]};
 
-GX.g9={s:gxT(__WD[920],
+GX.g9={s:gxT(__WD[921],
  "В русском «уже начался» и «начался» — одно время, а смысл разный. По-английски эту разницу показывает Past Perfect.",
  "Если порядок и так ясен из before / after, Past Perfect не обязателен: I had breakfast before I left. Обе формы верны."),
  m:[["I had saw him before.","I had seen him before.","Had + V3."],["After she has finished, she went home.","After she had finished, she went home.","Прошлое до прошлого → had + V3."]]};
 
-GX.edadj={s:gxT(__WD[921],
+GX.edadj={s:gxT(__WD[922],
  "Правило-подсказка: **-ed — что я чувствую, -ing — что это вызывает**. «I'm boring» значит «я зануда».",
  "Так работают пары: interested / interesting, excited / exciting, confused / confusing, surprised / surprising, embarrassed / embarrassing, frightened / frightening."),
  m:[["I'm very confusing about this rule.","I'm very confused about this rule.","Чувство → -ed."],["The news was very surprised.","The news was very surprising.","Причина → -ing."]]};
 
-GX.subjq={s:gxT(__WD[922],
+GX.subjq={s:gxT(__WD[923],
  "Подставь ответ: «**Аскар** позвонил мне» — вопрос к подлежащему, did не нужен. «Я позвонил **Аскару**» — вопрос к дополнению, нужен did.",
  "В вопросе к подлежащему глагол стоит в форме he / she / it: Who **knows** the answer? (не know)."),
  m:[["Who did break the window?","Who broke the window?","Вопрос к подлежащему — без did."],["What did make you laugh?","What made you laugh?","What — подлежащее."]]};
 
-GX.allowed={s:gxT(__WD[923],
+GX.allowed={s:gxT(__WD[924],
  "**Let** — без to и без пассива («I was let»); **allow** — с to и бывает в пассиве: They allowed us **to** leave → We were allowed **to** leave.",
  null),
  m:[["Can I to ask a question?","Can I ask a question?","После can — без to."],["Students don't allowed to use phones.","Students aren't allowed to use phones.","Be allowed — с be."]]};
 
-GX.tags={s:gxT(__WD[924],
+GX.tags={s:gxT(__WD[925],
  "Русское «да?», «правда?», «ведь» — одно слово на всё. В английском хвостик каждый раз собирается из глагола предложения.",
  "Если ответ «нет» на отрицательное предложение, англичанин говорит No: — You didn't call, did you? — **No**, I didn't. (По-русски мы бы сказали «Да, не звонил».)"),
  m:[["You live here, isn't it?","You live here, don't you?","Хвостик строится от глагола: live → don't."],["She can swim, can't her?","She can swim, can't she?","В хвостике — подлежащее (she), а не him / her."]]};
 
-GX.sodoi={s:gxT(__WD[925],
+GX.sodoi={s:gxT(__WD[926],
  "Русское «я тоже» подходит и к «да», и к «нет». В английском на отрицание «Me too» звучит ошибкой — нужно **Neither do I / Me neither**.",
  null),
  m:[["— I can't drive. — Me too.","— I can't drive. — Me neither. / Neither can I.","На отрицание → neither."],["— She has a cat. — So does I.","— She has a cat. — So do I.","I → do."]]};
 
-GX.zero={s:gxT(__WD[926],
+GX.zero={s:gxT(__WD[927],
  "Русское безличное «если нагреть» по-английски требует подлежащего: **If you** heat… (you = любой человек).",
  null),
  m:[["If heat ice, it melts.","If you heat ice, it melts.","Нужно подлежащее."],["Unless you don't practise, you forget.","Unless you practise, you forget.","Unless уже содержит not."]]};
 
-GX.cond1={s:gxT(__WD[927],
+GX.cond1={s:gxT(__WD[928],
  "Русский переносит «будет» и в часть с «если». Английский — нет: **if + Present, will + глагол**. Это самая частая ошибка русскоговорящих.",
  "Will после if возможен только в значении «согласишься ли»: If you'll wait a moment, I'll check. (Если вы не против подождать…) Это вежливая форма, а не будущее."),
  m:[["If I will see him, I'll tell him.","If I see him, I'll tell him.","После if — Present."],["We will go out if it won't rain.","We'll go out if it doesn't rain.","После if — Present."]]};
 
-GX.timec={s:gxT(__WD[928],
+GX.timec={s:gxT(__WD[929],
  "Правило то же, что с if: после **when, as soon as, until, before, after, while** будущее выражаем настоящим временем.",
  "Не путай с вопросом: **When will** he come? — тут when — вопросительное слово, will нужен."),
  m:[["Wait here until I won't come back.","Wait here until I come back.","Until уже значит «пока не»."],["I'll tell you after I will finish.","I'll tell you after I finish / after I've finished.","После after — Present."]]};
 
-GX.maymight={s:gxT(__WD[929],
+GX.maymight={s:gxT(__WD[930],
  "Не соединяй maybe и might: ««Maybe I might»» — двойное «может быть». Выбери одно: **Maybe I'll** come или **I might** come.",
  null),
  m:[["She might comes later.","She might come later.","После might — V1."],["I will maybe go.","Maybe I'll go. / I might go.","Maybe — в начале."]]};
 
-GX.cond2={s:gxT(__WD[930],
+GX.cond2={s:gxT(__WD[931],
  "Русское «бы» ставится в обе части, английское would — **только в одну**, без if. После if — прошедшее время: If I **had**, If I **knew**.",
  "If I were — для всех лиц (If she were, If it were) в письменной речи. If I was тоже говорят, но в тестах и IELTS выбирай were."),
  m:[["If I would know, I would tell you.","If I knew, I would tell you.","После if — без would."],["If I were rich, I will travel.","If I were rich, I would travel.","Нереальное → would."]]};
 
-GX.quant={s:gxT(__WD[931],
+GX.quant={s:gxT(__WD[932],
  "В русском двойное отрицание нормально («никто не пришёл»). В английском — только одно: Neither came / Nobody came, но не «Neither didn't come».",
  "Both, either, neither — только для двух. Для трёх и больше: all, any, none: None of my three friends came."),
  m:[["Neither of my friends didn't call.","Neither of my friends called.","Одно отрицание."],["Both of us likes pizza.","Both of us like pizza.","Both → множественное число."]]};
 
-GX.compadv={s:gxT(__WD[932],
+GX.compadv={s:gxT(__WD[933],
  "Русское «гораздо», «намного» = **much / far / a lot**, но не very: «very taller» → much taller.",
  null),
  m:[["It's very more difficult.","It's much more difficult.","Very не стоит перед сравнением."],["The more he practises, more confident he becomes.","The more he practises, the more confident he becomes.","The в обеих частях."]]};
 
-GX.pass={s:gxT(__WD[933],
+GX.pass={s:gxT(__WD[934],
  "Русские фразы «говорят», «построили», «продают» (без подлежащего) почти всегда переводятся пассивом.",
  "Пассив образуется только от глаголов с дополнением. Нельзя сказать «It was happened» — happen не имеет дополнения: It happened."),
  m:[["It was happened yesterday.","It happened yesterday.","Happen не бывает в пассиве."],["I am born in 2008.","I was born in 2008.","Born — в прошедшем."]]};
 
-GX.ger={s:gxT(__WD[934],
+GX.ger={s:gxT(__WD[935],
  "Русский инфинитив «-ть» переводится то через to, то через -ing — это зависит от первого глагола. Запоминай глагол вместе с формой: **enjoy doing**, **want to do**.",
  "После предлогов (in, on, at, about, for, of, without, before, after) — всегда -ing: without saying, before leaving, interested in learning."),
  m:[["I avoid to eat sugar.","I avoid eating sugar.","Avoid + -ing."],["I can't afford buying it.","I can't afford to buy it.","Afford + to."]]};
 
-GX.purpose={s:gxT(__WD[935],
+GX.purpose={s:gxT(__WD[936],
  "Русское «для того чтобы» + глагол — никогда не **for + глагол**: «for study» → **to study**.",
  null),
  m:[["I save money for buy a car.","I save money to buy a car.","For + глагол нельзя."],["She studies hard for not fail.","She studies hard so as not to fail.","Цель с отрицанием."]]};
 
-GX.makelet={s:gxT(__WD[936],
+GX.makelet={s:gxT(__WD[937],
  "«Я подстригся» по-английски — **I had my hair cut**. «I cut my hair» значит, что ты стриг себя сам.",
  null),
  m:[["I repaired my car at the garage.","I had my car repaired at the garage.","Чинили другие → have something done."],["She made me cried.","She made me cry.","После make — V1."]]};
 
-GX.rel={s:gxT(__WD[937],
+GX.rel={s:gxT(__WD[938],
  "В русском «который» склоняется (которого, которому), а в английском нет: who / which / that для всех падежей. Не повторяй местоимение: «the book which I read **it**».",
  null),
  m:[["The people which work here are friendly.","The people who work here are friendly.","О людях — who / that."],["This is the place where we met there.","This is the place where we met.","Where уже значит «там»."]]};
 
-GX.refl={s:gxT(__WD[938],
+GX.refl={s:gxT(__WD[939],
  "Русское «-ся» далеко не всегда = myself: **одеваться** — get dressed, **мыться** — have a wash / wash, **волноваться** — worry, **расслабляться** — relax.",
  "By myself = сам, без помощи / в одиночестве: I did it by myself."),
  m:[["I worry myself about the exam.","I worry about the exam.","Worry — без myself."],["We enjoyed at the party.","We enjoyed ourselves at the party.","Enjoy требует дополнения: enjoy yourself."]]};
 
-GX.sosuch={s:gxT(__WD[939],
+GX.sosuch={s:gxT(__WD[940],
  "Русское «такой» — это и so, и such. Смотри, что идёт следом: **есть существительное → such**, только прилагательное → so.",
  null),
  m:[["She is such kind.","She is so kind.","Нет существительного → so."],["It was so a nice day.","It was such a nice day.","Есть существительное → such a."]]};
 
-GX.phr={s:gxT(__WD[940],
+GX.phr={s:gxT(__WD[941],
  "Многим русским глаголам в английском соответствует глагол + частица: **вставать** — get up, **сдаваться** — give up, **продолжать** — go on, **выяснять** — find out.",
  "В IELTS Writing лучше нейтральные синонимы: find out → discover, put off → postpone, go up → increase. В Speaking фразовые глаголы — плюс."),
  m:[["Pick up it.","Pick it up.","Местоимение — между глаголом и частицей."],["I gave up to smoke.","I gave up smoking.","Give up + -ing."]]};
 
-GX.indq={s:gxT(__WD[941],
+GX.indq={s:gxT(__WD[942],
  "Русское «ли» не превращается в вопросительный порядок слов. Нужно **if** или **whether**: Do you know **if** he's home?",
  null),
  m:[["Can you tell me what time is it?","Can you tell me what time it is?","Прямой порядок."],["I don't know does he like it.","I don't know if he likes it.","«Ли» → if."]]};
-GX.ppc={s:gxT(__WD[942],
+GX.ppc={s:gxT(__WD[943],
  "Главный сигнал — русское настоящее время + «уже», «с …», «… лет»: «живу здесь с 2020» → **I've been living / I've lived here since 2020**. Present Simple или Continuous здесь — ошибка.",
  "For — срок (for two hours, for ages), since — точка начала (since Monday, since 2015, since I was a child)."),
  m:[["I've been waiting you for an hour.","I've been waiting for you for an hour.","Wait for someone."],["I work here since March.","I've been working here since March.","Since → Perfect."]]};
 
-GX.ppc2={s:gxT(__WD[943],
+GX.ppc2={s:gxT(__WD[944],
  "Если в русском есть **срок** («уже час», «три года») и **момент в прошлом** («когда…», «до того как…»), нужен Past Perfect Continuous.",
  null),
  m:[["He was tired because he had been run.","He was tired because he had been running.","Had been + -ing."],["When I met her, she has been living in Osh for years.","When I met her, she had been living in Osh for years.","Прошлое → had."]]};
 
-GX.narr={s:gxT(__WD[944],
+GX.narr={s:gxT(__WD[945],
  "В русском рассказе всё в одном прошедшем времени, а смысл понятен из «уже», «раньше», «в это время». В английском эти слова «встроены» во время глагола.",
  "В IELTS Speaking Part 2 (рассказ о событии) три времени — Past Simple, Past Continuous и Past Perfect — заметно поднимают оценку за грамматику."),
  m:[["While I walked home, I was seeing an accident.","While I was walking home, I saw an accident.","Фон — Continuous, событие — Simple."],["When we got there, the train left. (поезд уже ушёл)","When we got there, the train had left.","Ушёл раньше → Past Perfect."]]};
 
-GX.cond3={s:gxT(__WD[945],
+GX.cond3={s:gxT(__WD[946],
  "В русском «если бы» одно и для сейчас, и для прошлого. В английском смотри на время: **сейчас** → If I knew…, I would…; **в прошлом** → If I had known…, I would have…",
  "В речи would have звучит как [вудэв] или [вудв], отсюда частая ошибка в письме: «would of». Пиши только would have / would've."),
  m:[["If I knew about it yesterday, I would have helped.","If I had known about it yesterday, I would have helped.","Прошлое → had + V3."],["I would have came if you had called.","I would have come if you had called.","Would have + V3."]]};
 
-GX.modpast={s:gxT(__WD[946],
+GX.modpast={s:gxT(__WD[947],
  "Русское «надо было» (упрёк) — **should have done**, а не «had to»: had to значит, что ты был вынужден и сделал.",
  null),
  m:[["You must have told me earlier! (упрёк)","You should have told me earlier!","Упрёк → should have."],["I had to call you, but I forgot.","I should have called you, but I forgot.","Had to = пришлось и сделал."]]};
 
-GX.needn={s:gxT(__WD[947],
+GX.needn={s:gxT(__WD[948],
  "Не путай: **mustn't** — нельзя, **don't need to / don't have to** — не обязательно. «You mustn't come» — это запрет, а не «можешь не приходить».",
  null),
  m:[["You mustn't pay — it's free.","You don't need to pay — it's free.","Не обязательно ≠ нельзя."],["She doesn't need come today.","She doesn't need to come today.","Need как обычный глагол — с to."]]};
 
-GX.rep={s:gxT(__WD[948],
+GX.rep={s:gxT(__WD[949],
  "В русском время в косвенной речи не меняется («сказал, что устал» — про тогдашнее «устал»). В английском после **said / told** время сдвигается на шаг в прошлое.",
  null),
  m:[["He told to me that he was busy.","He told me that he was busy.","Tell без to."],["He said he will call me tomorrow. (говорил вчера)","He said he would call me the next day.","Will → would, tomorrow → the next day."]]};
 
-GX.repq={s:gxT(__WD[949],
+GX.repq={s:gxT(__WD[950],
  "Русское «сказал, чтобы…» — это **told someone to**: Он сказал, чтобы я подождал → He **told me to wait**.",
  null),
  m:[["She said me to wait.","She told me to wait.","Say не берёт «кому + to»."],["He asked me don't tell anyone.","He asked me not to tell anyone.","Not to + V1."]]};
 
-GX.used={s:gxT(__WD[950],
+GX.used={s:gxT(__WD[951],
  "Три похожие формы, три смысла: **used to do** — раньше делал; **be used to doing** — привык; **get used to doing** — привыкаю.",
  "Would не используют для состояний: «I would live in Osh» — ошибка, нужно I used to live."),
  m:[["I used to going to the gym.","I used to go to the gym.","Used to + V1."],["Did you use to playing football?","Did you use to play football?","Used to + V1."]]};
 
-GX.deduct={s:gxT(__WD[951],
+GX.deduct={s:gxT(__WD[952],
  "Русское «не может быть» = **can't**. «Mustn't» значит «нельзя» и для выводов не подходит.",
  null),
  m:[["He can't be come yet.","He can't have come yet.","О прошлом → can't have + V3."],["It mustn't be true!","It can't be true!","Отрицательный вывод → can't."]]};
 
-GX.hadbetter={s:gxT(__WD[952],
+GX.hadbetter={s:gxT(__WD[953],
  "Had better выглядит как прошедшее, но говорит о **сейчас и будущем**. Это не вежливое «лучше бы», а совет с намёком на последствия — с учителем звучит резко.",
  null),
  m:[["I prefer staying at home than going out.","I prefer staying at home to going out. / I'd rather stay at home than go out.","Prefer … to; would rather … than."],["You'd better not to go.","You'd better not go.","Had better not + V1."]]};
 
-GX.futc={s:gxT(__WD[953],
+GX.futc={s:gxT(__WD[954],
  "Русское «к» (к пятнице, к 8 часам) — главный сигнал Future Perfect: **by Friday, by 8 o'clock, by the time**.",
  "Until и by: until — «до тех пор, пока» (действие длится), by — «не позже чем» (к сроку): I'll wait until 5. I'll finish by 5."),
  m:[["I will have finished it until Monday.","I will have finished it by Monday.","К сроку → by."],["At 9 tomorrow I will sleep.","At 9 tomorrow I will be sleeping.","Процесс → will be + -ing."]]};
 
-GX.futpast={s:gxT(__WD[954],
+GX.futpast={s:gxT(__WD[955],
  "Русское «должен был» бывает двух видов: обязанность-договорённость → **was supposed to**, вывод → **must have**. «Ты должен был позвонить» (а не позвонил) = You were supposed to call.",
  null),
  m:[["I knew she will like it.","I knew she would like it.","После прошедшего → would."],["We were going to visiting her.","We were going to visit her.","Going to + V1."]]};
 
-GX.pass3={s:gxT(__WD[955],
+GX.pass3={s:gxT(__WD[956],
  "Русские «нужно сделать», «можно купить», «нельзя трогать» по-английски часто звучат пассивом: **must be done, can be bought, mustn't be touched**.",
  null),
  m:[["The results will announce tomorrow.","The results will be announced tomorrow.","Will be + V3."],["This problem can solve easily.","This problem can be solved easily.","Can be + V3."]]};
 
-GX.gerinf2={s:gxT(__WD[956],
+GX.gerinf2={s:gxT(__WD[957],
  "Простое правило: **-ing смотрит назад** (действие уже было), **to смотрит вперёд** (действие ещё впереди). Работает для remember, forget, regret, stop.",
  "Try to do = стараться (трудно): I tried to open the window, but it was stuck. Try doing = попробовать (вдруг поможет)."),
  m:[["Don't forget calling your grandma.","Don't forget to call your grandma.","Действие впереди → to."],["I regret to say that to her yesterday.","I regret saying that to her yesterday.","Прошлое → -ing."]]};
 
-GX.provided={s:gxT(__WD[957],
+GX.provided={s:gxT(__WD[958],
  "**In case** — «на всякий случай» (делаю заранее), **if** — «если» (делаю потом, когда случится). Русское «на случай, если пойдёт дождь» = in case **it rains**. In case of + существительное звучит официально: In case of fire, call 101.",
  null),
  m:[["As long as you will study, you'll pass.","As long as you study, you'll pass.","После союза — Present."],["Even I'm tired, I'll help.","Even though I'm tired, I'll help. / Even if I'm tired, I'll help.","Нужен even though / even if."]]};
 
-GX.nondef={s:gxT(__WD[958],
+GX.nondef={s:gxT(__WD[959],
  "В русском запятые перед «который» ставятся всегда. В английском запятые **меняют смысл**: The students, who studied, passed (все учились и сдали) ≠ The students who studied passed (сдали только те, кто учился).",
  "That после запятой не используется: «Osh, that is…» — ошибка."),
  m:[["My sister who lives in Osh is a nurse. (сестра одна)","My sister, who lives in Osh, is a nurse.","Единственная → запятые."],["I spoke to the manager, who's name I forgot.","I spoke to the manager, whose name I forgot.","Чей = whose."]]};
 
-GX.contrast={s:gxT(__WD[959],
+GX.contrast={s:gxT(__WD[960],
  "Русское «хотя …, но …» — два союза. В английском — **только один**: Although it was cold, we went (без but).",
  null),
  m:[["However it was late, we continued working.","Although it was late, we continued working.","However не соединяет две части одного предложения."],["Although he is rich, but he is unhappy.","Although he is rich, he is unhappy.","Один союз."]]};
 
-GX.each={s:gxT(__WD[960],
+GX.each={s:gxT(__WD[961],
  "Русское «все» = **everyone** (люди, ед. ч.) или **all** (с существительным). «Все пришли» — Everyone **has** come, а не have.",
  "Every day (каждый день) — два слова. Everyday (одно слово) — прилагательное «повседневный»: everyday clothes."),
  m:[["I've been waiting the all day.","I've been waiting all day.","All day — без the."],["Each students has a laptop.","Each student has a laptop.","Each + ед. ч."]]};
 
-GX.adjorder={s:gxT(__WD[961],
+GX.adjorder={s:gxT(__WD[962],
  "В русском порядок прилагательных свободный, в английском — почти фиксированный: **мнение — размер — возраст — форма — цвет — происхождение — материал — назначение**.",
  "Больше трёх прилагательных подряд носители почти не ставят. В эссе лучше разбить: a large wooden table that is over a hundred years old."),
  m:[["a dining wooden table","a wooden dining table","Назначение — у самого существительного."],["a Turkish beautiful carpet","a beautiful Turkish carpet","Мнение — первым."]]};
-GX.mixed={s:gxT(__WD[962],
+GX.mixed={s:gxT(__WD[963],
  "В русском «если бы» одинаково для любого времени, поэтому смешанное условие получается само собой. В английском каждую часть ставь в своё время: **когда было условие** и **когда результат**.",
  null),
- m:__WD[963]};
+ m:__WD[964]};
 
-GX.condinv={s:gxT(__WD[964],
+GX.condinv={s:gxT(__WD[965],
  "Инверсия вместо if звучит официально: письма, отчёты, IELTS Writing. В разговоре она кажется книжной.",
  "Отрицание не сокращается: **Had I not** known (не «Hadn't I known»)."),
  m:[["Should you will have questions, contact us.","Should you have questions, contact us.","После should — V1."],["Hadn't she helped us, we would have failed.","Had she not helped us, we would have failed.","Not — после подлежащего."]]};
 
-GX.befut={s:gxT(__WD[965],
+GX.befut={s:gxT(__WD[966],
  "Русское «должен» здесь — не обязанность (must), а **план или расписание**: is due to, is to. «The flight is due to land at 6» — так пишут на табло и в новостях.",
  null),
  m:[["The plane is due to landing at 6.","The plane is due to land at 6.","Due to + V1."],["The meeting is to be start at 9.","The meeting is to start at 9.","Be to + V1."]]};
 
-GX.inv={s:gxT(__WD[966],
+GX.inv={s:gxT(__WD[967],
  "В русском мы просто ставим «никогда» в начало для эмоции. В английском это **запускает вопросительный порядок слов**: Never **have I**, Rarely **do we**, Not until… **did I**.",
  "Без отрицательного слова в начале инверсии нет: I have never seen it (обычный порядок)."),
  m:[["Little I knew that she was lying.","Little did I know that she was lying.","Little в начале → did I."],["Only after the exam I relaxed.","Only after the exam did I relax.","Only after → did I + V1."]]};
 
-GX.wish={s:gxT(__WD[967],
+GX.wish={s:gxT(__WD[968],
  "Русское «жаль, что я **не** умею» → английское I wish I **could** (без not). Отрицание переворачивается: «жаль, что не» = wish + утверждение.",
  "Would после wish не используют о себе: «I wish I would…» — ошибка. Только о других и о том, что раздражает."),
  m:[["I wish I can speak French.","I wish I could speak French.","После wish — сдвиг назад."],["I wish I would have more free time.","I wish I had more free time.","О себе — без would."]]};
 
-GX.subj={s:gxT(__WD[968],
+GX.subj={s:gxT(__WD[969],
  "Русское «чтобы» + прошедшее («чтобы ты остался») часто соответствует английскому прошедшему: I'd rather you **stayed**, It's time you **went**.",
  "Subjunctive после suggest, recommend, insist, it's essential: She insisted that he **apologise** (без -s, без should). В британском можно и should apologise."),
  m:[["It's high time you start working.","It's high time you started working.","High time + Past."],["The doctor recommended that she takes a rest.","The doctor recommended that she take a rest.","Subjunctive — без -s."]]};
@@ -1713,66 +1736,66 @@ GX.emph={s:gxT([
  null),
  m:[["She doesn't sing well, but she do dance well.","She doesn't sing well, but she does dance well.","She → does."],["Do comes in!","Do come in!","Do + V1."]]};
 
-GX.ellip={s:gxT(__WD[969],
+GX.ellip={s:gxT(__WD[970],
  "Русский просто выбрасывает слова («Думаю, да»), английский оставляет «заменитель»: **so, not, one, to, do**. Без него фраза звучит обрывисто.",
  "I don't think so — обычный ответ «думаю, нет». I think not — звучит книжно."),
  m:[["— Is she coming? — I think yes.","— Is she coming? — I think so.","Да → so."],["I wanted to go but I couldn't go there.","I wanted to go, but I couldn't.","Повтор лишний."]]};
 
-GX.pass2={s:gxT(__WD[970],
+GX.pass2={s:gxT(__WD[971],
  "Русские безличные «говорят», «считается», «полагают» — это IELTS-стиль: **It is believed that…, X is thought to…** Они делают текст объективным.",
  null),
  m:[["He is said that he is rich.","He is said to be rich. / It is said that he is rich.","Две формы нельзя смешивать."],["The suspect is reported to be escaped.","The suspect is reported to have escaped.","Прошлое → to have + V3."]]};
 
-GX.relad={s:gxT(__WD[971],
+GX.relad={s:gxT(__WD[972],
  "Русское «то, что» = **what**, а не «that what» или «the thing which»: What I need is time.",
  "В разговоре предлог уходит в конец, а whom заменяется who или опускается: the man (who) I spoke to. Whom — признак письменного стиля."),
  m:[["This is that what I wanted.","This is what I wanted.","«То, что» = what."],["Whereby I mean that…","By which I mean that…","Whereby = «посредством которого», а не «под этим я имею в виду»."]]};
 
-GX.cleft={s:gxT(__WD[972],
+GX.cleft={s:gxT(__WD[973],
  "Русский выделяет слово порядком или словом «именно», английский — **конструкцией**: It is / was … that / who, What … is.",
  null),
  m:[["It was in 2020 when I moved here.","It was in 2020 that I moved here.","В cleft — that."],["What surprised me were his honesty.","What surprised me was his honesty.","What … was (ед. ч.)."]]};
 
-GX.part={s:gxT(__WD[973],
+GX.part={s:gxT(__WD[974],
  "Русское деепричастие («придя», «зная») почти всегда = английское причастие. Но подлежащее у обеих частей **должно совпадать**: «Walking home, it started to rain» — ошибка (дождь не шёл домой).",
  null),
  m:[["Having finishing the work, I left.","Having finished the work, I left.","Having + V3."],["Being tired, the film seemed long to me.","Being tired, I found the film long.","Подлежащее должно быть тем, кто устал."]]};
 
-GX.nominal={s:gxT(__WD[974],
+GX.nominal={s:gxT(__WD[975],
  "Русский научный стиль тоже любит существительные («рост», «снижение», «принятие решения»), поэтому номинализация даётся легко. Главное — не перегружать: два-три таких оборота на абзац достаточно.",
  null),
  m:[["There was a significant increase of prices.","There was a significant increase in prices.","Increase / rise / fall in."],["The protection nature is important.","The protection of nature is important.","Нужен of."]]};
 
-GX.hedge={s:gxT(__WD[975],
+GX.hedge={s:gxT(__WD[976],
  "Русская речь допускает категоричность («все», «всегда», «очевидно»). В академическом английском это минус: **tend to, appear to, may, likely, to some extent** делают аргумент точнее.",
  "Не смягчай всё подряд. Факты и цифры из графика (IELTS Task 1) подаются прямо: Sales rose by 20%."),
  m:[["It seems to be that prices will rise.","It seems that prices will rise. / Prices seem likely to rise.","It seems that или seem to."],["It is maybe true.","It may be true. / It is possibly true.","Maybe — разговорное, перед глаголом не ставят."]]};
 
-GX.discourse={s:gxT(__WD[976],
+GX.discourse={s:gxT(__WD[977],
  "Ложный друг: **actually** = «на самом деле», а не «актуально» (актуальный = relevant, current). **Eventually** = «в конце концов», а не «возможно».",
  null),
  m:[["Shortly, we were late.","In short, we were late. / Long story short, we were late.","«Короче» ≠ shortly (= скоро)."],["By the way, firstly, I'll answer the question.","First of all, I'll answer the question.","By the way — только для смены темы."]]};
 
-GX.acad={s:gxT(__WD[977],
+GX.acad={s:gxT(__WD[978],
  "Русское «но» в начале предложения в эссе лучше заменить на **However,**. Связки ставь в начало предложения и отделяй запятой.",
  "Не переусердствуй: связка в каждом предложении снижает оценку за Coherence. Достаточно 1–2 на абзац."),
  m:[["Besides of this, it is cheap.","Besides this, it is cheap. / In addition to this, it is cheap.","Besides — без of."],["In conclusion, to sum up, …","In conclusion, …","Одна связка."]]};
 
 for(const k in GX){ const b=GBOOK[k]; if(!b) continue; b.sections.push(GX[k].s); if(GX[k].m) b.mistakes.push(...GX[k].m); }
-GBOOK.movep=__WD[978];
+GBOOK.movep=__WD[979];
 SIMPLE.movep=["Предлоги движения показывают дорогу: куда идёшь, откуда и как. В комнату — into, из комнаты — out of, через дорогу — across, сквозь лес — through, вдоль реки — along, мимо школы — past.","Где? — in, on. Куда? — into, onto, to. Как? — across, through, along, past."];
 
-GBOOK.sugg=__WD[979];
-SIMPLE.sugg=__WD[980];
-GBOOK.art2=__WD[981];
-SIMPLE.art2=__WD[982];
+GBOOK.sugg=__WD[980];
+SIMPLE.sugg=__WD[981];
+GBOOK.art2=__WD[982];
+SIMPLE.art2=__WD[983];
 
-GBOOK.deppr=__WD[983];
-SIMPLE.deppr=__WD[984];
-GBOOK.wantyou=__WD[985];
+GBOOK.deppr=__WD[984];
+SIMPLE.deppr=__WD[985];
+GBOOK.wantyou=__WD[986];
 SIMPLE.wantyou=["По-русски говорим «хочу, чтобы ты пришёл», а по-английски проще: I want you to come — «хочу тебя прийти». Никаких that. Так же: ask me to, tell me to. А «видел, как он ушёл» — I saw him leave, без to.","Хочу, чтобы ты… = I want you to… Видел, как он… = I saw him + глагол."];
 
-GBOOK.seem=__WD[986];
+GBOOK.seem=__WD[987];
 SIMPLE.seem=["Когда говоришь, каким что-то кажется — на вид, на слух, на вкус, — бери look, sound, taste и т. д. и сразу прилагательное: You look tired. Если дальше предмет или человек — вставь like: You look like your mum.","Look / sound / seem + прилагательное. Look / sound + like + существительное."];
 /*GB_MORE_END*/
 /* ---------- grammar book UI ---------- */
@@ -1800,7 +1823,7 @@ const bkAnswer=(t,it)=>t==='gap'?(bkMulti(it)?it[2].map(a=>a[0]).join(' … '):i
 const bkFilled=(t,it,v)=>t==='gap'?(bkMulti(it)?Array.isArray(v)&&it[2].every((_,j)=>v[j]&&String(v[j]).trim()):!!(v&&String(v).trim())):t==='choice'||t==='error'?v!=null:t==='order'?!!(v&&v.length):!!(v&&String(v).trim());
 const BK_TYPE={gap:'Впиши пропущенное',choice:'Выбери ответ',trans:'Измени предложение',order:'Собери из слов',error:'Найди ошибку',tr:'Переведи'};
 
-function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done}){
+function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done,voiceBtn}){
   const go=id=>{ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}); };
   const block=(b,j)=>{ const [k,a,c]=b;
     if(k==='p') return html`<p key=${j} className="bk-p">${bkFmt(a)}</p>`;
@@ -1823,7 +1846,7 @@ function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done}){
       <ul className="bk-mis">${bk.mistakes.map((m,i)=>html`<li key=${i}><s lang="en">${m[0]}</s><b lang="en">${m[1]}</b><small>${m[2]}</small></li>`)}</ul></section>
     <section className="bk-sec" id="bks-s"><h3><span>✓</span>Коротко о главном</h3><ul className="bk-sum">${bk.summary.map((x,i)=>html`<li key=${i}>${bkFmt(x)}</li>`)}</ul></section>
     <div className="bk-askbox"><div><b>Остались вопросы?</b><p className="muted">Спроси Ворди или выдели любой фрагмент текста — появится кнопка «Объяснить».</p></div><button className="btn small ghost" id="bk-ask" onClick=${onAsk}>💡 Спросить Ворди</button></div>
-    <div className="bk-cta"><button className="btn wide" id="bk-start" onClick=${onStart}>К упражнениям: ${bk.ex.length} блоков, ${nEx} заданий</button>
+    <div className="bk-cta">${voiceBtn}<button className="btn wide" id="bk-start" onClick=${onStart}>К упражнениям: ${bk.ex.length} блоков, ${nEx} заданий</button>
       <button className="btn ghost wide" id="bk-test" onClick=${onTest}>${done?'Итоговый тест':'Сразу к итоговому тесту'}</button></div>
   </article>`;
 }
@@ -1939,7 +1962,10 @@ function FinalTest({items,onDone,run}){ const [vals,setVals]=useState({}), [res,
     <div className="bk-actions">${res?html`<button className="btn wide" id="ft-done" onClick=${()=>onDone(score,items.length,res)}>Результат: ${score} из ${items.length}</button>`
       :html`<button className="btn wide" id="ft-check" disabled=${!all} onClick=${check}>${all?'Проверить':'Ответь на все задания'}</button>`}</div></article>`; }
 
-function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
+function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved,st}){
+  const [voice,setVoice]=useState(false); const canVoice=!!st&&canLiveVoice()&&st.age!=='u13';
+  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · 5 мин</button>`:null;
+  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} onClose=${()=>setVoice(false)}/>`:null;
   const bk=GBOOK[lv.id], [bi,setBi]=useState(0), bsaved=saved||{};
   const saveBk=(b,n,tot)=>update(s=>{ const g={...(s.gbook||{})}, u={...(g[lv.id]||{})}, o=u[b]; u[b]=[Math.max(o?o[0]:0,n),tot]; g[lv.id]=u; return {gbook:g,xp:s.xp+n*2}; });
   const sec=secOf(idx);
@@ -2022,7 +2048,7 @@ function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
       <button className="btn wide" id="sheet-ok" onClick=${()=>{ SFX('tap'); setSheet(false); }}>Понятно, продолжаем</button></div></div>`:null}`;
   const style={'--nc':sec.c,'--nt':sec.t};
 
-  if(phase==='theory'&&bk) return html`<section style=${style} className="bk-wrap">${top('Теория',bk.ex.map((_,j)=>bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'on'):''))}<${BookTheory} lv=${lv} bk=${bk} sec=${sec} idx=${idx} onStart=${openBook} onTest=${start} onAsk=${()=>{ SFX('pop'); setAsk({quote:'',exercise:false}); }} done=${Object.keys(bsaved).length>=bk.ex.length}/>${askUi}</section>`;
+  if(phase==='theory'&&bk) return html`<section style=${style} className="bk-wrap">${top('Теория',bk.ex.map((_,j)=>bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'on'):''))}<${BookTheory} lv=${lv} bk=${bk} sec=${sec} idx=${idx} voiceBtn=${voiceBtn} onStart=${openBook} onTest=${start} onAsk=${()=>{ SFX('pop'); setAsk({quote:'',exercise:false}); }} done=${Object.keys(bsaved).length>=bk.ex.length}/>${askUi}${voiceUi}</section>`;
   if(phase==='book'&&bk) return html`<section style=${style} className="bk-wrap">${top('Упражнения',bk.ex.map((_,j)=>j===bi?'on':bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'bad'):''))}<div className="bk-back"><button className="link-btn" id="bk-theory" onClick=${()=>{ SFX('tap'); setPhase('theory'); window.scrollTo({top:0}); }}>← Теория</button></div><${BookPractice} lv=${lv} bk=${bk} bi=${bi} setBi=${setBi} saved=${bsaved} onSave=${saveBk} onTest=${start}/>${askUi}</section>`;
   if(phase==='theory') return html`<section style=${style}>
     ${top('База',tasks.map(()=>''))}
@@ -2037,8 +2063,8 @@ function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
         ${canSpeak?html`<button className="ex-say" aria-label="Послушать пример" onClick=${()=>{ speak(e[0]); W('react','nod'); }}>${I.speaker()}</button>`:null}
         <div><b>${e[0]}</b><span>${e[1]}</span></div></li>`)}</ul>
       <div className="gtip"><b>Совет Ворди</b><span>${lv.tip}</span></div>
-      <button className="btn wide" id="start-practice" onClick=${start}>К практике: 10 заданий <kbd>Enter</kbd></button>
-    </article></section>`;
+      ${voiceBtn}<button className="btn wide" id="start-practice" onClick=${start}>К практике: 10 заданий <kbd>Enter</kbd></button>
+    </article>${voiceUi}</section>`;
 
   if(phase==='final'&&bk){ const fit=finalItems(idx,run+1);
     return html`<section style=${style} className="bk-wrap">${top('Итоговый тест',fit.map(()=>''))}<div className="bk-back"><button className="link-btn" id="bk-theory2" onClick=${()=>{ SFX('tap'); setPhase('theory'); window.scrollTo({top:0}); }}>← Теория</button></div><${FinalTest} items=${fit} run=${run} onDone=${(sc,tot,r)=>{ setResults(r); finish(sc,tot); }}/>${askUi}</section>`; }
@@ -2143,7 +2169,7 @@ function dueOn(st,off){ const d=dayKey(off), due=st.due||{}; return ALL.filter(w
 /* ---------- shop ---------- */
 const SLOTS=[{id:'all',name:'Всё'},{id:'hat',name:'Шапки'},{id:'eyes',name:'Очки'},{id:'mouth',name:'Усы и борода'},{id:'cheeks',name:'Щёчки'},{id:'neck',name:'На шею'},{id:'suit',name:'Костюмы'},{id:'back',name:'За спину'}];
 const SLOT_ORDER=['hat','eyes','mouth','cheeks','neck','suit','back'];
-const LOOKS=__WD[987];
+const LOOKS=__WD[988];
 const ART_VB={hat:'-50 -116 100 76',eyes:'-38 -64 76 40',mouth:'-36 -54 72 58',cheeks:'-36 -56 72 40',neck:'-40 -40 80 48',suit:'-46 -74 92 86',back:'-76 -80 152 104',look:'-76 -124 152 144'};
 let _artN=0;
 function dollSvg(ids,full){ const by={}; ids.forEach(id=>{ const it=WORDY_ITEMS.find(x=>x.id===id); if(it) by[it.slot]=it; }); const g=k=>by[k]?by[k].svg:'', cid='dc'+(++_artN), B='#FF7A12';
@@ -2207,7 +2233,7 @@ function Wardrobe({st,update,preview,setPreview}){
 
 /* ---------- achievements ---------- */
 const learnedTotal=st=>ALL.filter(w=>(st.boxes[w.id]||0)>=2).length;
-const AIC=__WD[988];
+const AIC=__WD[989];
 const ACH=[
   {id:'first',title:'Первый шаг',desc:'Пройди первую тему со словами',icon:'flag',c:'#FF7A12',val:st=>Object.keys(st.best||{}).length,goal:1},
   {id:'w10',title:'Словарный запас',desc:'Выучи 10 слов',icon:'book',c:'#12A195',val:learnedTotal,goal:10},
@@ -2270,7 +2296,7 @@ function pickDaily(st){
   for(let r=0;out.length<n&&keys.some(k=>groups[k].length);r++) keys.forEach(k=>{ if(out.length<n&&groups[k].length) out.push(groups[k].shift()); });
   return out.map(w=>w.id);
 }
-const LEVELS=__WD[989];
+const LEVELS=__WD[990];
 
 /* neutral age question (Google Play Families): under 13 the AI features are off, so nothing a child writes or says leaves the device for AI */
 const AGES=[['u13','До 13 лет'],['teen','13–17 лет'],['adult','18 и старше']];
@@ -2363,10 +2389,9 @@ function LevelUp({from,to,onGo}){
 }
 
 /* ---------- reading texts ---------- */
-const TEXTS=__WD[990];
+const TEXTS=__WD[991];
 /* ---------- reading texts pack 2 ---------- */
 TEXTS.push(
- __WD[991],
  __WD[992],
  __WD[993],
  __WD[994],
@@ -2383,11 +2408,11 @@ TEXTS.push(
  __WD[1005],
  __WD[1006],
  __WD[1007],
- __WD[1008]
+ __WD[1008],
+ __WD[1009]
 );
 /* ---------- reading texts pack 3 ---------- */
 TEXTS.push(
- __WD[1009],
  __WD[1010],
  __WD[1011],
  __WD[1012],
@@ -2406,14 +2431,14 @@ TEXTS.push(
  __WD[1025],
  __WD[1026],
  __WD[1027],
- __WD[1028]
+ __WD[1028],
+ __WD[1029]
 );
 /* rotate answer options of pack 3 so the correct one isn't always in the same slot */
 TEXTS.forEach((t,ti)=>{ if(+t.id.slice(1)>30) t.q.forEach((q,qi)=>{ const k=(ti*3+qi*5+1)%q[1].length, c=q[1][q[2]]; q[1]=q[1].slice(k).concat(q[1].slice(0,k)); q[2]=q[1].indexOf(c); }); });
 /* reading library: science, interesting facts, literature (retellings + public-domain poems) */
 TEXTS.forEach(t=>{ if(!t.cat) t.cat='life'; });
 TEXTS.push(
-__WD[1029],
 __WD[1030],
 __WD[1031],
 __WD[1032],
@@ -2502,7 +2527,8 @@ __WD[1114],
 __WD[1115],
 __WD[1116],
 __WD[1117],
-__WD[1118]
+__WD[1118],
+__WD[1119]
 );
 
 /* ---------- word lookup for reading ---------- */
@@ -2544,8 +2570,8 @@ function stopSpeak(){ try{ speechSynthesis.cancel(); W('talk',0); }catch(e){} }
 /* ---------- word card 2.0 ----------
    WREL: synonyms, antonyms and word family inside the course, from Open English WordNet (CC BY 4.0, based on Princeton WordNet),
    filtered by meaning and checked by hand. WFF: false friends for Russian speakers. The rest comes from the AI on request. */
-const WREL=__WD[1119];
-const WFF=__WD[1120];
+const WREL=__WD[1120];
+const WFF=__WD[1121];
 let _wbyEn=null; const wordByEn=en=>{ if(!_wbyEn){ _wbyEn=new Map(); ALL.forEach(w=>{ const k=w.en.toLowerCase(); if(!_wbyEn.has(k)) _wbyEn.set(k,w); }); } return _wbyEn.get(String(en).toLowerCase()); };
 const wordRel=w=>{ const r=WREL[w.en]||[[],[],[]]; return {syn:r[0],ant:r[1],fam:r[2],ff:WFF[w.en]||null}; };
 const wxPrompt=w=>'Help a Russian-speaking learner remember the English word "'+w.en+'" in this meaning: '+w.ru+(w.def?' ("'+w.def+'")':'')+'. Level '+(w.cefr||'B1')+'.'
@@ -3326,133 +3352,133 @@ function Settings({st,update,reset,restore}){
 /* ================= MOCK TESTS: data (original items in exam format) ================= */
 const TFNG=['TRUE','FALSE','NOT GIVEN'], YNNG=['YES','NO','NOT GIVEN'];
 const IELTS_MOCKS=[{id:'ielts1',title:'IELTS Academic · Тест 1',
- listening:__WD[1121],
+ listening:__WD[1122],
  reading:[
-  {title:'The Wolves of Yellowstone',paras:__WD[1122],
+  {title:'The Wolves of Yellowstone',paras:__WD[1123],
    groups:[
-    {ins:'Вопросы 1–6. Соответствует ли утверждение тексту? TRUE — да, FALSE — противоречит, NOT GIVEN — в тексте нет информации.',opts:TFNG,qs:__WD[1123]},
-    __WD[1124],
-    __WD[1125]]},
-  {title:'Why We Forget',paras:__WD[1126],
+    {ins:'Вопросы 1–6. Соответствует ли утверждение тексту? TRUE — да, FALSE — противоречит, NOT GIVEN — в тексте нет информации.',opts:TFNG,qs:__WD[1124]},
+    __WD[1125],
+    __WD[1126]]},
+  {title:'Why We Forget',paras:__WD[1127],
    groups:[
-    __WD[1127],
     __WD[1128],
+    __WD[1129],
     {ins:'Вопросы 23–26. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['Ebbinghaus tested a large group of volunteers.',1],
      ['Proactive interference involves old information affecting new learning.',0],
      ['The divers in the experiment were professional athletes.',2],
      ['Rereading notes is more effective than self-testing.',1]]}]}],
- writing:__WD[1129],
- speaking:__WD[1130]
+ writing:__WD[1130],
+ speaking:__WD[1131]
 }];
 
 /* ---------- IELTS Academic tests 2–3 (original items) ---------- */
 IELTS_MOCKS.push(
 {id:'ielts2',title:'IELTS Academic · Тест 2',
- listening:__WD[1131],
+ listening:__WD[1132],
  reading:[
-  {title:'The Story of Paper Money',paras:__WD[1132],
+  {title:'The Story of Paper Money',paras:__WD[1133],
    groups:[
-    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1133]},
-    __WD[1134],
-    __WD[1135]]},
-  {title:'Microplastics: A Hidden Threat?',paras:__WD[1136],
+    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1134]},
+    __WD[1135],
+    __WD[1136]]},
+  {title:'Microplastics: A Hidden Threat?',paras:__WD[1137],
    groups:[
-    __WD[1137],
-    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES — да, NO — противоречит, NOT GIVEN — автор об этом не говорит.',opts:YNNG,qs:__WD[1138]},
-    __WD[1139]]}],
- writing:__WD[1140],
- speaking:__WD[1141]
+    __WD[1138],
+    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES — да, NO — противоречит, NOT GIVEN — автор об этом не говорит.',opts:YNNG,qs:__WD[1139]},
+    __WD[1140]]}],
+ writing:__WD[1141],
+ speaking:__WD[1142]
 },
 {id:'ielts3',title:'IELTS Academic · Тест 3',
- listening:__WD[1142],
+ listening:__WD[1143],
  reading:[
-  {title:'The Secret of Spider Silk',paras:__WD[1143],
+  {title:'The Secret of Spider Silk',paras:__WD[1144],
    groups:[
-    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1144]},
-    __WD[1145],
-    __WD[1146]]},
-  {title:'The Paradox of Choice',paras:__WD[1147],
+    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1145]},
+    __WD[1146],
+    __WD[1147]]},
+  {title:'The Paradox of Choice',paras:__WD[1148],
    groups:[
     {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:[
      ['Choice is harmful in all situations.',1],['The way options are presented has a major influence on decisions.',0],
      ['Companies that reduced their range of products increased their profits.',2],['Deciding in advance what is "good enough" is a very useful skill.',0]]},
-    __WD[1148],
-    __WD[1149]]}],
- writing:__WD[1150],
- speaking:__WD[1151]
+    __WD[1149],
+    __WD[1150]]}],
+ writing:__WD[1151],
+ speaking:__WD[1152]
 });
 
 /* ---------- IELTS Academic tests 4–5 (original items) ---------- */
 IELTS_MOCKS.push(
 {id:'ielts4',title:'IELTS Academic · Тест 4',
- listening:__WD[1152],
+ listening:__WD[1153],
  reading:[
-  {title:'Coffee: From Legend to Global Commodity',paras:__WD[1153],
+  {title:'Coffee: From Legend to Global Commodity',paras:__WD[1154],
    groups:[
-    __WD[1154],
+    __WD[1155],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['The story of Kaldi was written down at the time coffee was discovered.',1],['Coffee plants still grow naturally in Ethiopia.',0],
      ['Attempts to close coffee houses in Istanbul usually succeeded in the long term.',1],['English coffee houses served food as well as drinks.',2]]},
-    __WD[1155]]},
-  {title:'Working From Anywhere',paras:__WD[1156],
+    __WD[1156]]},
+  {title:'Working From Anywhere',paras:__WD[1157],
    groups:[
-    {ins:'Вопросы 14–18. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1157]},
-    __WD[1158],
-    __WD[1159]]}],
- writing:__WD[1160],
- speaking:__WD[1161]
+    {ins:'Вопросы 14–18. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1158]},
+    __WD[1159],
+    __WD[1160]]}],
+ writing:__WD[1161],
+ speaking:__WD[1162]
 },
 {id:'ielts5',title:'IELTS Academic · Тест 5',
- listening:__WD[1162],
+ listening:__WD[1163],
  reading:[
-  {title:'Navigating by the Stars',paras:__WD[1163],
+  {title:'Navigating by the Stars',paras:__WD[1164],
    groups:[
-    __WD[1164],
+    __WD[1165],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['Polynesians reached Easter Island before New Zealand.',2],['Navigators could use ocean swells even when the sky was cloudy.',0],
      ['Hōkūle\'a used a compass to check its direction.',1],['Mau Piailug had sailed to Tahiti before 1976.',2]]},
-    __WD[1165]]},
-  {title:'Can Machines Be Creative?',paras:__WD[1166],
+    __WD[1166]]},
+  {title:'Can Machines Be Creative?',paras:__WD[1167],
    groups:[
-    {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1167]},
-    __WD[1168],
-    __WD[1169]]}],
- writing:__WD[1170],
- speaking:__WD[1171]
+    {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1168]},
+    __WD[1169],
+    __WD[1170]]}],
+ writing:__WD[1171],
+ speaking:__WD[1172]
 });
 
 /* ---------- full-format additions: Listening parts (original scripts) ---------- */
-const IELTS_EXTRA=__WD[1172];
+const IELTS_EXTRA=__WD[1173];
 
 /* ---------- full-format additions: Reading Passage 3 (original texts) ---------- */
-IELTS_EXTRA.ielts1.passage={title:'The Science of Laughter',paras:__WD[1173],
+IELTS_EXTRA.ielts1.passage={title:'The Science of Laughter',paras:__WD[1174],
  groups:[
-  __WD[1174],
-  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1175]},
-  __WD[1176]]};
+  __WD[1175],
+  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1176]},
+  __WD[1177]]};
 
-IELTS_EXTRA.ielts2.passage=__WD[1177];
+IELTS_EXTRA.ielts2.passage=__WD[1178];
 
-IELTS_EXTRA.ielts3.passage={title:'Mining the Deep Sea',paras:__WD[1178],
+IELTS_EXTRA.ielts3.passage={title:'Mining the Deep Sea',paras:__WD[1179],
  groups:[
-  {ins:'Вопросы 27–31. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1179]},
-  __WD[1180],
-  __WD[1181]]};
+  {ins:'Вопросы 27–31. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1180]},
+  __WD[1181],
+  __WD[1182]]};
 
-IELTS_EXTRA.ielts4.passage={title:'Bilingualism and the Brain',paras:__WD[1182],
+IELTS_EXTRA.ielts4.passage={title:'Bilingualism and the Brain',paras:__WD[1183],
  groups:[
-  __WD[1183],
-  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1184]},
-  __WD[1185]]};
+  __WD[1184],
+  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1185]},
+  __WD[1186]]};
 
-IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1186],
+IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1187],
  groups:[
-  __WD[1187],
+  __WD[1188],
   {ins:'Вопросы 33–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:[
    ['Most species of fungi have not yet been described by scientists.',0],['The idea of fungal networks between trees has been completely disproved.',1],
    ['Popular books about forests sell better than other science books.',2],['Research into fungi deserves more financial support.',0]]},
-  __WD[1188]]};
+  __WD[1189]]};
 
 /* merge: full format = 4 listening parts (40 q) + 3 passages (40 q); renumber old instructions; attach audio */
 (()=>{ const pn=p=>+(p.title.match(/Part (\d)/)||[0,0])[1];
@@ -3464,15 +3490,15 @@ IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1186]
     m.reading.push(x.passage); }); })();
 
 /* ---------- full-length Listening scripts (exam length ~4–5 min per part); '--' marks the mid-part pause ---------- */
-const LS2=__WD[1189];
+const LS2=__WD[1190];
 
-Object.assign(LS2,__WD[1190]);
+Object.assign(LS2,__WD[1191]);
 
 /* apply full-length scripts */
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const o=LS2[m.id+'-'+p.n]; if(!o) return; p.script=o.script; p.desc=o.desc; p.kind=o.kind; if(o.split) p.split=o.split; if(o.qs) p.qs=o.qs; })); })();
 /* extra exam-length material: start = after the opening line, end1 = just before the mid-part pause, end = at the end */
-LS2['ielts5-4']=__WD[1191];
-const LS2X=__WD[1192];
+LS2['ielts5-4']=__WD[1192];
+const LS2X=__WD[1193];
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const o=LS2[m.id+'-'+p.n]; if(o&&!p.desc){ p.script=o.script; p.desc=o.desc; p.kind=o.kind; }
   const x=LS2X[m.id+'-'+p.n]; if(!x) return; let sc=p.script.slice(); if(x.voices) p.voices={...p.voices,...x.voices};
   if(x.start) sc.splice(1,0,...x.start);
@@ -3481,111 +3507,111 @@ const LS2X=__WD[1192];
   p.script=sc; })); })();
 
 /* full-length Speaking for tests 1–5 (Part 1 ≈ 9 questions on 3 topics, Part 2 with follow-up, Part 3 ≈ 6 questions) */
-const SP_FULL=__WD[1193];
+const SP_FULL=__WD[1194];
 (()=>{ IELTS_MOCKS.forEach(m=>{ const s=SP_FULL[m.id]; if(s) m.speaking=s; }); })();
 /*MORE_TESTS*/
 /* ---------- IELTS Academic · Test 6 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts6',title:'IELTS Academic · Тест 6',
- listening:__WD[1194],
+ listening:__WD[1195],
  reading:[
-  {title:'The Story of Glass',paras:__WD[1195],
+  {title:'The Story of Glass',paras:__WD[1196],
    groups:[
-    __WD[1196],
+    __WD[1197],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['The first glass objects made in Mesopotamia were clear.',1],['The Romans used glass in windows.',0],
      ['Venetian glassmakers were allowed to work in other countries.',1],['George Ravenscroft became very rich from his invention.',2]]},
-    __WD[1197]]},
-  {title:'Music Lessons and the Mind',paras:__WD[1198],
+    __WD[1198]]},
+  {title:'Music Lessons and the Mind',paras:__WD[1199],
    groups:[
-    __WD[1199],
-    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1200]},
-    __WD[1201]]},
-  {title:'The Puzzle of the Placebo',paras:__WD[1202],
+    __WD[1200],
+    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1201]},
+    __WD[1202]]},
+  {title:'The Puzzle of the Placebo',paras:__WD[1203],
    groups:[
-    __WD[1203],
-    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1204]},
-    __WD[1205]]}],
- writing:__WD[1206],
- speaking:__WD[1207]
+    __WD[1204],
+    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1205]},
+    __WD[1206]]}],
+ writing:__WD[1207],
+ speaking:__WD[1208]
 });
 /*END_T6*/
 /* ---------- IELTS Academic · Test 7 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts7',title:'IELTS Academic · Тест 7',
- listening:__WD[1208],
+ listening:__WD[1209],
  reading:[
-  {title:'Measuring the Year',paras:__WD[1209],
+  {title:'Measuring the Year',paras:__WD[1210],
    groups:[
-    {ins:'Вопросы 1–6. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1210]},
-    __WD[1211]]},
-  __WD[1212],
-  {title:'Can Money Buy Happiness?',paras:__WD[1213],
+    {ins:'Вопросы 1–6. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1211]},
+    __WD[1212]]},
+  __WD[1213],
+  {title:'Can Money Buy Happiness?',paras:__WD[1214],
    groups:[
-    __WD[1214],
-    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1215]},
-    __WD[1216]]}],
- writing:__WD[1217],
- speaking:__WD[1218]
+    __WD[1215],
+    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1216]},
+    __WD[1217]]}],
+ writing:__WD[1218],
+ speaking:__WD[1219]
 });
 /*END_T7*/
 /* ---------- IELTS Academic · Test 8 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts8',title:'IELTS Academic · Тест 8',
- listening:__WD[1219],
+ listening:__WD[1220],
  reading:[
-  __WD[1220],
-  {title:'The Value of City Trees',paras:__WD[1221],
+  __WD[1221],
+  {title:'The Value of City Trees',paras:__WD[1222],
    groups:[
-    {ins:'Вопросы 14–19. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1222]},
-    __WD[1223]]},
-  __WD[1224]],
- writing:__WD[1225],
- speaking:__WD[1226]
+    {ins:'Вопросы 14–19. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1223]},
+    __WD[1224]]},
+  __WD[1225]],
+ writing:__WD[1226],
+ speaking:__WD[1227]
 });
 /*END_T8*/
 /* ---------- IELTS Academic · Test 9 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts9',title:'IELTS Academic · Тест 9',
- listening:__WD[1227],
+ listening:__WD[1228],
  reading:[
-  {title:'How the Dutch Took to Their Bikes',paras:__WD[1228],
+  {title:'How the Dutch Took to Their Bikes',paras:__WD[1229],
    groups:[
-    {ins:'Вопросы 1–7. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1229]},
-    __WD[1230]]},
-  {title:'The Mind of the Octopus',paras:__WD[1231],
+    {ins:'Вопросы 1–7. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1230]},
+    __WD[1231]]},
+  {title:'The Mind of the Octopus',paras:__WD[1232],
    groups:[
-    __WD[1232],
     __WD[1233],
-    {ins:'Вопросы 23–26. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1234]}]},
-  __WD[1235]],
- writing:__WD[1236],
- speaking:__WD[1237]
+    __WD[1234],
+    {ins:'Вопросы 23–26. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1235]}]},
+  __WD[1236]],
+ writing:__WD[1237],
+ speaking:__WD[1238]
 });
 /*END_T9*/
 /* ---------- IELTS Academic · Test 10 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts10',title:'IELTS Academic · Тест 10',
- listening:__WD[1238],
+ listening:__WD[1239],
  reading:[
-  {title:'The Printing Revolution',paras:__WD[1239],
+  {title:'The Printing Revolution',paras:__WD[1240],
    groups:[
-    __WD[1240],
-    {ins:'Вопросы 5–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1241]},
-    __WD[1242]]},
-  {title:'Saving the World\'s Coral Reefs',paras:__WD[1243],
+    __WD[1241],
+    {ins:'Вопросы 5–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1242]},
+    __WD[1243]]},
+  {title:'Saving the World\'s Coral Reefs',paras:__WD[1244],
    groups:[
-    __WD[1244],
-    {ins:'Вопросы 20–23. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1245]},
-    __WD[1246]]},
-  __WD[1247]],
- writing:__WD[1248],
- speaking:__WD[1249]
+    __WD[1245],
+    {ins:'Вопросы 20–23. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1246]},
+    __WD[1247]]},
+  __WD[1248]],
+ writing:__WD[1249],
+ speaking:__WD[1250]
 });
 /*END_T10*/
 /* extra exam-length material for all tests: e1 before the mid-part pause, e2 before the last k lines */
-const LS3X=__WD[1250];
+const LS3X=__WD[1251];
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const x=LS3X[m.id+'-'+p.n]; if(!x) return; const sc=p.script.slice();
   if(x.e1){ const k=sc.findIndex(l=>l[0]==='--'); if(k>=0) sc.splice(k,0,...x.e1); }
   if(x.e2) sc.splice(sc.length-(x.k||0),0,...x.e2); p.script=sc; })); })();
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach((p,i)=>{ if(!p.n) p.n=+(((p.title||'').match(/Part (\d)/)||[0,i+1])[1]); if(!p.audio) p.audio='audio/'+m.id+'-p'+p.n+'.mp3'; })); })();
-const IELTS_AUDIO=__WD[1251]; /*AUDIO_TIMES*/
-const SP_AUDIO=__WD[1252]; /*SP_AUDIO*/
+const IELTS_AUDIO=__WD[1252]; /*AUDIO_TIMES*/
+const SP_AUDIO=__WD[1253]; /*SP_AUDIO*/
 /* SAT: q = {t:type, p:passage, q:question, o:options, a:index | g:[accepted numeric answers], e:explanation} */
 const SQ_WIC='Which choice completes the text with the most logical and precise word or phrase?';
 const SQ_SEC='Which choice completes the text so that it conforms to the conventions of Standard English?';
@@ -3595,43 +3621,43 @@ const SAT_MOCKS=[{id:'sat1',title:'Digital SAT · Тест 1',
   m1:[
    {t:'Words in Context',p:'Marine biologists have found that coral reefs near volcanic vents in the Pacific are surprisingly ______: despite water acidity that would kill most corals, these reefs continue to grow.',q:SQ_WIC,o:['fragile','resilient','ancient','colorful'],a:1,e:'«Несмотря на кислотность… продолжают расти» — значит, рифы устойчивые. Resilient = устойчивый, способный восстанавливаться.'},
    {t:'Words in Context',p:"The novelist's early works were largely ______ by critics, who found them too experimental; only decades later were they recognized as masterpieces.",q:SQ_WIC,o:['celebrated','overlooked','translated','imitated'],a:1,e:'«Только спустя десятилетия признали шедеврами» — значит, сначала их не заметили / проигнорировали (overlooked).'},
-   __WD[1253],
    __WD[1254],
    __WD[1255],
    __WD[1256],
    __WD[1257],
+   __WD[1258],
    {t:'Boundaries',p:'The Atacama Desert in Chile is one of the driest places on ______ some weather stations there have never recorded rain.',q:SQ_SEC,o:['Earth,','Earth;','Earth','Earth, which'],a:1,e:'Два независимых предложения соединяет точка с запятой. Запятая одна — ошибка comma splice.'},
    {t:'Form, Structure, and Sense',p:'The collection of letters written by the explorer during her travels ______ now on display at the national museum.',q:SQ_SEC,o:['are','were','is','have been'],a:2,e:'Подлежащее — collection (единственное число), letters — внутри of-фразы. Нужно is.'},
    {t:'Boundaries',p:'Architect Zaha Hadid, known for her flowing ______ designed the aquatic center for the 2012 London Olympics.',q:SQ_SEC,o:['curves,','curves;','curves','curves—'],a:0,e:'Вставка «known for her flowing curves» выделяется запятыми с обеих сторон.'},
    {t:'Transitions',p:'Early electric cars of the 1900s were popular in cities because they were quiet and easy to drive. ______ the mass production of cheaper gasoline-powered cars soon pushed them off the market.',q:SQ_TR,o:['Similarly,','However,','For example,','Therefore,'],a:1,e:'Сначала популярность, потом вытеснение — противопоставление: However.'},
-   __WD[1258]],
+   __WD[1259]],
   hard:[
    {t:'Words in Context',p:"Although the committee's report was meant to resolve the dispute, its ______ language allowed both sides to claim victory.",q:SQ_WIC,o:['ambiguous','concise','hostile','technical'],a:0,e:'Обе стороны смогли заявить о победе — значит, формулировки двусмысленные (ambiguous).'},
    {t:'Words in Context',p:"The historian's account is notable for its ______: rather than relying on a single archive, she consulted letters, tax records, and oral histories from dozens of communities.",q:SQ_WIC,o:['brevity','thoroughness','partiality','whimsy'],a:1,e:'Десятки сообществ и разные источники — это основательность (thoroughness).'},
    {t:'Words in Context',p:"Far from being ______, the scientist's conclusion was the product of years of painstaking measurements.",q:SQ_WIC,o:['hasty','rigorous','controversial','obscure'],a:0,e:'«Far from being X» — противоположность «годам кропотливых измерений», то есть поспешный (hasty).'},
-   __WD[1259],
    __WD[1260],
    __WD[1261],
    __WD[1262],
    __WD[1263],
+   __WD[1264],
    {t:'Form, Structure, and Sense',p:'Neither the lead researcher nor her assistants ______ aware that the samples had been mislabeled.',q:SQ_SEC,o:['was','were','is','has been'],a:1,e:'При neither…nor глагол согласуется с ближайшим подлежащим: assistants → were. Прошедшее время — по смыслу (had been).'},
    {t:'Boundaries',p:"The museum's newest exhibit features three ______ a 2,000-year-old bronze mirror, a medieval astrolabe, and a nineteenth-century telegraph key.",q:SQ_SEC,o:['artifacts:','artifacts,','artifacts;','artifacts'],a:0,e:'Двоеточие вводит список после полного предложения.'},
    {t:'Transitions',p:'Most plants obtain nitrogen from the soil through their roots. The Venus flytrap, ______ grows in nitrogen-poor bogs and supplements its diet by trapping insects.',q:SQ_TR,o:['by contrast,','for instance,','in addition,','as a result,'],a:0,e:'Мухоловка поступает иначе, чем большинство растений — противопоставление: by contrast.'},
-   __WD[1264]],
+   __WD[1265]],
   easy:[
    {t:'Words in Context',p:'After hours of hiking in the heat, the team was ______ and needed to rest.',q:SQ_WIC,o:['exhausted','curious','delighted','generous'],a:0,e:'Часы похода по жаре и нужен отдых — exhausted (измотанный).'},
    {t:'Words in Context',p:'The new library is very ______ for students: it has quiet study rooms, a café, and free computers.',q:SQ_WIC,o:['narrow','useful','silent','empty'],a:1,e:'Перечислены удобства — значит, библиотека полезная (useful).'},
    {t:'Words in Context',p:'Scientists hope to ______ the cause of the disease so that they can develop a cure.',q:SQ_WIC,o:['ignore','identify','celebrate','borrow'],a:1,e:'Чтобы создать лекарство, причину нужно установить — identify.'},
-   __WD[1265],
    __WD[1266],
    __WD[1267],
    __WD[1268],
+   __WD[1269],
    {t:'Form, Structure, and Sense',p:'Every morning, my grandmother ______ a short walk around the park.',q:SQ_SEC,o:['take','takes','taking','have taken'],a:1,e:'Present Simple, he/she → takes.'},
    {t:'Boundaries',p:'Maya packed everything she needed for the ______ a tent, a sleeping bag, and a flashlight.',q:SQ_SEC,o:['trip:','trip,','trip','trip;'],a:0,e:'Двоеточие вводит список.'},
    {t:'Form, Structure, and Sense',p:'The students proudly presented ______ science project to the whole school.',q:SQ_SEC,o:['its','their','there','they\'re'],a:1,e:'Students — множественное число, притяжательное their. There — «там», they\'re = they are.'},
    {t:'Transitions',p:'The final exam was very difficult. ______ most students passed it.',q:SQ_TR,o:['Therefore,','Nevertheless,','For example,','Similarly,'],a:1,e:'Трудный экзамен, но сдали — уступка: Nevertheless.'},
-   __WD[1269]]},
- math:__WD[1270]
+   __WD[1270]]},
+ math:__WD[1271]
 }];
 
 /* ================= MOCK TESTS: engine & UI ================= */
@@ -3774,7 +3800,7 @@ let _samplePromise=null;
 setTimeout(()=>{ if(!window.__wordyKid) getSample().then(x=>x&&x.warm&&x.warm()).catch(()=>{}); },2500);
 const getSample=()=>_samplePromise||(_samplePromise=((window.claude&&typeof window.claude.use==='function')?window.claude.use('sample').catch(()=>null):Promise.resolve(null)).then(x=>x||geminiAI()));
 function useSample(){ const [s,setS]=useState(undefined); useEffect(()=>{ let on=true; getSample().then(x=>{ if(on) setS(()=>(window.__wordyKid?null:x)||null); }); /* sample is a function: wrap so React does not call it as an updater */ return ()=>{ on=false; }; },[]); return s; }
-const AI_ERR=__WD[1271];
+const AI_ERR=__WD[1272];
 const aiOffText=()=>window.__wordyKid?'Функции с ИИ доступны с 13 лет.':'Проверка ИИ сейчас недоступна. Попробуй позже.';
 const aiErr=e=>AI_ERR[e&&e.code]||'Проверка временно недоступна. Попробуй ещё раз.';
 const clampB=x=>{ x=Math.round(Number(x)*2)/2; return isNaN(x)?null:Math.max(0,Math.min(9,x)); };
@@ -3795,7 +3821,7 @@ function speakingPrompt(m,ans,fs){ const lines=[];
   return 'You are a strict, experienced IELTS Speaking examiner. Below is a transcript of a candidate\'s practice test (speech recognition or typed, so ignore punctuation and spelling). Assess Fluency and Coherence, Lexical Resource and Grammatical Range and Accuracy from the transcript. Pronunciation cannot be judged from text: do not score it. Short, memorised or missing answers lower the bands.'+IELTS_CAL+' Be realistic.\n\n'+lines.join('\n\n').slice(0,9000)
    +(fs?'\n\nMEASURED BY THE APP from the live recording (use it for Fluency): speech rate '+fs.wpm+' words per minute; '+fs.ppm+' pauses longer than 1.5 seconds per minute (longest '+fs.longest+' s); filler words: '+(fs.filN?Object.entries(fs.fil).map(([n,c])=>n+' x'+c).join(', '):'none detected')+(fs.p2!=null?'; Part 2 long turn lasted '+fs.p2+' seconds':'')+'. Mention speed, pauses and fillers in "improve" if they are a problem.':'')+'\n\nWrite every explanation in Russian; quote the candidate\'s English exactly in "from".\nReply with ONLY a JSON object: {"band":6,"crit":{"fc":6,"lr":6,"gra":5.5},"summary":"2-3 предложения","strengths":["..."],"improve":["..."],"fixes":[{"from":"...","to":"...","why":"..."}]}. At most 3 strengths, 4 improve items, 6 fixes.'; }
 /* AI examiners tend to over-score: anchor them */
-const IELTS_CAL=__WD[1272];
+const IELTS_CAL=__WD[1273];
 const pronAdd=(secs,what)=>'\n\nAUDIO ATTACHED: a '+secs+'-second recording of the candidate\'s own voice ('+what+'). Listen to it and assess Pronunciation as crit "pr" using the IELTS pronunciation descriptors: individual sounds, word stress, sentence stress and intonation, connected speech, and how much effort the listener needs. The candidate is a Russian or Kyrgyz speaker: listen for th, w/v, h, final voiced consonants, short and long vowels, -ed endings and word stress. Judge pronunciation from the recording, not from the transcript (speech recognition hides errors). Add to the JSON "pr" inside "crit" and "pron":[{"word":"the English word or phrase","heard":"how it sounded (IPA or simple Russian letters)","tip":"как исправить, по-русски"}] with at most 6 real problems (empty array if none). The overall "band" must include pr (average of the four criteria).';
 const CRIT_N={ta:'Task Response',cc:'Coherence & Cohesion',lr:'Lexical Resource',gra:'Grammar',fc:'Fluency & Coherence',pr:'Pronunciation'};
 function Feedback({fb,keys}){ return html`<div className="mk-fb enter">
@@ -3966,7 +3992,7 @@ function flatReading(m){ const out=[]; m.reading.forEach((ps,pi)=>ps.groups.forE
 function rdOk(it,v){ const {g,q}=it; return g.gap?gapOk(v||'',q[1]):v===(g.opts||g.box||g.pm?q[1]:q[2]); }
 const pmOpts=P=>P.paras.map((_,k)=>'Paragraph '+String.fromCharCode(65+k));
 /* ---------- answer evidence: where in the text / recording the answer is ---------- */
-const EV_STOP=new Set(__WD[1273].split(' '));
+const EV_STOP=new Set(__WD[1274].split(' '));
 const evStem=w=>w.length>4?w.replace(/(ies)$/,'y').replace(/(ing|ed|es|e|s|ly)$/,''):w;
 const evToks=s=>String(s||'').toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s+/).filter(w=>w&&!EV_STOP.has(w)).map(evStem).filter(w=>w.length>1);
 const evSplit=p=>{ const s=String(p).replace(/(\d)\.(\d)/g,'$1\u2024$2').replace(/\b(Dr|Mr|Mrs|Ms|St)\./g,'$1\u2024'); return (s.match(/[^.!?]+[.!?]+["')”]*\s*|[^.!?]+$/g)||[s]).map(x=>x.replace(/\u2024/g,'.').trim()).filter(Boolean); };
@@ -3995,7 +4021,7 @@ function listeningEvidence(m){ const out=[]; m.listening.forEach((p,k)=>{ const 
     if(best&&!Array.isArray(q)&&multi){ const w=lines.slice(best.i,best.i+3); span=w.length; text=w.map(x=>x.sp+': '+x.text).join('\n'); }
     else if(best&&/\?\s*$/.test(best.text)&&lines[best.i+1]){ const nx=lines[best.i+1]; span=2; text=best.text+'\n'+nx.text; }
     out.push(best?{part:k,line,span,sp,text,approx:!Array.isArray(q)}:null); }); }); return out; }
-const W2N=__WD[1274];
+const W2N=__WD[1275];
 /* AI: why is this the answer */
 const whyPrompt=(ctx,qtext,opts,correct,mine)=>'You are an IELTS teacher. A Russian-speaking student reviews one question. Explain in RUSSIAN, 2-4 short sentences: why the correct answer is right, pointing to the exact words in the text, and if the student answered differently, why their answer is wrong (for NOT GIVEN, say what information is missing). Do not repeat the whole text.\n\nTEXT:\n'+ctx+'\n\nQUESTION: '+qtext+(opts?'\nOPTIONS: '+opts:'')+'\nCORRECT ANSWER: '+correct+'\nSTUDENT ANSWER: '+(mine==null||mine===''?'(no answer)':mine)+'\n\nReturn JSON: {"why": "..."}';
 /* Google Play rule for apps with generative AI: learners can flag a bad AI answer without leaving the app. Goes to Firestore «feedback» (kind 'ai'). */
@@ -4382,7 +4408,7 @@ async function clipsToWav(blobs,maxSec){ if(!blobs||!blobs.length) return null; 
    - Browser recognition gives live text and pause timing. Chrome often stops it on its own after a silence, so it is restarted until the learner presses «Стоп».
    - The voice is recorded at the same time. If recognition gave no text (unsupported browser, blocked service, busy microphone),
      Gemini transcribes the recording instead, keeping the learner's own mistakes. */
-const TRANSCRIBE=__WD[1275];
+const TRANSCRIBE=__WD[1276];
 function useDictation(onText,onMetrics,onAudio,ai){
   const canAI=!!(CAN_REC&&ai&&ai.gemini);
   const rec=useRef(null), [on,setOn]=useState(false), [srFail,setSrFail]=useState(!SR); const cb=useRef(onText); cb.current=onText; const mcb=useRef(onMetrics); mcb.current=onMetrics;
@@ -4525,7 +4551,7 @@ function IeltsSpeaking({m,st,update,onExit,onNext,nextName}){
 }
 
 /* ---------- pronunciation trainer: read a sentence aloud, the recogniser shows which words it understood ---------- */
-const PRON=__WD[1276];
+const PRON=__WD[1277];
 const PRON_GROUPS=[['all','Все'],['th','TH'],['w','W / V'],['vowel','Гласные'],['final','Конечные звуки'],['ed','-ed'],['stress','Ударение'],['ielts','Фразы IELTS']];
 const prNorm=s=>String(s).toLowerCase().replace(/[^a-z0-9'\s]/g,' ').split(/\s+/).filter(Boolean);
 function prAlign(target,heard){ const a=prNorm(target), b=prNorm(heard), n=a.length, m=b.length, L=[...Array(n+1)].map(()=>Array(m+1).fill(0));
@@ -4576,7 +4602,7 @@ function PronDrill({update,onExit,st}){ const [grp,setGrp]=useState('all'), [k,s
     <p className="mk-note">Как это работает: распознавание речи записывает то, что услышало. Красные слова оно не узнало — скорее всего, их стоит произнести чётче. «Разбор от ИИ» слушает саму запись голоса и подсказывает, какие звуки поправить. Это тренировка, а не оценка экзаменатора.</p>
   </section>`; }
 /* ---------- Speaking Part 2 bank: popular cue cards with Band 7+ sample answers and a timed practice ---------- */
-const P2_BANK=__WD[1277];
+const P2_BANK=__WD[1278];
 function P2Bank({st,update,onExit}){ const ai=useSample(); const [k,setK]=useState(null), [ph,setPh]=useState('card'), [ans,setAns]=useState(''), [met,setMet]=useState(null), [fb,setFb]=useState(null), [busy,setBusy]=useState(false), [err,setErr]=useState(null), [showS,setShowS]=useState(false), [rec,setRec]=useState(false), [clips,setClips]=useState([]);
   const c=P2_BANK.find(x=>x.id===k), done=st.p2done||{};
   const tl=useCountdown(ph==='prep'?60:ph==='talk'?120:0,()=>{ if(ph==='prep'){ SFX('pop'); setPh('talk'); W('say','Время! Говори 1–2 минуты.',0,true); } else if(ph==='talk'){ SFX('pop'); setPh('done'); W('say','Две минуты прошли.',0,true); } },ph==='prep'||ph==='talk',k+ph);
@@ -4672,7 +4698,7 @@ function SatResult({m,res,log,secs,onExit}){
 /* rotate SAT options so the key is spread across A–D (explanations never refer to letters) */
 SAT_MOCKS.forEach(m=>['rw','math'].forEach(sec=>['m1','hard','easy'].forEach((k,ki)=>m[sec][k].forEach((q,qi)=>{ if(!q.o) return;
   const r=(qi*3+ki*2+(sec==='math'?1:0)+(qi%3===0?2:0))%q.o.length, c=q.o[q.a]; q.o=q.o.slice(r).concat(q.o.slice(0,r)); q.a=q.o.indexOf(c); }))));
-const IELTS_SEC=__WD[1278];
+const IELTS_SEC=__WD[1279];
 function IeltsFull({m,st,update,onExit}){
   const order=['L','R','W','S'], [i,setI]=useState(0), [go,setGo]=useState(false);
   if(i>=order.length){ const r=(st.mocks||{})[m.id]||{}, ov=ieltsOverall(r);
@@ -4756,7 +4782,7 @@ function StoryScreen({st,update,onExit}){ const ai=useSample();
     ${word?html`<${WordSheet} w=${word} st=${st} update=${update} open=${true} onClose=${()=>setWord(null)}/>`:null}
   </section>`; }
 
-const TALK_SC=__WD[1279];
+const TALK_SC=__WD[1280];
 const talkPrompt=(sc,lvl,targets,hist,said)=>'You are '+sc[2]+'. You are talking with an English learner (CEFR '+lvl+', native language Russian). Stay in the role and keep the conversation natural and kind. '
   +'Speak at the learner\'s level: 1-2 short sentences, then a question so they can answer. Try to create chances for the learner to use these words: '+targets.join(', ')+'. '
   +'Conversation so far:\n'+hist.map(m=>(m.who==='ai'?'You: ':'Learner: ')+m.text).join('\n')+'\nLearner: '+said+'\n'
@@ -4836,7 +4862,7 @@ const EMO_STYLE={happy:'Say cheerfully',laugh:'Say with a happy laugh',surprised
 /* ---------- Live call: Gemini Live (real-time voice both ways, can be interrupted) ----------
    Runs on a separate Firebase project without App Check (browsers cannot send App Check over WebSocket).
    Wordy's feelings and the learner's progress come from tool calls the model makes while it talks. */
-const LIVE_TOOLS=__WD[1280];
+const LIVE_TOOLS=__WD[1281];
 const liveSys=(sc,lvl,targets,name,typed,extra)=>'You are '+sc[2]+'. You are on a live '+(typed?'chat: the learner types and you answer with your voice':'video call')+' with an English learner (CEFR '+lvl+', native language Russian). '
   +'You are always Wordy: a small, cheerful, slightly mischievous orange creature. If the scene gives you a role, you are Wordy playing it, and your name is Wordy. '
   +(name?'The learner\'s name is '+name+'. ':'You do not know the learner\'s name: never invent one; you may ask for it once. ')
@@ -4847,7 +4873,7 @@ const liveSys=(sc,lvl,targets,name,typed,extra)=>'You are '+sc[2]+'. You are on 
   +'If the learner speaks Russian, answer in simple English and encourage them to try in English. '+(extra||'')+'Start by greeting them with: "'+sc[3]+'"';
 function b64pcm(f32){ const n=f32.length, b=new ArrayBuffer(n*2), v=new DataView(b); for(let i=0;i<n;i++){ const x=Math.max(-1,Math.min(1,f32[i])); v.setInt16(i*2,x<0?x*0x8000:x*0x7FFF,true); } const u=new Uint8Array(b); let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
 const ASSESS_TOOLS=[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],
-  __WD[1281]]}];
+  __WD[1282]]}];
 const assessSys=g=>'You are Wordy, a friendly, cheerful orange creature, doing a quick spoken English level check (about 3 minutes) with a new learner whose native language is Russian. '
   +'Start in very simple, slow English: greet them, say this is a short chat to find their level, and ask their name. Then ask about six short questions that get gradually harder: '
   +'A1 (name, age, city, family) → A2 (daily routine, last weekend) → B1 (plans, experiences, an opinion with reasons) → B2 (a hypothetical situation, pros and cons) → C1 (a nuanced, abstract question). '
@@ -4866,9 +4892,39 @@ function LevelCheck({st,update,onPick,onClose}){ const [res,setRes]=useState(nul
     :html`<${LiveCall} key=${run} st=${st} update=${update} sc=${['assess','Проверка уровня','','']} assess=${{sys:assessSys(genderLine(st.gender)),onResult:a=>{ const lv=['A1','A2','B1','B2','C1'].includes(a&&a.level)?a.level:'A2'; SFX('fanfare'); W('react','cheer'); setRes({...a,level:lv}); }}}
         onExit=${onClose} onFallback=${onClose}/>`}</div>`;
   return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
+const BOARD_TOOL=__WD[1283];
+/* the lesson board: formula chips, examples with the key part highlighted, the current task with its type, progress dots, the last correction */
+const TASK_T={translate:['🔁','Переведи'],transform:['✏️','Измени'],answer:['💬','Ответь'],create:['🌟','Придумай своё'],repeat:['🔂','Повтори правильно']};
+const starMark=t=>String(t).split(/(\*\*[^*]+\*\*)/).map((p,i)=>{ const m=p.match(/^\*\*([^*]+)\*\*$/); return m?html`<mark key=${i}>${m[1]}</mark>`:p.replace(/\*/g,''); });
+function LessonBoard({b}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
+  if(!b) return html`<div className="lboard empty"><p className="muted">Здесь Ворди будет писать правило, примеры и задания.</p></div>`;
+  const tt=TASK_T[b.type]||TASK_T.translate, key=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
+  return html`<div className="lboard" aria-live="polite">
+    <div className="lb-head">${b.emoji?html`<span className="lb-emoji" aria-hidden="true">${b.emoji}</span>`:null}<b className="lb-title">${b.title||'Урок'}</b>
+      ${b.n?html`<span className="lb-dots" aria-label=${'Задание '+b.n}>${Array.from({length:Math.max(b.n,5)},(_,i)=>html`<i key=${i} className=${b.marks[i]==='ok'?'ok':b.marks[i]==='bad'?'bad':i===b.n-1?'cur':''}></i>`)}</span>`:null}</div>
+    ${b.task?html`<div className="lb-task" key=${b.n}><div className="lb-tt"><span aria-hidden="true">${tt[0]}</span>${tt[1]}<small>задание ${b.n}</small></div><p>${b.task}</p>
+        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b></div>`:null}
+        ${b.hint?(hint?html`<p className="lb-hint">💡 ${b.hint}</p>`:html`<button className="link-btn lb-hbtn" onClick=${()=>{ SFX('tap'); setHint(true); }}>💡 Подсказка</button>`):null}</div>`:null}
+    ${b.formula.length?html`<div className="lb-formula">${b.formula.map((x,i)=>html`${i?html`<span className="lb-plus" aria-hidden="true">+</span>`:null}<span key=${i} className=${'lb-chip'+(key(x)?' key':'')}>${x}</span>`)}</div>`:null}
+    ${b.rule?html`<p className="lb-rule">${b.rule}</p>`:null}
+    ${b.examples.length?html`<ul className="lb-ex">${b.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en.replace(/\*/g,'')} onClick=${()=>speak(e.en.replace(/\*/g,''))}>${I.speaker()}</button>`:null}<div><b lang="en">${starMark(e.en)}</b>${e.ru?html`<span>${e.ru}</span>`:null}</div></li>`)}</ul>`:null}
+  </div>`; }
+const lessonSys=(lvl,ctx,extra)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
+  +'Темп: говори медленно, спокойно и чётко, с паузами между предложениями — особенно в начале; ученику нужно успевать понять. '
+  +'У ученика на экране есть доска: всё важное пиши на неё инструментом show_board, а голосом говори коротко. '
+  +'План. 1) Поздоровайся одной фразой. Вызови show_board с title, emoji, formula (схема по частям), rule (когда употребляем, одна строка) и examples (2–3 примера с переводом, главную часть выдели **звёздочками**). Голосом коротко, в 2–3 предложениях по-русски, объясни правило и прочитай один пример. Спроси: «Понятно? Начинаем?» — и дождись ответа ученика. '
+  +'2) Дай 5–6 коротких устных заданий по очереди, от простого к сложному; перед каждым заданием вызывай show_board с task (текст задания), task_type и, если полезно, hint — и затем прочитай задание голосом: перевести короткую фразу с русского, превратить предложение в отрицание или вопрос, ответить на вопрос с этой конструкцией, придумать своё предложение. Давай по одному заданию и жди ответа. '
+  +'3) Если ответ верный — коротко похвали и дай следующее задание. Если есть ошибка — вызови correction (wrong — фрагмент ученика, right — правильный вариант, why — очень коротко по-русски), мягко скажи правильный вариант и попроси повторить. Вызывай correction только для настоящих ошибок и только для одной фразы ученика за раз. Если ученик ответил грамматически верно, но другой конструкцией (например, Past Simple с yesterday вместо Present Perfect), — засчитай, похвали и коротко объясни разницу, без correction. '
+  +'4) После заданий подведи итог в 2 предложениях по-русски: что получилось и на что обратить внимание — и тепло попрощайся. '
+  +'Говори живо и коротко, на «ты», как друг-репетитор. Английские фразы произноси чётко, с английским произношением. Не читай весь экран вслух. Показывай эмоции через show_emotion. '+(extra||'');
+/* 🎙 voice mini-lesson on the grammar topic on screen */
+function VoiceLesson({st,update,onClose}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+  const ui=html`<div className="lc-wrap" role="dialog" aria-modal="true" aria-label="Урок с Ворди голосом"><${LiveCall} st=${st} update=${update} sc=${['lesson','Урок с Ворди','','']}
+      lesson=${{sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st))}} onExit=${onClose} onFallback=${onClose}/></div>`;
+  return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
 const canLiveVoice=()=>!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey&&window.AudioWorkletNode&&navigator.mediaDevices);
 const tutor0=p=>p==='tutor'?.82:.5;
-const MIC_WORKLET=__WD[1282];
+const MIC_WORKLET=__WD[1284];
 /* Wordy remembers: short notes about the learner + the end of the last conversation, and how to address them in Russian */
 const genderLine=g=>g==='f'?'Ученик — девушка: по-русски обращайся к ней в женском роде (ты сделала, ты готова, молодец сама). The learner is female. '
   :g==='m'?'Ученик — парень: по-русски обращайся к нему в мужском роде (ты сделал, ты готов). The learner is male. '
@@ -4918,10 +4974,10 @@ function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setO
     ${mini&&!inCall?html`<button className="tutor-fab mini" id="tutor-restore" onClick=${restore} aria-label="Вернуться к разговору с Ворди"><span aria-hidden="true">💬</span><b>Ворди</b></button>`:null}
     ${open&&!mini?html`<${LiveCall} key=${run} st=${st} update=${update} typed=${true} tutor=${open} hist=${logRef.current} onMsgs=${m=>{ logRef.current=m; }} sc=${['tutor','Спросить Ворди','','']}
         onMini=${()=>{ SFX('tap'); setMini(true); }} onExit=${()=>{ setOpen(null); setMini(false); logRef.current=[]; }} onFallback=${()=>{ setOpen(null); setMini(false); }}/>`:null}`; }
-function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess}){
-  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false);
+function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess,lesson}){
+  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
   const targets=useMemo(()=>practiceWords(st,5),[]); const R=useRef({}); const box=useRef(null); const usedRef=useRef([]); usedRef.current=used;
-  useCallStage(!end,tutor?1.1:typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
+  useCallStage(!end,tutor?1.1:lesson?(innerWidth<520?1.3:1.6):typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
   useEffect(()=>{ if(box.current) box.current.scrollTop=box.current.scrollHeight; },[msgs.length,aiLine]);
   const log=(who,text,extra)=>{ text=String(text||'').trim(); if(text) setMsgs(m=>[...m,{who,text,...(extra||{})}]); };
   const msgsRef=useRef(msgs); msgsRef.current=msgs; useEffect(()=>{ onMsgs&&onMsgs(msgs); },[msgs]);
@@ -4933,7 +4989,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       const [A,AI]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js')]);
       const app=A.getApps().find(a=>a.name==='wordy-live')||A.initializeApp(C.config,'wordy-live');
       const ai=AI.getAI(app,{backend:new AI.GoogleAIBackend()});
-      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
+      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
         generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:C.voice||'Puck'}}},inputAudioTranscription:{},outputAudioTranscription:{}}});
       const mlist=[C.model].concat(C.alt||[]).filter((m,i,a)=>m&&a.indexOf(m)===i);
       const out=new (window.AudioContext||window.webkitAudioContext)(); r.out=out; if(out.state==='suspended') await out.resume();
@@ -4958,7 +5014,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       /* lip sync from the output level */
       const d=new Uint8Array(an.fftSize); r.outLvl=0; const tick=()=>{ if(!r.alive) return; an.getByteTimeDomainData(d); let m=0; for(let i=0;i<d.length;i+=4) m=Math.max(m,Math.abs(d[i]-128)); r.outLvl=Math.max(m/128,r.outLvl*.97); if(m>3) W('lip',Math.min(1,m/55)); r.raf=requestAnimationFrame(tick); }; tick();
       setPhase('live'); SFX('pop');
-      if(!(tutor&&tutor.quiet)) session.send(assess?'(The learner is ready. Start.)':tutor?tutor.greet:'Hi!');
+      if(!(tutor&&tutor.quiet)) session.send(lesson?'(Ученик готов. Начинай урок.)':assess?'(The learner is ready. Start.)':tutor?tutor.greet:'Hi!');
       /* server messages */
       let aiBuf='', meBuf=''; r.flushAi=()=>{ if(aiBuf){ log('ai',aiBuf); aiBuf=''; setAiLine(''); } };
       /* Google closes a live connection after ~10 minutes. The server keeps sending a resume handle; on "going away"
@@ -4978,6 +5034,11 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         } else if(m.type==='toolCall'){
           const res=(m.functionCalls||[]).map(fc=>{ const a=fc.args||{};
             if(fc.name==='show_emotion') W('emo',String(a.emotion||'happy'),6);
+            if(fc.name==='show_board'){ const ex=Array.isArray(a.examples)?a.examples.filter(x=>x&&x.en).slice(0,3).map(x=>({en:String(x.en),ru:String(x.ru||'')})):null, fo=Array.isArray(a.formula)?a.formula.map(String).filter(Boolean).slice(0,6):null, isTask=!!a.task, newRule=!!(a.rule||ex||fo);
+              setBoard(b0=>{ const b=b0||{n:0,marks:[]}, marks=b.marks.slice(); if(isTask&&b.n&&marks[b.n-1]==null) marks[b.n-1]='ok';
+                return {title:a.title?String(a.title):b.title||'',emoji:a.emoji?String(a.emoji).slice(0,4):b.emoji||'',formula:fo&&fo.length?fo:b.formula||[],rule:a.rule?String(a.rule):b.rule||'',examples:ex&&ex.length?ex:b.examples||[],
+                  task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+            if(fc.name==='correction'&&a.wrong&&a.right&&lesson) setBoard(b=>b&&b.n?{...b,fix:{wrong:String(a.wrong),right:String(a.right)},marks:Object.assign(b.marks.slice(),{[b.n-1]:'bad'})}:b);
             if(fc.name==='finish_assessment'&&assess&&!r.result){ r.result=a; r.resT=setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },9000); }
             if(fc.name==='word_used'){ const w=String(a.word||'').toLowerCase(); if(targets.some(t=>t.en.toLowerCase()===w)&&!usedRef.current.includes(w)){ setUsed(o=>[...o,w]); SFX('correct'); } }
             if(fc.name==='correction'&&a.wrong&&a.right) setMsgs(ms=>[...ms,{who:'fix',text:'',fix:{wrong:String(a.wrong),right:String(a.right),why:String(a.why||'')}}]);
@@ -5038,21 +5099,23 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
   return html`<section className="mk-sec call live">
     <div className="sess-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${phase==='connecting'?'соединяю…':end?'звонок завершён':(R.current.backup?'Live 2 · ':'Live · ')+mineN+' '+plural(mineN,'реплика','реплики','реплик')}</span></div>
       <button className="chip" id="live-headset" aria-pressed=${headset} title="Я в наушниках: можно перебивать Ворди тихим голосом" aria-label="Наушники" onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}>🎧</button><button className="chip" aria-pressed=${subs} onClick=${()=>setSubs(v=>!v)}>Субтитры</button></div>
-    ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`:null}
-    <div className="talk-goal" hidden=${!!assess}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
-    <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
+    ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`
+      :lesson&&phase==='connecting'?html`<p className="muted lc-note">Ворди коротко объяснит правило и даст задания — отвечай голосом. Ошибки попадут в повторение.</p>`:null}
+    <div className="talk-goal" hidden=${!!(assess||lesson)}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
+    <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')+(lesson?' with-board':'')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
+      ${lesson&&!end?html`<${LessonBoard} b=${board}/>`:null}
       ${subs&&!end?html`<p className="call-sub" aria-live="polite">${aiLine||([...msgs].reverse().find(m=>m.who==='ai')||{}).text||(phase==='connecting'?'Звоню Ворди…':'')}</p>`:null}
       ${!end?html`<p className="call-live">${meLine||(muted?'Микрофон выключен':phase==='live'?'Говори — Ворди слушает':'')}</p>`:null}
       ${fixes.length&&!end?html`<div className="t-fix live-fix"><s>${fixes[fixes.length-1].fix.wrong}</s> → <b>${fixes[fixes.length-1].fix.right}</b></div>`:null}</div>
     ${err&&!end?html`<p className="muted call-err">${err}</p>`:null}
-    ${end?html`<div className="mk-res enter"><h3>${typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')} · слов из повторения: ${used.length} из ${targets.length}</p>
+    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
         ${fixes.length?html`<h4>Что поправить</h4><p className="muted fix-note">✎ Эти ошибки добавлены в твоё повторение — Ворди спросит их в ближайшие дни.</p><div className="mk-fixes">${fixes.map((m,i)=>html`<div key=${i} className="mk-fix"><s>${m.fix.wrong}</s><b>${m.fix.right}</b><small>${m.fix.why}</small></div>`)}</div>`:html`<p className="muted">Ошибок Ворди не заметил — так держать!</p>`}
         <details className="call-log"><summary>Весь разговор</summary>${msgs.filter(m=>m.who!=='fix').map((m,i)=>html`<p key=${i}><b>${m.who==='ai'?'Ворди':'Ты'}:</b> ${m.text}</p>`)}</details>
         <${AiReport} what="live-звонок" text=${msgs.filter(m=>m.who!=='fix').map(m=>(m.who==='ai'?'AI: ':'Me: ')+m.text).join('\n')}/>
         <div className="actions"><button className="btn" onClick=${onExit}>Готово</button></div></div>`
     :html`<div className="call-ctrl"><button className="btn ghost" id="live-mute" aria-pressed=${muted} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'Включить микрофон':'Выключить микрофон'}</button>
         ${assess?html`<button className="btn" id="lc-finish" disabled=${phase!=='live'||mineN<3} onClick=${()=>{ try{ R.current.session.send('(Please finish the level check now: call finish_assessment, then say a short goodbye.)'); }catch(e){} }}>${mineN<3?'Поговори ещё немного…':'Узнать уровень'}</button>`
-          :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>Завершить звонок</button>`}</div>
+          :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>${lesson?'Завершить урок':'Завершить звонок'}</button>`}</div>
       <p className="hint-line">Говори как с человеком. Чтобы перебить Ворди, скажи громче. В наушниках нажми 🎧 — тогда можно перебивать и тихо.</p>`}
   </section>`; }
 function CallScreen({st,update,onExit}){ const ai=useSample();
@@ -5162,7 +5225,7 @@ function accCertCode(){ let s=''; const a=new Uint32Array(8); try{ crypto.getRan
 const ACC_PROVIDERS={google:{name:'Google',id:'google.com'},microsoft:{name:'Microsoft',id:'microsoft.com'}};
 const accProviders=()=>(window.WORDY_AUTH||[]).filter(k=>ACC_PROVIDERS[k]);
 const ACC_AVATARS=['navy','orange','green','plum','teal','rose','sand','slate'];
-const ACC_ERR=__WD[1283];
+const ACC_ERR=__WD[1285];
 const accErrText=e=>{ const k=(e&&e.code)||e; if(ACC_ERR[k]==='') return ''; return ACC_ERR[k]||((e&&e.message)?String(e.message).slice(0,140):'Что-то пошло не так. Попробуй ещё раз.'); };
 const accE=code=>{ const e=new Error(ACC_ERR[code]||code); e.code=code; return e; };
 
@@ -6165,7 +6228,7 @@ function useBack(active,fn){ const ref=useRef(fn); ref.current=fn; const [n,setN
     return ()=>{ const i=BACK_STACK.indexOf(h); if(i>=0) BACK_STACK.splice(i,1); if(!h.done){ backSkip++; try{ history.back(); }catch(e){ backSkip--; } } }; },[!!active,n]); }
 
 /* ================= FIRST-RUN TOUR: highlights the real interface, one idea per step ================= */
-const TOUR_STEPS=__WD[1284];
+const TOUR_STEPS=__WD[1286];
 function Tour({onDone}){ const [i,setI]=useState(0), [box,setBox]=useState(null); const cardRef=useRef(null);
   const steps=useMemo(()=>TOUR_STEPS.filter(s=>!s.sel||document.querySelector(s.sel)),[]); const s=steps[Math.min(i,steps.length-1)];
   useEffect(()=>{ const r=document.documentElement; r.classList.add('in-game','in-tour'); return ()=>r.classList.remove('in-game','in-tour'); },[]);
@@ -6365,50 +6428,48 @@ const CW_TOPICS=[
  {id:'colours',cefr:'A1',name:'Цвета',task:'Лови цвета',good:'red blue green yellow black white pink purple orange brown grey gold'.split(' '),bad:'big small tall happy cold fast slow old new long short hot'.split(' '),note:'прилагательное, но не цвет'},
  {id:'clothes',cefr:'A1',name:'Одежда',task:'Лови одежду',good:'shirt jacket dress skirt coat jeans socks scarf hat boots sweater shorts gloves trousers'.split(' '),bad:'bed sofa carpet pillow curtain mirror lamp shelf cup phone clock towel'.split(' '),note:'не одежда'},
  {id:'jobs',cefr:'A1',name:'Профессии',task:'Лови профессии',good:'doctor teacher driver nurse pilot farmer cook dentist lawyer engineer waiter artist singer builder'.split(' '),bad:'hospital school bus kitchen office farm plane court restaurant song brick paint'.split(' '),note:'место или вещь, а не профессия'},
- __WD[1285],
- __WD[1286],
  __WD[1287],
+ __WD[1288],
+ __WD[1289],
  {id:'plural',cefr:'A2',name:'Множественное число',task:'Лови правильное множественное число',good:'children men women mice teeth feet boxes buses cities babies knives leaves potatoes people sheep'.split(' '),
   bad:[["childs","children"],["mans","men"],["womans","women"],["mouses","mice"],["tooths","teeth"],["foots","feet"],["boxs","boxes"],["citys","cities"],["babys","babies"],["knifes","knives"],["leafs","leaves"],["peoples","people"],["sheeps","sheep"]]},
  {id:'past_irr',cefr:'A2',name:'Past Simple: неправильные глаголы',task:'Лови правильный Past Simple',good:'went saw took gave ate drank wrote bought thought brought taught caught flew swam began spoke knew left felt found made came ran sat'.split(' '),
-  bad:__WD[1288]},
+  bad:__WD[1290]},
  {id:'past_reg',cefr:'A2',name:'Окончание -ed',task:'Лови правильное написание с -ed',good:'stopped studied planned played tried cried danced hoped carried enjoyed shopped lived cooked worked'.split(' '),
   bad:[["stoped","stopped"],["studyed","studied"],["planed","planned"],["plaied","played"],["tryed","tried"],["cryed","cried"],["danceed","danced"],["hopeed","hoped"],["carryed","carried"],["shoped","shopped"],["liveed","lived"],["enjoied","enjoyed"]]},
- __WD[1289],
- __WD[1290],
  __WD[1291],
+ __WD[1292],
+ __WD[1293],
  {id:'uncount',cefr:'A2',name:'Неисчисляемые',task:'Лови неисчисляемые существительные',good:'water advice information furniture news money luggage homework rice music weather knowledge traffic bread milk research'.split(' '),bad:'apple chair idea car coin egg suggestion suitcase song cup fact problem'.split(' '),note:'исчисляемое: можно сказать two …s'},
  {id:'adverbs',cefr:'A2',name:'Наречия',task:'Лови наречия (как? каким образом?)',good:'quickly well hard fast carefully slowly happily badly easily loudly quietly early late beautifully'.split(' '),
-  bad:__WD[1292]},
- __WD[1293],
- __WD[1294],
+  bad:__WD[1294]},
+ __WD[1295],
+ __WD[1296],
  {id:'syn_big',cefr:'A2',name:'Синонимы big',task:'Лови синонимы слова big',good:'large huge enormous giant vast massive immense gigantic'.split(' '),bad:'tiny small little narrow slim minor short thin'.split(' '),note:'это противоположное: «маленький»'},
  {id:'syn_happy',cefr:'A2',name:'Синонимы happy',task:'Лови синонимы слова happy',good:'glad cheerful delighted joyful pleased content thrilled overjoyed'.split(' '),bad:'sad upset gloomy miserable angry worried bored lonely'.split(' '),note:'это не «счастливый»'},
- __WD[1295],
- {id:'v3',cefr:'B1',name:'Третья форма глагола',task:'Лови третью форму (V3)',good:'gone seen taken given eaten written been done broken chosen forgotten spoken known flown swum begun'.split(' '),
-  bad:__WD[1296]},
  __WD[1297],
- __WD[1298],
+ {id:'v3',cefr:'B1',name:'Третья форма глагола',task:'Лови третью форму (V3)',good:'gone seen taken given eaten written been done broken chosen forgotten spoken known flown swum begun'.split(' '),
+  bad:__WD[1298]},
  __WD[1299],
  __WD[1300],
+ __WD[1301],
+ __WD[1302],
  {id:'spelling',cefr:'B1',name:'Правописание',task:'Лови слова без ошибок',good:'necessary beautiful because friend which believe separate tomorrow different really until address receive government'.split(' '),
-  bad:__WD[1301]},
+  bad:__WD[1303]},
  {id:'formal',cefr:'B2',name:'Формальные слова (IELTS)',task:'Лови формальные слова для эссе',good:'obtain purchase assist commence require sufficient numerous approximately demonstrate significant inquire reside consequently furthermore'.split(' '),
-  bad:__WD[1302]},
- __WD[1303],
- __WD[1304],
+  bad:__WD[1304]},
  __WD[1305],
+ __WD[1306],
+ __WD[1307],
 ];
 CW_TOPICS.push(
  {id:'numbers',cefr:'A1',name:'Числа',task:'Лови числа',good:'one two three four five six seven eight nine ten eleven twelve'.split(' '),bad:'red cat book sun milk chair hand blue tree fish bag pen'.split(' '),note:'не число'},
  {id:'family',cefr:'A1',name:'Семья',task:'Лови членов семьи',good:'mother father sister brother aunt uncle cousin grandma grandpa daughter son wife husband'.split(' '),bad:'teacher doctor friend neighbour driver pilot farmer nurse boss classmate'.split(' '),note:'не родственник'},
- __WD[1306],
- __WD[1307],
  __WD[1308],
  __WD[1309],
- {id:'weather',cefr:'A2',name:'Погода',task:'Лови слова о погоде',good:'sunny rainy windy cloudy snowy foggy stormy hot cold warm freezing'.split(' '),bad:'happy hungry tired angry busy sleepy lazy proud'.split(' '),note:'это про людей, не про погоду'},
  __WD[1310],
  __WD[1311],
+ {id:'weather',cefr:'A2',name:'Погода',task:'Лови слова о погоде',good:'sunny rainy windy cloudy snowy foggy stormy hot cold warm freezing'.split(' '),bad:'happy hungry tired angry busy sleepy lazy proud'.split(' '),note:'это про людей, не про погоду'},
  __WD[1312],
  __WD[1313],
  __WD[1314],
@@ -6421,7 +6482,9 @@ CW_TOPICS.push(
  __WD[1321],
  __WD[1322],
  __WD[1323],
- __WD[1324]
+ __WD[1324],
+ __WD[1325],
+ __WD[1326]
 );
 
 const CW_LV=['A1','A2','B1','B2','C1','IELTS','SAT'];
@@ -6851,7 +6914,7 @@ const ESC_ROOMS=[
    {id:'desk',name:'desk',art:EA.desk({x:104,w:92}),act:{type:'look',text:"You open the [drawer|ящик]. There are pencils and an old [comic|комикс]. Nothing useful."}},
    {id:'bed',name:'bed',art:EA.bed({x:196}),act:{type:'look',text:"The bed is not made. Under the [blanket|одеяло] there is only one sock."}},
    {id:'teddy',name:'teddy bear',art:EA.teddy({x:300,y:216}),act:{type:'look',text:"A [teddy bear|плюшевый мишка] holds a card: «The code is 999». Hmm… teddy bears always [lie|врут]!"}},
-   {id:'pillow',name:'pillow',art:EA.pillow({x:240,y:226}),act:__WD[1325]},
+   {id:'pillow',name:'pillow',art:EA.pillow({x:240,y:226}),act:__WD[1327]},
    {id:'plant',name:'plant',art:EA.plant({x:84,y:300}),act:{type:'look',text:"A green plant in a pot. It needs some water."}},
    {id:'rug',name:'rug',art:EA.rug({x:230,y:372}),act:{type:'look',text:"A soft red [rug|коврик]. You look under it — nothing, only dust."}},
    {id:'box',name:'box',art:EA.box({x:120,y:330}),act:{type:'lock',kind:'digits',len:3,answer:'472',prompt:'The box has a lock with three numbers.',open:{give:'key',text:"Click! Inside the box there is a small golden [key|ключ]."}}}],
@@ -6886,11 +6949,11 @@ const ESC_ROOMS=[
  {id:'r4',cefr:'B1',title:'The Old Library',ru:'Старая библиотека',intro:'Профессор Грей спрятал выход из своей библиотеки за загадками. Читай внимательно: важна каждая деталь.',
   bg:{wall:'#5E7A6B',pat:'panels',floor:'wood',fc:'#8A5A36'},
   objs:[
-   {id:'shelf',name:'bookshelf',art:EA.shelf(__WD[1326]),act:{type:'look',text:"Four bright books stand on the middle shelf. Each has a number on its [spine|корешок]: red — 3, green — 1, yellow — 6, blue — 8."}},
+   {id:'shelf',name:'bookshelf',art:EA.shelf(__WD[1328]),act:{type:'look',text:"Four bright books stand on the middle shelf. Each has a number on its [spine|корешок]: red — 3, green — 1, yellow — 6, blue — 8."}},
    {id:'painting',name:'painting',art:EA.frame({x:166,y:60,w:100,h:70,kind:'ship'}),act:{type:'need',item:'uv',locked:"An old painting of a ship at sea. Nothing special… or is there?",text:"Under the UV light, [hidden|скрытые] words appear on the painting: «The exit word is the past form of the verb GO.»"}},
    {id:'door',name:'door',art:EA.door({x:284,c:'#6D4C41'}),act:{type:'lock',kind:'word',answer:'went',prompt:'A lock with letters. Enter the exit word.',exit:true}},
    {id:'table',name:'table',art:EA.table({x:150,w:116}),act:{type:'look',text:"An old wooden table. It smells of [dust|пыль] and coffee."}},
-   {id:'letter',name:'letter',art:EA.paper({x:176,y:236,r:-6,w:30,h:20}),act:__WD[1327]},
+   {id:'letter',name:'letter',art:EA.paper({x:176,y:236,r:-6,w:30,h:20}),act:__WD[1329]},
    {id:'candle',name:'candle',art:EA.candle({x:246,y:232}),act:{type:'look',text:"A candle and a pen. The pen has [run out of|закончились] ink."}},
    {id:'safe',name:'safe',art:EA.safe({x:176,y:306}),act:{type:'lock',kind:'digits',len:4,answer:'6831',prompt:'The safe has a lock with four numbers.',open:{give:'uv',text:"The safe opens! Inside there is a [UV lamp|ультрафиолетовая лампа] and a note: «Some secrets are [invisible|невидимые].»"}}},
    {id:'globe',name:'globe',art:EA.globe({x:66,y:322}),act:{type:'look',text:"An old globe. Someone has [circled|обвёл] London in red. A clue? No — it's just the professor's [hometown|родной город]."}}],
@@ -6940,14 +7003,14 @@ const ESC_ROOMS=[
  {id:'r8',cefr:'B1',title:"The Detective's Office",ru:'Кабинет детектива',intro:'Из музея украли Золотой кубок. Ты заперт в кабинете детектива, пока не найдёшь лжеца.',
   bg:{wall:'#E4DCCB',pat:'panels',floor:'wood'},
   objs:[
-   {id:'board',name:'board',art:EA.board({x:104,y:44,w:140,h:96}),act:__WD[1328]},
+   {id:'board',name:'board',art:EA.board({x:104,y:44,w:140,h:96}),act:__WD[1330]},
    {id:'poster',name:'poster',art:EA.frame({x:262,y:52,w:80,h:76,kind:'poster',text:'CITY|MUSEUM|since 1987'}),act:{type:'look',text:"CITY MUSEUM — open since 1987. Come and see the Golden Cup!"}},
    {id:'door',name:'door',art:EA.door({x:16}),act:{type:'lock',kind:'digits',len:4,answer:'1987',prompt:'The door has a lock with four numbers.',exit:true}},
    {id:'desk',name:'desk',art:EA.desk({x:100,w:168,c:'#6B4A2E'}),act:{type:'look',text:"The detective's desk. A cup of cold coffee and many papers."}},
    {id:'case',name:'case file',art:EA.paper({x:108,y:214,r:-3,w:34,h:22,c:'#F5D38A'}),act:{type:'note',title:'CASE: The Golden Cup',text:"The Golden Cup was [stolen|украден] from the City Museum last Sunday at 9 p.m. There are three [suspects|подозреваемые]. Their [statements|показания] are on the board. One of them is [lying|лжёт]. Find the liar — the name opens the [cabinet|шкаф]."}},
    {id:'paper',name:'newspaper',art:EA.paper({x:200,y:214,r:5,w:38,h:22,c:'#EDEDE4'}),act:{type:'note',title:'City News — Monday',text:"«Luigi's restaurant is [closed|закрыт] on Sundays and Mondays,» says the [owner|владелец]. «We are open from Tuesday to Saturday.»\nAlso in the news: the new film «Night Train» is two and a half hours long."}},
    {id:'phone',name:'phone',art:EA.phone({x:166,y:218}),act:{type:'note',title:'A voice message',text:"«Hello, Mr White. This is your doctor. Please take your [medicine|лекарство] three times a day and stay in bed until Monday.»"}},
-   {id:'filecab',name:'cabinet',art:EA.filecab({x:288,y:206}),act:__WD[1329]}],
+   {id:'filecab',name:'cabinet',art:EA.filecab({x:288,y:206}),act:__WD[1331]}],
   items:{ticket:{em:'🎟️',name:'ticket',ru:'билет'}},
   chain:[['case','Начни с папки с делом на столе.'],['board','Показания подозреваемых — на доске.'],['paper','Сравни показания с газетой.'],['filecab','Ресторан Luigi\'s по воскресеньям закрыт — лжёт Mr Brown.'],['poster','Год открытия музея — на постере.'],['door','Код двери — 1987.']]},
  {id:'r9',cefr:'B2',title:'The Museum Hall',ru:'Зал музея',intro:'Музей закрылся, а ты остался в зале. Выход открывается кодом — разберись в табличках экспонатов.',
@@ -6967,7 +7030,7 @@ const ESC_ROOMS=[
   bg:{wall:'#E3EEF2',pat:'tiles',floor:'tile',fc:'#B9C4CC'},
   objs:[
    {id:'lights',name:'lights',art:EA.lights({x:88,y:54,on:'green'}),act:{type:'look',text:"A panel with two lights. The red light is [off|выключен]. The green light is on."}},
-   {id:'rules',name:'lab rules',art:EA.frame({x:174,y:40,w:100,h:76,kind:'poster',text:'LAB RULES|Read carefully!'}),act:__WD[1330]},
+   {id:'rules',name:'lab rules',art:EA.frame({x:174,y:40,w:100,h:76,kind:'poster',text:'LAB RULES|Read carefully!'}),act:__WD[1332]},
    {id:'thermo',name:'thermometer',art:EA.thermo({x:110,y:110,t:18}),act:{type:'look',text:"The [thermometer|термометр] shows 18 °C."}},
    {id:'door',name:'door',art:EA.door({x:302,w:54,c:'#9AA5B1'}),act:{type:'look',text:"The door is locked [electronically|электронно]. It is [controlled|управляется] by the computer."}},
    {id:'bottles',name:'bottles',art:EA.bottles({x:178,y:140,list:['#3E7CB1','#4E9A55','#4E9A55','#3E7CB1','#4E9A55','#4E9A55','#3E7CB1','#4E9A55']}),act:{type:'look',text:"A shelf with bottles: three blue ones and five green ones."}},
@@ -7117,7 +7180,7 @@ ESC_ROOMS.push(
    {id:'map',name:'map',art:EA.frame({x:86,y:54,w:110,h:72,kind:'map'}),act:{type:'look',text:"A treasure map. A red X marks a spot on the island. Very old, very [mysterious|загадочно]."}},
    {id:'door',name:'door',art:EA.door({x:14,c:'#5E3A22'}),act:{type:'need',item:'key',locked:"A heavy wooden door with an iron lock.",exit:true}},
    {id:'table',name:'table',art:EA.table({x:110,y:254,w:140,c:'#6B4A2E'}),act:{type:'look',text:"The captain's table. It is covered with wax and [scratches|царапины]."}},
-   {id:'log',name:'logbook',art:EA.paper({x:150,y:238,r:-3,w:34,h:22,c:'#E8D9A8'}),act:__WD[1331]},
+   {id:'log',name:'logbook',art:EA.paper({x:150,y:238,r:-3,w:34,h:22,c:'#E8D9A8'}),act:__WD[1333]},
    {id:'candle',name:'candle',art:EA.candle({x:226,y:236}),act:{type:'look',text:"A candle in a [brass|латунный] holder. It's almost [burnt out|догорела]."}},
    {id:'barrel',name:'barrel',art:EA.barrel({x:290,y:292}),act:{type:'look',text:"A barrel of water. Someone scratched «77» on it. Pirates love lies."}},
    {id:'chest',name:'chest',art:EA.chest({x:60,y:330}),act:{type:'lock',kind:'digits',len:2,answer:'22',prompt:'The chest has a lock with two numbers.',open:{give:'key',text:"The chest opens! Gold coins… and a big iron key."}}}],
@@ -7411,7 +7474,7 @@ const DR_SCENE=({l,r,state,pick,lv,ls,rs})=>{ const pal=[['#E9DCC8','#D8C8AE','#
     ${door('l',l)}${door('r',r)}
     <rect x="0" y="0" width="360" height="420" fill="url(#drv)" opacity="0"/>
   </svg>`; };
-const DR_DIFF=__WD[1332];
+const DR_DIFF=__WD[1334];
 function DoorsGame({st,update,onExit,active}){
   const rd=(k,v)=>{ try{ return localStorage.getItem(k)||v; }catch(e){ return v; } };
   const [phase,setPhase]=useState('menu'); const [lv,setLv]=useState(()=>rd('wordy.drlv',st.level&&CW_LV.includes(st.level)?st.level:'A2'));
@@ -7642,8 +7705,8 @@ function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
 }
 
 /* ---- Wordy's House: rooms to upgrade and decorate, plus the wardrobe ---- */
-const HS_WALLS=__WD[1333];
-const HS_FLOORS=__WD[1334];
+const HS_WALLS=__WD[1335];
+const HS_FLOORS=__WD[1336];
 const C=(name,price,c)=>({name,price,c});
 const HS_ROOMS=[
  {id:'living',name:'Гостиная',houseLv:1,wall:'cream',floor:'wood',light:{light:'window',lx:200,ly:80},
@@ -7804,7 +7867,7 @@ function trkFlush(){ if(!TRK.on) return; const fb=window.firebase; if(!fb||!fb.f
   TRK.sess=0; TRK.xp=0; TRK.v={}; TRK.ms-=min*60000;
   try{ fb.firestore().doc('act/'+day+'_'+TRK.aid).set(d,{merge:true}).catch(()=>{ TRK.sess+=snap.sess; TRK.xp+=snap.xp; TRK.ms+=min*60000; vk.forEach(k=>{ TRK.v[k]=(TRK.v[k]||0)+snap.v[k]; }); }); }catch(e){} }
 
-const ST_NAMES=__WD[1335];
+const ST_NAMES=__WD[1337];
 const stName=k=>ST_NAMES[k]||(k.startsWith('game:')?'Игра: '+({word:'Угадай слово',cross:'Слова из букв',space:'Космический тир',doors:'Двери',tetris:'Словопад',escape:'Побег из комнаты',catch:'Спаси Wordy'}[k.slice(5)]||k.slice(5)):k.startsWith('gram:')?'Грамматика':k);
 function stCompute(docs,today){ const days=[]; for(let i=13;i>=0;i--){ const d=new Date(today+'T12:00:00'); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
   const shift=(day,n)=>{ const d=new Date(day+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
@@ -8058,8 +8121,9 @@ function App(){
          :reading?html`<${Reader} key=${reading} x=${TEXTS.find(x=>x.id===reading)} st=${st} update=${update} onExit=${()=>{ setReading(null); window.scrollTo({top:0}); }}/>`
          :listen?html`<${Listening} key=${listen} st=${st} update=${update} onExit=${()=>{ setListen(null); window.scrollTo({top:0}); }}/>`
          :session&&un?html`<${Session} key=${session.key} track=${tr} unit=${un} mode=${session.mode||'learn'} st=${st} update=${update} onExit=${exit} active=${tab==='learn'}/>`
-         :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
-         :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel}/>`
+         :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} st=${st} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
+         :gram&&gram.view==='ref'?html`<${RefBook} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
+         :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel} openRef=${()=>{ setGram({view:'ref'}); window.scrollTo({top:0}); }}/>`
          :html`<${Learn} st=${st} update=${update} openText=${openText} startListen=${startListen} tsub=${tsub} setTsub=${setTsub} openMock=${openMock} track=${track} setTrack=${setTrack} sub=${sub} setSub=${setSub} openLevel=${openLevel} startUnit=${startUnit} openGrammar=${openGrammar} startReview=${startReview} startDaily=${startDaily} openGame=${id=>{ SFX('pop'); setTab('games'); setGame(id); window.scrollTo({top:0}); }} showLevel=${()=>go('progress')}/>`}</div>
        ${acc.be?html`<div hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
        <div hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>

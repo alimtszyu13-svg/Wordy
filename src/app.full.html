@@ -251,7 +251,28 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .tutor-perch{position:absolute;left:0;right:0;top:0;height:6px;pointer-events:none}
 .tutor-top{display:flex;align-items:center;gap:8px}.tutor-top b{font-family:var(--f-display);font-size:18px;white-space:nowrap}.tutor-top .muted{flex:1;font-size:13px}
 .sheet.tutor .talk-log{max-height:none;min-height:0;overflow-y:auto}
-.tutor-row{grid-template-columns:1fr auto auto!important}.talk-goal[hidden]{display:none}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
+.tutor-row{grid-template-columns:1fr auto auto!important}.talk-goal[hidden]{display:none}.vl-btn{margin-bottom:8px}.with-board .call-seat{height:min(17vh,150px)!important;margin-bottom:26px!important}.with-board{gap:6px!important}.lboard .lb-task+.lb-title{margin-top:2px}
+.lboard{width:100%;max-width:560px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:14px;display:grid;gap:10px;box-shadow:0 14px 30px -22px rgba(120,60,10,.6);position:relative;overflow:hidden}
+.lboard::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--accent),#FFC15A)}
+.lboard.empty{opacity:.75;place-items:center;min-height:80px}
+.lb-head{display:flex;align-items:center;gap:8px}.lb-emoji{font-size:22px;line-height:1}.lb-title{font-family:var(--f-display);font-size:18px;flex:1;min-width:0}
+.lb-dots{display:flex;gap:4px}.lb-dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}.lb-dots i.cur{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.lb-dots i.ok{background:#2E9E5B}.lb-dots i.bad{background:#E0473A}
+.lb-task{background:var(--accent-soft);border-radius:16px;padding:12px 14px;animation:lbIn .4s cubic-bezier(.2,.8,.3,1.2)}
+.lb-tt{display:flex;align-items:center;gap:6px;font-weight:800;color:var(--accent-ink);font-size:14px}.lb-tt small{margin-left:auto;font-weight:700;opacity:.7}
+.lb-task>p{margin:4px 0 0;font-size:21px;font-weight:800;line-height:1.3}
+.lb-fix{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin-top:8px;padding:6px 10px;border-radius:12px;background:var(--surface);font-size:15px;animation:lbIn .35s ease}.lb-fix s{color:#E0473A;text-decoration-thickness:2px}.lb-fix b{color:#2E9E5B}
+.lb-hbtn{margin-top:6px;font-size:14px}.lb-hint{margin:6px 0 0;font-size:15px}
+.lb-formula{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.lb-chip{padding:7px 12px;border-radius:12px;background:var(--bg);border:1.5px solid var(--line);font-weight:800;font-size:16px}
+.lb-chip.key{background:var(--accent);border-color:var(--accent);color:#fff}.lb-plus{font-weight:800;color:var(--muted)}
+.lb-rule{margin:0;font-size:15px;color:var(--muted);line-height:1.4}
+.lb-ex{list-style:none;margin:0;padding:0;display:grid;gap:8px}.lb-ex li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center}.lb-ex li div{display:grid}.lb-ex span{color:var(--muted);font-size:14px}.lb-ex .ex-say{width:30px;height:30px}
+.lb-ex mark{background:linear-gradient(transparent 55%,rgba(255,165,50,.45) 55%);color:inherit;padding:0 1px;border-radius:2px}
+@keyframes lbIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.lb-task,.lb-fix{animation:none}}.ref-open{margin-left:auto;white-space:nowrap}.refbook .chips{margin:4px 0 10px}.ref-q{width:100%;margin-bottom:8px}.ref-note{font-size:14px;margin:0 0 10px}
+.ref-tbl{display:grid;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px}
+.ref-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1.3fr;align-items:center;gap:6px;padding:6px 6px;border-radius:12px;font-size:15px}.ref-row:nth-child(even){background:var(--bg)}
+.ref-row.head{font-size:12px;font-weight:800;color:var(--muted);background:none!important}.ref-row .ex-say{width:30px;height:30px}
+.ref-row.ger{grid-template-columns:32px 1fr;align-items:start}.ref-row.ger small{display:block;color:var(--muted);font-size:13px}.ref-g{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px}.ref-g h3{margin:2px 6px 6px;font-size:16px}.ref-g>p{margin:0 6px 6px;font-size:13px}
+@media (max-width:420px){.ref-row{grid-template-columns:28px 1fr 1fr 1fr;font-size:14px}.ref-row>span.muted{grid-column:2/-1;font-size:13px;margin-top:-4px}.ref-row.head>span:last-child{display:none}.ref-row.ger{grid-template-columns:28px 1fr}}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
 .talk-row textarea{width:100%;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:inherit;resize:vertical}
 .talk-row .mic.on{border-color:#D92D20;color:#D92D20}
 .t-hint{margin:0;font-size:13px;color:var(--muted)}
@@ -13043,7 +13064,33 @@ function CountUp({to,dur}){
   return v;
 }
 
-function GrammarMap({st,onBack,open}){
+/* ---------- Справочник: tables to look things up any time (not a lesson — nobody learns 97 verbs at once) ---------- */
+const GERREF={
+  ing:[['admit','признавать','He admitted taking the money.'],['appreciate','ценить','I appreciate you helping me.'],['avoid','избегать','She avoids eating late.'],['can\'t help','не могу не','I can\'t help laughing.'],['can\'t stand','терпеть не могу','I can\'t stand waiting.'],['carry on','продолжать','Carry on working.'],['consider','обдумывать','We\'re considering moving.'],['deny','отрицать','He denied breaking it.'],['dislike','не любить','I dislike getting up early.'],['enjoy','получать удовольствие','I enjoy reading.'],['fancy','хотеть (разг.)','Do you fancy going out?'],['feel like','хотеться','I feel like dancing.'],['finish','заканчивать','Have you finished packing?'],['give up','бросать','She gave up smoking.'],['imagine','представлять','Imagine living on Mars!'],['involve','включать в себя','The job involves travelling.'],['keep','продолжать, всё время','He keeps interrupting.'],['look forward to','ждать с нетерпением','I look forward to seeing you.'],['mind','возражать','Do you mind opening the window?'],['miss','скучать, упускать','I miss living by the sea.'],['practise','тренироваться','Practise speaking every day.'],['put off','откладывать','Don\'t put off doing it.'],['recommend','рекомендовать','I recommend booking early.'],['risk','рисковать','You risk losing everything.'],['suggest','предлагать','He suggested going by train.'],['be used to','привыкнуть','I\'m used to working late.'],['it\'s worth','стоит','It\'s worth visiting.'],['spend time','тратить время','I spent an hour cooking.']],
+  to:[['afford','позволить себе','We can\'t afford to buy it.'],['agree','соглашаться','They agreed to help.'],['appear','казаться','He appears to be lost.'],['arrange','договориться','We arranged to meet at six.'],['ask','просить','She asked to leave early.'],['attempt','пытаться','He attempted to climb it.'],['choose','решить, выбрать','I chose to stay.'],['decide','решать','We decided to wait.'],['deserve','заслуживать','You deserve to win.'],['expect','ожидать','I expect to finish soon.'],['fail','не суметь','He failed to arrive.'],['hope','надеяться','I hope to see you.'],['learn','учиться','She learned to swim.'],['manage','суметь','I managed to fix it.'],['offer','предлагать (сделать сам)','He offered to drive.'],['plan','планировать','We plan to travel.'],['prepare','готовиться','Prepare to start.'],['pretend','притворяться','She pretended to sleep.'],['promise','обещать','I promise to call.'],['refuse','отказываться','He refused to answer.'],['seem','казаться','You seem to be tired.'],['tend','быть склонным','Prices tend to rise.'],['threaten','угрожать','They threatened to leave.'],['want','хотеть','I want to go.'],['would like','хотел бы','I\'d like to try.'],['wish','желать','I wish to speak to the manager.']],
+  both:[['begin / start','начинать — почти без разницы','It started raining. / It started to rain.'],['continue','продолжать — почти без разницы','She continued working / to work.'],['like / love / hate','про привычки чаще -ing','I like swimming. I\'d like to swim now.'],['prefer','предпочитать','I prefer walking. I prefer to walk.']],
+  diff:[['stop','-ing: прекратить · to: остановиться, чтобы','I stopped smoking. / I stopped to smoke.'],['remember','-ing: помнить, что делал · to: не забыть сделать','I remember locking it. / Remember to lock it.'],['forget','-ing: забыть, что делал · to: забыть сделать','I\'ll never forget meeting her. / Don\'t forget to call.'],['try','-ing: попробовать (как способ) · to: стараться','Try restarting it. / I tried to open it.'],['regret','-ing: жалеть о сделанном · to: с сожалением сообщать','I regret saying that. / We regret to inform you…'],['go on','-ing: продолжать то же · to: перейти к другому','He went on talking. / He went on to win the cup.'],['mean','-ing: означать · to: намереваться','It means waiting. / I meant to call you.'],['need','-ing: нуждаться в (пассив) · to: нужно сделать','The car needs washing. / I need to wash it.']]};
+function irrRows(){ const out=[], seen={}; ((GBOOK.irr||{}).sections||[]).forEach(sec=>(sec.b||[]).forEach(b=>{ if(b[0]==='tbl'&&b[1]&&b[1][0]==='V1') b[2].forEach(r=>{ const k=r[0]; if(!seen[k]){ seen[k]=1; out.push(r.map(String)); } }); }));
+  return out.sort((a,b)=>a[0].localeCompare(b[0])); }
+function RefBook({onBack}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState('');
+  const pickTab=t=>{ SFX('tap'); setTab(t); setQ(''); try{ localStorage.setItem('wordy.ref',t); }catch(e){} };
+  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(x).toLowerCase().includes(f));
+  const say=t=>{ if(canSpeak){ speak(t); W('react','nod'); } };
+  const gl=(title,list,note)=>{ const l=list.filter(hit); return l.length?html`<div className="ref-g"><h3>${title}</h3>${note?html`<p className="muted">${note}</p>`:null}
+      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+r[2]} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${r[2]}</small></div></div>`)}</div>`:null; };
+  return html`<section className="refbook">
+    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b><span className="muted">подсматривай, когда нужно</span></div></div>
+    <div className="chips" role="tablist"><button className="chip" role="tab" id="ref-irr" aria-pressed=${tab==='irr'} onClick=${()=>pickTab('irr')}>Неправильные глаголы</button><button className="chip" role="tab" id="ref-ger" aria-pressed=${tab==='ger'} onClick=${()=>pickTab('ger')}>-ing или to</button></div>
+    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder=${tab==='irr'?'Найти: go, ушёл…':'Найти: enjoy, решать…'} onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
+    ${tab==='irr'?html`<p className="muted ref-note">${rows.length} самых нужных глаголов. Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.</p>
+        <div className="ref-tbl" role="table"><div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span></div>
+        ${rows.filter(hit).map(r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span></div>`)}
+        ${!rows.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}</div>`
+    :html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
+      ${gl('Глагол + -ing',GERREF.ing)}${gl('Глагол + to + глагол',GERREF.to)}${gl('Можно и так, и так',GERREF.both,'Смысл почти не меняется.')}${gl('Смысл меняется',GERREF.diff)}
+      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?html`<p className="empty">Не нашёл «${q}».</p>`:null}`}
+  </section>`; }
+function GrammarMap({st,onBack,open,openRef}){
   const gs=st.gstars||{};
   let cur=gCurrent(st);
   const mapRef=useRef(null), curRef=useRef(null);
@@ -13069,7 +13116,8 @@ function GrammarMap({st,onBack,open}){
   const total=gStarsTotal(st), passed=gPassed(st);
   return html`<section className="gm">
     <div className="sess-top"><button className="icon-btn" id="gmap-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button>
-      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div></div>
+      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div>
+      ${openRef?html`<button className="chip ref-open" id="gmap-ref" onClick=${()=>{ SFX('pop'); openRef(); }}>📘 Справочник</button>`:null}</div>
     <div className="ghead enter">
       <div className="ghead-main"><p className="eyebrow">Твой путь</p><h2>${passed} из ${GL.length} ${plural(GL.length,'уровень','уровня','уровней')} пройдено</h2>
         <div className="bar big"><i style=${{width:(passed/GL.length*100)+'%'}}></i></div></div>
@@ -19347,7 +19395,7 @@ const bkAnswer=(t,it)=>t==='gap'?(bkMulti(it)?it[2].map(a=>a[0]).join(' … '):i
 const bkFilled=(t,it,v)=>t==='gap'?(bkMulti(it)?Array.isArray(v)&&it[2].every((_,j)=>v[j]&&String(v[j]).trim()):!!(v&&String(v).trim())):t==='choice'||t==='error'?v!=null:t==='order'?!!(v&&v.length):!!(v&&String(v).trim());
 const BK_TYPE={gap:'Впиши пропущенное',choice:'Выбери ответ',trans:'Измени предложение',order:'Собери из слов',error:'Найди ошибку',tr:'Переведи'};
 
-function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done}){
+function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done,voiceBtn}){
   const go=id=>{ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}); };
   const block=(b,j)=>{ const [k,a,c]=b;
     if(k==='p') return html`<p key=${j} className="bk-p">${bkFmt(a)}</p>`;
@@ -19370,7 +19418,7 @@ function BookTheory({lv,bk,sec,idx,onStart,onTest,onAsk,done}){
       <ul className="bk-mis">${bk.mistakes.map((m,i)=>html`<li key=${i}><s lang="en">${m[0]}</s><b lang="en">${m[1]}</b><small>${m[2]}</small></li>`)}</ul></section>
     <section className="bk-sec" id="bks-s"><h3><span>✓</span>Коротко о главном</h3><ul className="bk-sum">${bk.summary.map((x,i)=>html`<li key=${i}>${bkFmt(x)}</li>`)}</ul></section>
     <div className="bk-askbox"><div><b>Остались вопросы?</b><p className="muted">Спроси Ворди или выдели любой фрагмент текста — появится кнопка «Объяснить».</p></div><button className="btn small ghost" id="bk-ask" onClick=${onAsk}>💡 Спросить Ворди</button></div>
-    <div className="bk-cta"><button className="btn wide" id="bk-start" onClick=${onStart}>К упражнениям: ${bk.ex.length} блоков, ${nEx} заданий</button>
+    <div className="bk-cta">${voiceBtn}<button className="btn wide" id="bk-start" onClick=${onStart}>К упражнениям: ${bk.ex.length} блоков, ${nEx} заданий</button>
       <button className="btn ghost wide" id="bk-test" onClick=${onTest}>${done?'Итоговый тест':'Сразу к итоговому тесту'}</button></div>
   </article>`;
 }
@@ -19486,7 +19534,10 @@ function FinalTest({items,onDone,run}){ const [vals,setVals]=useState({}), [res,
     <div className="bk-actions">${res?html`<button className="btn wide" id="ft-done" onClick=${()=>onDone(score,items.length,res)}>Результат: ${score} из ${items.length}</button>`
       :html`<button className="btn wide" id="ft-check" disabled=${!all} onClick=${check}>${all?'Проверить':'Ответь на все задания'}</button>`}</div></article>`; }
 
-function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
+function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved,st}){
+  const [voice,setVoice]=useState(false); const canVoice=!!st&&canLiveVoice()&&st.age!=='u13';
+  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · 5 мин</button>`:null;
+  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} onClose=${()=>setVoice(false)}/>`:null;
   const bk=GBOOK[lv.id], [bi,setBi]=useState(0), bsaved=saved||{};
   const saveBk=(b,n,tot)=>update(s=>{ const g={...(s.gbook||{})}, u={...(g[lv.id]||{})}, o=u[b]; u[b]=[Math.max(o?o[0]:0,n),tot]; g[lv.id]=u; return {gbook:g,xp:s.xp+n*2}; });
   const sec=secOf(idx);
@@ -19569,7 +19620,7 @@ function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
       <button className="btn wide" id="sheet-ok" onClick=${()=>{ SFX('tap'); setSheet(false); }}>Понятно, продолжаем</button></div></div>`:null}`;
   const style={'--nc':sec.c,'--nt':sec.t};
 
-  if(phase==='theory'&&bk) return html`<section style=${style} className="bk-wrap">${top('Теория',bk.ex.map((_,j)=>bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'on'):''))}<${BookTheory} lv=${lv} bk=${bk} sec=${sec} idx=${idx} onStart=${openBook} onTest=${start} onAsk=${()=>{ SFX('pop'); setAsk({quote:'',exercise:false}); }} done=${Object.keys(bsaved).length>=bk.ex.length}/>${askUi}</section>`;
+  if(phase==='theory'&&bk) return html`<section style=${style} className="bk-wrap">${top('Теория',bk.ex.map((_,j)=>bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'on'):''))}<${BookTheory} lv=${lv} bk=${bk} sec=${sec} idx=${idx} voiceBtn=${voiceBtn} onStart=${openBook} onTest=${start} onAsk=${()=>{ SFX('pop'); setAsk({quote:'',exercise:false}); }} done=${Object.keys(bsaved).length>=bk.ex.length}/>${askUi}${voiceUi}</section>`;
   if(phase==='book'&&bk) return html`<section style=${style} className="bk-wrap">${top('Упражнения',bk.ex.map((_,j)=>j===bi?'on':bsaved[j]?(bsaved[j][0]===bsaved[j][1]?'good':'bad'):''))}<div className="bk-back"><button className="link-btn" id="bk-theory" onClick=${()=>{ SFX('tap'); setPhase('theory'); window.scrollTo({top:0}); }}>← Теория</button></div><${BookPractice} lv=${lv} bk=${bk} bi=${bi} setBi=${setBi} saved=${bsaved} onSave=${saveBk} onTest=${start}/>${askUi}</section>`;
   if(phase==='theory') return html`<section style=${style}>
     ${top('База',tasks.map(()=>''))}
@@ -19584,8 +19635,8 @@ function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved}){
         ${canSpeak?html`<button className="ex-say" aria-label="Послушать пример" onClick=${()=>{ speak(e[0]); W('react','nod'); }}>${I.speaker()}</button>`:null}
         <div><b>${e[0]}</b><span>${e[1]}</span></div></li>`)}</ul>
       <div className="gtip"><b>Совет Ворди</b><span>${lv.tip}</span></div>
-      <button className="btn wide" id="start-practice" onClick=${start}>К практике: 10 заданий <kbd>Enter</kbd></button>
-    </article></section>`;
+      ${voiceBtn}<button className="btn wide" id="start-practice" onClick=${start}>К практике: 10 заданий <kbd>Enter</kbd></button>
+    </article>${voiceUi}</section>`;
 
   if(phase==='final'&&bk){ const fit=finalItems(idx,run+1);
     return html`<section style=${style} className="bk-wrap">${top('Итоговый тест',fit.map(()=>''))}<div className="bk-back"><button className="link-btn" id="bk-theory2" onClick=${()=>{ SFX('tap'); setPhase('theory'); window.scrollTo({top:0}); }}>← Теория</button></div><${FinalTest} items=${fit} run=${run} onDone=${(sc,tot,r)=>{ setResults(r); finish(sc,tot); }}/>${askUi}</section>`; }
@@ -24803,6 +24854,43 @@ function LevelCheck({st,update,onPick,onClose}){ const [res,setRes]=useState(nul
     :html`<${LiveCall} key=${run} st=${st} update=${update} sc=${['assess','Проверка уровня','','']} assess=${{sys:assessSys(genderLine(st.gender)),onResult:a=>{ const lv=['A1','A2','B1','B2','C1'].includes(a&&a.level)?a.level:'A2'; SFX('fanfare'); W('react','cheer'); setRes({...a,level:lv}); }}}
         onExit=${onClose} onFallback=${onClose}/>`}</div>`;
   return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
+const BOARD_TOOL={name:'show_board',description:'Write on the lesson board that the learner sees. Call it with the rule and examples when you explain, and with "task" every time you give a new task.',parameters:{type:'OBJECT',properties:{
+  title:{type:'STRING',description:'short topic title'},emoji:{type:'STRING',description:'one emoji that fits the topic'},
+  formula:{type:'ARRAY',items:{type:'STRING'},description:'the pattern as separate parts, e.g. ["I / you / we / they","have","V3"] or ["he / she / it","has","V3"]; no plus signs'},
+  rule:{type:'STRING',description:'when to use it, one short line in Russian'},
+  examples:{type:'ARRAY',items:{type:'OBJECT',properties:{en:{type:'STRING',description:'wrap the key grammar in **double asterisks**'},ru:{type:'STRING'}},required:['en']},description:'2-3 short English examples with Russian translation'},
+  task:{type:'STRING',description:'the current task text in Russian, without the verb label, e.g. «Я потерял ключи.»'},
+  task_type:{type:'STRING',enum:['translate','transform','answer','create','repeat'],description:'translate = переведи, transform = измени (в вопрос/отрицание), answer = ответь на вопрос, create = придумай своё, repeat = повтори правильно'},
+  hint:{type:'STRING',description:'optional short hint in Russian, hidden until the learner taps it'}}}};
+/* the lesson board: formula chips, examples with the key part highlighted, the current task with its type, progress dots, the last correction */
+const TASK_T={translate:['🔁','Переведи'],transform:['✏️','Измени'],answer:['💬','Ответь'],create:['🌟','Придумай своё'],repeat:['🔂','Повтори правильно']};
+const starMark=t=>String(t).split(/(\*\*[^*]+\*\*)/).map((p,i)=>{ const m=p.match(/^\*\*([^*]+)\*\*$/); return m?html`<mark key=${i}>${m[1]}</mark>`:p.replace(/\*/g,''); });
+function LessonBoard({b}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
+  if(!b) return html`<div className="lboard empty"><p className="muted">Здесь Ворди будет писать правило, примеры и задания.</p></div>`;
+  const tt=TASK_T[b.type]||TASK_T.translate, key=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
+  return html`<div className="lboard" aria-live="polite">
+    <div className="lb-head">${b.emoji?html`<span className="lb-emoji" aria-hidden="true">${b.emoji}</span>`:null}<b className="lb-title">${b.title||'Урок'}</b>
+      ${b.n?html`<span className="lb-dots" aria-label=${'Задание '+b.n}>${Array.from({length:Math.max(b.n,5)},(_,i)=>html`<i key=${i} className=${b.marks[i]==='ok'?'ok':b.marks[i]==='bad'?'bad':i===b.n-1?'cur':''}></i>`)}</span>`:null}</div>
+    ${b.task?html`<div className="lb-task" key=${b.n}><div className="lb-tt"><span aria-hidden="true">${tt[0]}</span>${tt[1]}<small>задание ${b.n}</small></div><p>${b.task}</p>
+        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b></div>`:null}
+        ${b.hint?(hint?html`<p className="lb-hint">💡 ${b.hint}</p>`:html`<button className="link-btn lb-hbtn" onClick=${()=>{ SFX('tap'); setHint(true); }}>💡 Подсказка</button>`):null}</div>`:null}
+    ${b.formula.length?html`<div className="lb-formula">${b.formula.map((x,i)=>html`${i?html`<span className="lb-plus" aria-hidden="true">+</span>`:null}<span key=${i} className=${'lb-chip'+(key(x)?' key':'')}>${x}</span>`)}</div>`:null}
+    ${b.rule?html`<p className="lb-rule">${b.rule}</p>`:null}
+    ${b.examples.length?html`<ul className="lb-ex">${b.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en.replace(/\*/g,'')} onClick=${()=>speak(e.en.replace(/\*/g,''))}>${I.speaker()}</button>`:null}<div><b lang="en">${starMark(e.en)}</b>${e.ru?html`<span>${e.ru}</span>`:null}</div></li>`)}</ul>`:null}
+  </div>`; }
+const lessonSys=(lvl,ctx,extra)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
+  +'Темп: говори медленно, спокойно и чётко, с паузами между предложениями — особенно в начале; ученику нужно успевать понять. '
+  +'У ученика на экране есть доска: всё важное пиши на неё инструментом show_board, а голосом говори коротко. '
+  +'План. 1) Поздоровайся одной фразой. Вызови show_board с title, emoji, formula (схема по частям), rule (когда употребляем, одна строка) и examples (2–3 примера с переводом, главную часть выдели **звёздочками**). Голосом коротко, в 2–3 предложениях по-русски, объясни правило и прочитай один пример. Спроси: «Понятно? Начинаем?» — и дождись ответа ученика. '
+  +'2) Дай 5–6 коротких устных заданий по очереди, от простого к сложному; перед каждым заданием вызывай show_board с task (текст задания), task_type и, если полезно, hint — и затем прочитай задание голосом: перевести короткую фразу с русского, превратить предложение в отрицание или вопрос, ответить на вопрос с этой конструкцией, придумать своё предложение. Давай по одному заданию и жди ответа. '
+  +'3) Если ответ верный — коротко похвали и дай следующее задание. Если есть ошибка — вызови correction (wrong — фрагмент ученика, right — правильный вариант, why — очень коротко по-русски), мягко скажи правильный вариант и попроси повторить. Вызывай correction только для настоящих ошибок и только для одной фразы ученика за раз. Если ученик ответил грамматически верно, но другой конструкцией (например, Past Simple с yesterday вместо Present Perfect), — засчитай, похвали и коротко объясни разницу, без correction. '
+  +'4) После заданий подведи итог в 2 предложениях по-русски: что получилось и на что обратить внимание — и тепло попрощайся. '
+  +'Говори живо и коротко, на «ты», как друг-репетитор. Английские фразы произноси чётко, с английским произношением. Не читай весь экран вслух. Показывай эмоции через show_emotion. '+(extra||'');
+/* 🎙 voice mini-lesson on the grammar topic on screen */
+function VoiceLesson({st,update,onClose}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+  const ui=html`<div className="lc-wrap" role="dialog" aria-modal="true" aria-label="Урок с Ворди голосом"><${LiveCall} st=${st} update=${update} sc=${['lesson','Урок с Ворди','','']}
+      lesson=${{sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st))}} onExit=${onClose} onFallback=${onClose}/></div>`;
+  return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
 const canLiveVoice=()=>!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey&&window.AudioWorkletNode&&navigator.mediaDevices);
 const tutor0=p=>p==='tutor'?.82:.5;
 const MIC_WORKLET="class P extends AudioWorkletProcessor{constructor(){super();this.b=[];this.r=sampleRate/16000;this.p=0}process(i){const c=i[0]&&i[0][0];if(!c)return true;for(let k=0;k<c.length;k++){this.p+=1;if(this.p>=this.r){this.p-=this.r;this.b.push(c[k])}}if(this.b.length>=1600){this.port.postMessage(new Float32Array(this.b));this.b=[]}return true}}registerProcessor('wmic',P)";
@@ -24855,10 +24943,10 @@ function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setO
     ${mini&&!inCall?html`<button className="tutor-fab mini" id="tutor-restore" onClick=${restore} aria-label="Вернуться к разговору с Ворди"><span aria-hidden="true">💬</span><b>Ворди</b></button>`:null}
     ${open&&!mini?html`<${LiveCall} key=${run} st=${st} update=${update} typed=${true} tutor=${open} hist=${logRef.current} onMsgs=${m=>{ logRef.current=m; }} sc=${['tutor','Спросить Ворди','','']}
         onMini=${()=>{ SFX('tap'); setMini(true); }} onExit=${()=>{ setOpen(null); setMini(false); logRef.current=[]; }} onFallback=${()=>{ setOpen(null); setMini(false); }}/>`:null}`; }
-function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess}){
-  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false);
+function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess,lesson}){
+  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
   const targets=useMemo(()=>practiceWords(st,5),[]); const R=useRef({}); const box=useRef(null); const usedRef=useRef([]); usedRef.current=used;
-  useCallStage(!end,tutor?1.1:typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
+  useCallStage(!end,tutor?1.1:lesson?(innerWidth<520?1.3:1.6):typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
   useEffect(()=>{ if(box.current) box.current.scrollTop=box.current.scrollHeight; },[msgs.length,aiLine]);
   const log=(who,text,extra)=>{ text=String(text||'').trim(); if(text) setMsgs(m=>[...m,{who,text,...(extra||{})}]); };
   const msgsRef=useRef(msgs); msgsRef.current=msgs; useEffect(()=>{ onMsgs&&onMsgs(msgs); },[msgs]);
@@ -24870,7 +24958,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       const [A,AI]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js')]);
       const app=A.getApps().find(a=>a.name==='wordy-live')||A.initializeApp(C.config,'wordy-live');
       const ai=AI.getAI(app,{backend:new AI.GoogleAIBackend()});
-      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
+      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
         generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:C.voice||'Puck'}}},inputAudioTranscription:{},outputAudioTranscription:{}}});
       const mlist=[C.model].concat(C.alt||[]).filter((m,i,a)=>m&&a.indexOf(m)===i);
       const out=new (window.AudioContext||window.webkitAudioContext)(); r.out=out; if(out.state==='suspended') await out.resume();
@@ -24895,7 +24983,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       /* lip sync from the output level */
       const d=new Uint8Array(an.fftSize); r.outLvl=0; const tick=()=>{ if(!r.alive) return; an.getByteTimeDomainData(d); let m=0; for(let i=0;i<d.length;i+=4) m=Math.max(m,Math.abs(d[i]-128)); r.outLvl=Math.max(m/128,r.outLvl*.97); if(m>3) W('lip',Math.min(1,m/55)); r.raf=requestAnimationFrame(tick); }; tick();
       setPhase('live'); SFX('pop');
-      if(!(tutor&&tutor.quiet)) session.send(assess?'(The learner is ready. Start.)':tutor?tutor.greet:'Hi!');
+      if(!(tutor&&tutor.quiet)) session.send(lesson?'(Ученик готов. Начинай урок.)':assess?'(The learner is ready. Start.)':tutor?tutor.greet:'Hi!');
       /* server messages */
       let aiBuf='', meBuf=''; r.flushAi=()=>{ if(aiBuf){ log('ai',aiBuf); aiBuf=''; setAiLine(''); } };
       /* Google closes a live connection after ~10 minutes. The server keeps sending a resume handle; on "going away"
@@ -24915,6 +25003,11 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         } else if(m.type==='toolCall'){
           const res=(m.functionCalls||[]).map(fc=>{ const a=fc.args||{};
             if(fc.name==='show_emotion') W('emo',String(a.emotion||'happy'),6);
+            if(fc.name==='show_board'){ const ex=Array.isArray(a.examples)?a.examples.filter(x=>x&&x.en).slice(0,3).map(x=>({en:String(x.en),ru:String(x.ru||'')})):null, fo=Array.isArray(a.formula)?a.formula.map(String).filter(Boolean).slice(0,6):null, isTask=!!a.task, newRule=!!(a.rule||ex||fo);
+              setBoard(b0=>{ const b=b0||{n:0,marks:[]}, marks=b.marks.slice(); if(isTask&&b.n&&marks[b.n-1]==null) marks[b.n-1]='ok';
+                return {title:a.title?String(a.title):b.title||'',emoji:a.emoji?String(a.emoji).slice(0,4):b.emoji||'',formula:fo&&fo.length?fo:b.formula||[],rule:a.rule?String(a.rule):b.rule||'',examples:ex&&ex.length?ex:b.examples||[],
+                  task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+            if(fc.name==='correction'&&a.wrong&&a.right&&lesson) setBoard(b=>b&&b.n?{...b,fix:{wrong:String(a.wrong),right:String(a.right)},marks:Object.assign(b.marks.slice(),{[b.n-1]:'bad'})}:b);
             if(fc.name==='finish_assessment'&&assess&&!r.result){ r.result=a; r.resT=setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },9000); }
             if(fc.name==='word_used'){ const w=String(a.word||'').toLowerCase(); if(targets.some(t=>t.en.toLowerCase()===w)&&!usedRef.current.includes(w)){ setUsed(o=>[...o,w]); SFX('correct'); } }
             if(fc.name==='correction'&&a.wrong&&a.right) setMsgs(ms=>[...ms,{who:'fix',text:'',fix:{wrong:String(a.wrong),right:String(a.right),why:String(a.why||'')}}]);
@@ -24975,21 +25068,23 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
   return html`<section className="mk-sec call live">
     <div className="sess-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${phase==='connecting'?'соединяю…':end?'звонок завершён':(R.current.backup?'Live 2 · ':'Live · ')+mineN+' '+plural(mineN,'реплика','реплики','реплик')}</span></div>
       <button className="chip" id="live-headset" aria-pressed=${headset} title="Я в наушниках: можно перебивать Ворди тихим голосом" aria-label="Наушники" onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}>🎧</button><button className="chip" aria-pressed=${subs} onClick=${()=>setSubs(v=>!v)}>Субтитры</button></div>
-    ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`:null}
-    <div className="talk-goal" hidden=${!!assess}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
-    <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
+    ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`
+      :lesson&&phase==='connecting'?html`<p className="muted lc-note">Ворди коротко объяснит правило и даст задания — отвечай голосом. Ошибки попадут в повторение.</p>`:null}
+    <div className="talk-goal" hidden=${!!(assess||lesson)}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
+    <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')+(lesson?' with-board':'')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
+      ${lesson&&!end?html`<${LessonBoard} b=${board}/>`:null}
       ${subs&&!end?html`<p className="call-sub" aria-live="polite">${aiLine||([...msgs].reverse().find(m=>m.who==='ai')||{}).text||(phase==='connecting'?'Звоню Ворди…':'')}</p>`:null}
       ${!end?html`<p className="call-live">${meLine||(muted?'Микрофон выключен':phase==='live'?'Говори — Ворди слушает':'')}</p>`:null}
       ${fixes.length&&!end?html`<div className="t-fix live-fix"><s>${fixes[fixes.length-1].fix.wrong}</s> → <b>${fixes[fixes.length-1].fix.right}</b></div>`:null}</div>
     ${err&&!end?html`<p className="muted call-err">${err}</p>`:null}
-    ${end?html`<div className="mk-res enter"><h3>${typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')} · слов из повторения: ${used.length} из ${targets.length}</p>
+    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
         ${fixes.length?html`<h4>Что поправить</h4><p className="muted fix-note">✎ Эти ошибки добавлены в твоё повторение — Ворди спросит их в ближайшие дни.</p><div className="mk-fixes">${fixes.map((m,i)=>html`<div key=${i} className="mk-fix"><s>${m.fix.wrong}</s><b>${m.fix.right}</b><small>${m.fix.why}</small></div>`)}</div>`:html`<p className="muted">Ошибок Ворди не заметил — так держать!</p>`}
         <details className="call-log"><summary>Весь разговор</summary>${msgs.filter(m=>m.who!=='fix').map((m,i)=>html`<p key=${i}><b>${m.who==='ai'?'Ворди':'Ты'}:</b> ${m.text}</p>`)}</details>
         <${AiReport} what="live-звонок" text=${msgs.filter(m=>m.who!=='fix').map(m=>(m.who==='ai'?'AI: ':'Me: ')+m.text).join('\n')}/>
         <div className="actions"><button className="btn" onClick=${onExit}>Готово</button></div></div>`
     :html`<div className="call-ctrl"><button className="btn ghost" id="live-mute" aria-pressed=${muted} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'Включить микрофон':'Выключить микрофон'}</button>
         ${assess?html`<button className="btn" id="lc-finish" disabled=${phase!=='live'||mineN<3} onClick=${()=>{ try{ R.current.session.send('(Please finish the level check now: call finish_assessment, then say a short goodbye.)'); }catch(e){} }}>${mineN<3?'Поговори ещё немного…':'Узнать уровень'}</button>`
-          :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>Завершить звонок</button>`}</div>
+          :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>${lesson?'Завершить урок':'Завершить звонок'}</button>`}</div>
       <p className="hint-line">Говори как с человеком. Чтобы перебить Ворди, скажи громче. В наушниках нажми 🎧 — тогда можно перебивать и тихо.</p>`}
   </section>`; }
 function CallScreen({st,update,onExit}){ const ai=useSample();
@@ -28059,8 +28154,9 @@ function App(){
          :reading?html`<${Reader} key=${reading} x=${TEXTS.find(x=>x.id===reading)} st=${st} update=${update} onExit=${()=>{ setReading(null); window.scrollTo({top:0}); }}/>`
          :listen?html`<${Listening} key=${listen} st=${st} update=${update} onExit=${()=>{ setListen(null); window.scrollTo({top:0}); }}/>`
          :session&&un?html`<${Session} key=${session.key} track=${tr} unit=${un} mode=${session.mode||'learn'} st=${st} update=${update} onExit=${exit} active=${tab==='learn'}/>`
-         :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
-         :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel}/>`
+         :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} st=${st} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
+         :gram&&gram.view==='ref'?html`<${RefBook} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
+         :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel} openRef=${()=>{ setGram({view:'ref'}); window.scrollTo({top:0}); }}/>`
          :html`<${Learn} st=${st} update=${update} openText=${openText} startListen=${startListen} tsub=${tsub} setTsub=${setTsub} openMock=${openMock} track=${track} setTrack=${setTrack} sub=${sub} setSub=${setSub} openLevel=${openLevel} startUnit=${startUnit} openGrammar=${openGrammar} startReview=${startReview} startDaily=${startDaily} openGame=${id=>{ SFX('pop'); setTab('games'); setGame(id); window.scrollTo({top:0}); }} showLevel=${()=>go('progress')}/>`}</div>
        ${acc.be?html`<div hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
        <div hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>
