@@ -209,14 +209,34 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .card-rel-t{color:var(--muted)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wff{background:#3A2C0A;color:#FBE3A6;border-color:#6B5014}}
 :root[data-theme="dark"] .wff{background:#3A2C0A;color:#FBE3A6;border-color:#6B5014}
-.prac-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
-.prac-card{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer}
+.pill{position:relative}.pill-fz{font-size:10px;color:#2D8BD8;margin-left:1px}.pill-plus{position:absolute;right:4px;top:-6px;font-style:normal;font-size:13px;font-weight:800;color:var(--accent-ink);pointer-events:none;animation:plusUp 1.1s ease-out forwards}
+@keyframes plusUp{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(0) scale(1.1)}100%{opacity:0;transform:translateY(-18px) scale(1)}}
+/* tab switch: the new tab slides in a little; progress bars fill when they appear */
+main>div:not([hidden]){animation:tabIn .32s cubic-bezier(.2,.8,.3,1)}@keyframes tabIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bar>i{transform-origin:left center;animation:barGrow .9s cubic-bezier(.2,.8,.2,1) both}@keyframes barGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.lvl-chip{display:inline-grid;gap:3px;justify-items:center;cursor:pointer;font:inherit}.lvl-mini{display:block;width:100%;height:3px;border-radius:2px;background:color-mix(in srgb,currentColor 20%,transparent);overflow:hidden}.lvl-mini b{display:block;height:100%;background:var(--accent)}
+.seg button[aria-pressed="true"] .tglyph{animation:segHop .5s cubic-bezier(.3,1.7,.5,1)}@keyframes segHop{40%{transform:translateY(-5px) rotate(-6deg) scale(1.12)}}
+.subtabs button[aria-selected="true"]{animation:subIn .3s ease}@keyframes subIn{from{transform:scale(.94)}}
+.review-card.has .rv-count{animation:rvPulse 2.4s ease-in-out 3}@keyframes rvPulse{50%{transform:scale(1.12);box-shadow:0 0 0 6px rgba(46,158,91,.15)}}
+.ring circle:last-of-type{animation:ringIn 1s cubic-bezier(.2,.8,.2,1)}@keyframes ringIn{from{stroke-dashoffset:170}}
+@media (prefers-reduced-motion:reduce){main>div:not([hidden]),.bar>i,.seg .tglyph,.subtabs button,.review-card .rv-count,.ring circle,.pill-plus,.ach2-ring{animation:none!important}}
+.fz-card{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:12px;border-radius:var(--r-md);background:linear-gradient(135deg,#EAF6FF,#F6FBFF);border:1px solid #CFE6F7;color:#16324A}
+.fz-ic{font-size:30px;line-height:1;animation:fzSpin 6s ease-in-out infinite}@keyframes fzSpin{50%{transform:rotate(18deg) scale(1.06)}}.fz-main{flex:1;display:grid;gap:2px}.fz-main small{color:#4A6A85}
+.fz-dots{display:flex;gap:4px;font-size:13px}.fz-dots i{font-style:normal;color:#B9D3E6}.fz-dots i.on{color:#2D8BD8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fz-card{background:#132433;border-color:#24425C;color:#DCEBF7}:root:not([data-theme="light"]) .fz-main small{color:#9DB8CF}}
+:root[data-theme="dark"] .fz-card{background:#132433;border-color:#24425C;color:#DCEBF7}:root[data-theme="dark"] .fz-main small{color:#9DB8CF}
+@media (prefers-reduced-motion:reduce){.fz-ic{animation:none}}
+.vg-more{margin-top:8px}.hero.today{display:block;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface) 70%)!important;color:var(--ink)!important;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))!important;box-shadow:var(--shadow)!important}.hero.today .eyebrow{color:var(--accent-ink)!important}.hero.today h2{color:var(--ink)!important}.hero.today .ring text{fill:var(--ink)!important}.hero.today .eyebrow{color:var(--accent-ink,var(--accent));opacity:1}.hero.today h2{color:var(--ink)}.hero.today .ring circle:first-of-type{stroke:color-mix(in srgb,var(--accent) 18%,transparent)}.hero.today .ring circle:last-of-type{stroke:var(--accent)}.hero.today .ring text{fill:var(--ink)}.hero.today.met .ring circle:last-of-type{stroke:var(--good)}.today-top{display:flex;gap:14px;align-items:center}.today-top>div{min-width:0}.hero .plan-card.pl-embed{margin:14px 0 0;padding:0;background:none;border:0;box-shadow:none}.hero .pl-embed .pl-list li{color:var(--ink);padding:8px 8px 8px 10px}.hero .pl-embed .btn.small{padding:8px 14px;min-width:0;font-size:14px}.hero .pl-embed .pl-main small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero .pl-embed .pl-reward{color:var(--muted);margin-top:10px}.hero .pl-embed.all .pl-reward{color:var(--good)}.mem-how{margin-top:8px}.mem-how summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}.prog-more{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:0 14px}.prog-more>summary{list-style:none;cursor:pointer;display:grid;gap:2px;padding:14px 0;position:relative;padding-right:24px}.prog-more>summary::-webkit-details-marker{display:none}.prog-more>summary::after{content:'›';position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:22px;color:var(--muted);transition:transform .2s}.prog-more[open]>summary::after{transform:translateY(-50%) rotate(-90deg)}.prog-more>summary .muted{font-size:13px}.prog-more[open]{padding-bottom:14px}.rung-sum .rung-main b{font-size:14px}.ach-all{display:block;margin:10px auto 0}.pace{display:grid;gap:6px;width:100%}.pace .chips{flex-wrap:nowrap}.pace-l{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}.story-start{text-align:center;padding:22px 18px 18px;border-radius:var(--r-lg);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:radial-gradient(120% 70% at 50% 0%,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow)}.story-start h3{font-family:var(--f-display);font-size:24px;margin:6px 0 4px}.story-start>.muted{max-width:34ch;margin:0 auto 14px;font-size:14.5px}.ss-hero{position:relative;width:84px;height:84px;margin:0 auto;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,var(--surface));box-shadow:inset 0 -4px 0 color-mix(in srgb,var(--accent) 30%,transparent)}.ss-book{font-size:44px;animation:ssBob 3s ease-in-out infinite}.ss-sp{position:absolute;font-size:16px;animation:ssTw 2.4s ease-in-out infinite}.ss-sp.s1{top:2px;right:0}.ss-sp.s2{bottom:8px;left:-2px;animation-delay:1.2s;font-size:12px}@keyframes ssBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}@keyframes ssTw{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}.ss-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px}.ss-w{padding:5px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-size:14px;animation:tabIn .35s both;animation-delay:calc(var(--i)*.05s)}.ss-l{font-weight:700;font-size:14px;margin:0 0 8px}.ss-topics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}.ss-t{display:grid;gap:2px;justify-items:center;padding:9px 2px 7px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:11.5px;font-weight:600;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}.ss-t span{font-size:22px;line-height:1.1}.ss-t[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface));transform:translateY(-2px)}.ss-t:active{transform:scale(.95)}@media (prefers-reduced-motion:reduce){.ss-book,.ss-sp{animation:none}}.st-errs{margin-top:14px}.pod-card{margin-bottom:10px}.pod-ic{font-size:22px}.pod{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px 16px;margin-bottom:12px}.pod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.pod-title{margin:6px 0 2px}.pod-sub{margin:0 0 10px}.pod-player{display:flex;align-items:center;gap:14px;margin:10px 0}.pod-play{width:56px;height:56px;border-radius:50%;border:0;background:var(--accent,#ff8a1f);color:#fff;font-size:20px;cursor:pointer;flex:none;box-shadow:0 6px 16px rgba(255,138,31,.35);transition:transform .15s}.pod-play:active{transform:scale(.94)}.pod-wave{display:flex;gap:4px;align-items:center;height:30px}.pod-wave i{width:4px;height:8px;border-radius:3px;background:var(--accent,#ff8a1f);opacity:.45}.pod-wave i.on{animation:podW .9s ease-in-out infinite;animation-delay:calc(var(--i)*.09s);opacity:1}@keyframes podW{0%,100%{height:6px}50%{height:28px}}.pod-who{flex:1;text-align:right}.pod-who b,.pod-text b{color:var(--accent,#ff8a1f)}.pod-who b.mia,.pod-text b.mia{color:#7b5cff}.pod-words{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.pod-text p{margin:6px 0;padding:4px 8px;border-radius:10px;transition:background .2s}.pod-text p.cur{background:var(--soft,#fff3e6)}.pod-q{margin-top:12px}.pod-qi p{margin:8px 0 6px}.pod-opts{display:flex;flex-wrap:wrap;gap:6px}.pod-o.ok{background:#2fb36b;color:#fff;border-color:#2fb36b}.pod-o.bad{background:#e5534b;color:#fff;border-color:#e5534b}.pod-res{margin-top:10px}@media (prefers-reduced-motion:reduce){.pod-wave i.on{animation:none;height:18px}}.pron-rev{margin:14px 0;text-align:left}.pron-list{display:grid;gap:8px}.pron-item{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;animation:tabIn .35s both}.pron-item:nth-child(2){animation-delay:.06s}.pron-item:nth-child(3){animation-delay:.12s}.pron-item:nth-child(4){animation-delay:.18s}.pron-say{border:0;background:var(--soft,#fff3e6);border-radius:50%;width:36px;height:36px;flex:none;cursor:pointer;font-size:16px}.pron-txt{flex:1;min-width:0}.pron-rev .pron-txt p{margin:4px 0 8px;font-size:13.5px;font-weight:400;color:var(--ink,inherit);line-height:1.4}.pron-txt small{color:var(--muted);font-size:12px;margin-left:6px}.pron-ipa{color:var(--muted);font-size:13px;font-weight:400}.pron-add{font-size:13px;padding:5px 12px;min-height:0}.st-errmsg{font-size:12px;word-break:break-word;color:var(--muted)}.ls-h{margin-top:18px}
+.ls-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.ls-test{display:grid;justify-items:center;gap:2px;padding:12px 4px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);font:inherit;color:var(--ink);cursor:pointer}
+.ls-n{font-family:var(--f-display);font-size:22px;font-weight:800}.ls-test small{font-size:11px;color:var(--muted)}.ls-test.done{border-color:#2E9E5B}.ls-test.done small{color:#2E9E5B;font-weight:700}
+.prac-wrap{margin-top:14px}.prac-h{margin-bottom:8px}.prac-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.prac-card{display:grid;justify-items:center;gap:2px;text-align:center;padding:14px 8px 12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);color:var(--ink);font:inherit;cursor:pointer}
 .prac-card:hover{border-color:var(--accent)}
 .prac-card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .prac-card b{display:block;font-size:15px}
 .prac-card small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35;margin-top:2px}
-.prac-ic{font-size:22px;line-height:1}
-@media (max-width:520px){.prac-row{grid-template-columns:1fr}}
+.prac-ic{font-size:28px;line-height:1;margin-bottom:4px;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}.prac-card b{font-size:15px}.prac-card small{font-size:12px;color:var(--muted);line-height:1.25}.prac-card:hover .prac-ic,.prac-card:focus-visible .prac-ic{transform:translateY(-3px) rotate(-8deg) scale(1.12)}
+
 .st-w{font:inherit;color:inherit;background:#FFE3C7;border:0;border-radius:6px;padding:0 4px;cursor:pointer;font-weight:700}
 .st-w:focus-visible{outline:2px solid var(--accent)}
 .st-par{margin-bottom:10px}
@@ -266,13 +286,31 @@ kbd{font-family:var(--f-body);font-size:11px;font-weight:800;padding:1px 6px;bor
 .lb-chip.key{background:var(--accent);border-color:var(--accent);color:#fff}.lb-plus{font-weight:800;color:var(--muted)}
 .lb-rule{margin:0;font-size:15px;color:var(--muted);line-height:1.4}
 .lb-ex{list-style:none;margin:0;padding:0;display:grid;gap:8px}.lb-ex li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center}.lb-ex li div{display:grid}.lb-ex span{color:var(--muted);font-size:14px}.lb-ex .ex-say{width:30px;height:30px}
+.ask-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ask-quick .chip{font-size:13px;padding:6px 11px}
+.lb-quick{display:flex;justify-content:center;gap:14px;width:100%;max-width:560px}
+.lq{display:grid;justify-items:center;gap:3px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}.lq span{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--surface);border:1px solid var(--line);font-size:20px;box-shadow:0 4px 10px -8px rgba(0,0,0,.4)}
+.lq small{font-size:11px;font-weight:700;color:var(--muted)}.lq:active span{transform:scale(.94)}.lq[aria-pressed="true"] span{border-color:var(--accent);background:var(--accent-soft)}
+.live-top{position:relative}.live-menu{margin-left:auto;position:relative}.live-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:250px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);display:grid;gap:2px}
+.live-pop button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border:0;background:none;border-radius:10px;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}.live-pop button:hover{background:var(--bg)}.live-pop i{font-style:normal;font-size:13px;color:var(--muted)}.live-pop button[aria-checked="true"] i{color:var(--accent-ink)}
+.live-pop p{margin:4px 10px 6px;font-size:12px;line-height:1.4}
+.mic-round{width:56px;height:56px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:24px;cursor:pointer;flex:none}.mic-round.on{border-color:#2E9E5B;box-shadow:0 0 0 4px rgba(46,158,91,.18);animation:micPulse 2s ease-in-out infinite}.mic-round.off{opacity:.7}
+@keyframes micPulse{50%{box-shadow:0 0 0 8px rgba(46,158,91,.08)}}@media (prefers-reduced-motion:reduce){.mic-round.on{animation:none}}
+.lb-rulebox{border-top:1px dashed var(--line);padding-top:6px}.lb-rulebox summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--muted);list-style:none}.lb-rulebox summary::-webkit-details-marker{display:none}.lb-rulebox[open] summary{margin-bottom:8px}.lb-rulebody{display:grid;gap:10px}
+.lb-type{width:100%;max-width:560px;grid-template-columns:1fr auto!important}.lb-type .set-in{min-height:44px}
+.lb-task>p.lb-said,.lb-said{margin:8px 0 0;font-size:15px;font-weight:600;font-style:italic;line-height:1.35}.lb-task>p.lb-hint{font-size:15px;font-weight:600}.lb-said span{font-style:normal;font-weight:700;color:var(--accent-ink);margin-right:4px}
+.lb-mis{margin-left:auto;font-size:13px;color:var(--muted)}
+.lb-sum{display:grid;gap:2px;background:rgba(46,158,91,.14);color:#2E8A52;border-radius:14px;padding:10px 12px;font-size:15px}.lb-sum span{color:inherit;opacity:.85}
+.vl-stars{display:flex;justify-content:center;gap:6px;font-size:40px;line-height:1}.vl-stars span{color:var(--line)}.vl-stars span.on{color:#FFB21E;text-shadow:0 2px 0 rgba(160,90,0,.25)}.vl-score{text-align:center;margin:4px 0}
 .lb-ex mark{background:linear-gradient(transparent 55%,rgba(255,165,50,.45) 55%);color:inherit;padding:0 1px;border-radius:2px}
-@keyframes lbIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.lb-task,.lb-fix{animation:none}}.ref-open{margin-left:auto;white-space:nowrap}.refbook .chips{margin:4px 0 10px}.ref-q{width:100%;margin-bottom:8px}.ref-note{font-size:14px;margin:0 0 10px}
+@keyframes lbIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.lb-task,.lb-fix{animation:none}}.ref-open{margin-left:auto;white-space:nowrap}.chips.ref-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:2px 16px;-webkit-overflow-scrolling:touch}.ref-tabs::-webkit-scrollbar{display:none}.ref-tabs .chip{font-size:14px;flex:none}.chips.ref-view{margin:-2px 0 8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.ref-view .chip{font-size:13px;padding:6px 10px}
+.ref-star{width:32px;height:32px;border-radius:50%;border:0;background:none;font-size:20px;color:var(--muted);cursor:pointer}.ref-star.on{color:#FFB21E}
+.ref-tense{padding:8px 6px;border-top:1px solid var(--line)}.ref-tense:first-of-type{border-top:0}.rt-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}.rt-h code{font-family:inherit;font-weight:800;background:var(--accent-soft);color:var(--accent-ink);padding:2px 8px;border-radius:8px}
+.ref-tense p{margin:4px 0}.rt-ex{display:flex;align-items:center;gap:8px}.ref-tense mark,.ref-row mark{background:linear-gradient(transparent 55%,rgba(255,165,50,.45) 55%);color:inherit}.ref-prep .chips{margin-top:6px}.ref-prep h3{font-size:20px}.refbook .chips{margin:4px 0 10px}.ref-q{width:100%;margin-bottom:8px}.ref-note{font-size:14px;margin:0 0 10px}
 .ref-tbl{display:grid;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px}
-.ref-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1.3fr;align-items:center;gap:6px;padding:6px 6px;border-radius:12px;font-size:15px}.ref-row:nth-child(even){background:var(--bg)}
+.ref-row{display:grid;grid-template-columns:32px 1fr 1fr 1fr 1.3fr auto;align-items:center;gap:6px;padding:6px 6px;border-radius:12px;font-size:15px}.ref-row:nth-child(even){background:var(--bg)}
 .ref-row.head{font-size:12px;font-weight:800;color:var(--muted);background:none!important}.ref-row .ex-say{width:30px;height:30px}
 .ref-row.ger{grid-template-columns:32px 1fr;align-items:start}.ref-row.ger small{display:block;color:var(--muted);font-size:13px}.ref-g{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px}.ref-g h3{margin:2px 6px 6px;font-size:16px}.ref-g>p{margin:0 6px 6px;font-size:13px}
-@media (max-width:420px){.ref-row{grid-template-columns:28px 1fr 1fr 1fr;font-size:14px}.ref-row>span.muted{grid-column:2/-1;font-size:13px;margin-top:-4px}.ref-row.head>span:last-child{display:none}.ref-row.ger{grid-template-columns:28px 1fr}}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
+@media (max-width:420px){.ref-row{grid-template-columns:28px 1fr 1fr 1fr 32px;font-size:14px}.ref-row>span.muted{grid-column:2/5;grid-row:2;font-size:13px;margin-top:-4px}.ref-row>.ref-star{grid-column:5;grid-row:1}.ref-row.head>span:nth-child(5){display:none}.ref-row.ger{grid-template-columns:28px 1fr}}.lc-wrap{position:fixed;inset:0;z-index:58;background:var(--bg);overflow-y:auto;padding:12px 16px 24px}.lc-wrap>section{max-width:648px;margin:0 auto}.lc-note{text-align:center;margin:4px 0}.lc-res .mk-big{font-size:64px}.lc-btn{display:grid;gap:2px;margin-top:10px}.lc-btn small{font-weight:600;color:var(--muted);font-size:12px}.fix-wrong s{text-decoration-color:#E0473A;text-decoration-thickness:2px}.fix-note{font-size:14px;margin:-4px 0 6px}.set-chips{display:flex;flex-wrap:wrap;gap:6px}.tutor-g{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}.tutor-fab.mini{border-style:solid;background:var(--accent);color:#fff}.tutor-row textarea{min-height:46px}.typed .call-seat{height:min(22vh,170px);margin-bottom:26px}.typed .talk-log{max-height:32vh;min-height:110px}.typed .talk-log .t-fix{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline;align-self:flex-end;max-width:86%;margin:0}.typed .talk-log .t-fix small{flex-basis:100%;text-align:right}.typed .talk-in{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:6px 0 calc(8px + env(safe-area-inset-bottom))}.typed .call-stage{padding:0}
 .talk-row textarea{width:100%;font:inherit;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:inherit;resize:vertical}
 .talk-row .mic.on{border-color:#D92D20;color:#D92D20}
 .t-hint{margin:0;font-size:13px;color:var(--muted)}
@@ -313,7 +351,7 @@ html.in-call .call-ctrl{position:sticky;bottom:0;z-index:5;background:var(--bg);
 .call-sub{margin:0;max-width:560px;font-size:18px;line-height:1.45;font-weight:600}
 .call-status{margin:0;font-size:13px;color:var(--muted);min-height:18px}
 .call-live{margin:0;font-size:15px;color:var(--muted);font-style:italic;min-height:22px;max-width:560px}
-.call-ctrl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:12px 0}
+.call-ctrl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin:12px 0}
 .call-hang{background:#D92D20;border-color:#D92D20}
 .call-err{text-align:center}
 .call-log{margin:10px 0;font-size:14px}.call-log p{margin:4px 0}
@@ -336,7 +374,8 @@ html.in-call .call-ctrl{position:sticky;bottom:0;z-index:5;background:var(--bg);
 .vgroup>.units{padding:0 10px 10px}
 .vgroup.done .vg-main b{opacity:.75}
 .u-prev{color:var(--muted)}
-@media (prefers-reduced-motion:reduce){.vgroup>summary::after{transition:none}}
+@media (prefers-reduced-motion:reduce){.vgroup>summary::after{transition:none}
+}
 .qhint{margin:-4px 0 12px;color:var(--muted);font-size:14px;line-height:1.4}
 .mem-card{padding:16px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);display:grid;gap:14px}
 .mem-bar{display:flex;height:12px;border-radius:9px;overflow:hidden;background:var(--bg-2);gap:2px}
@@ -620,6 +659,13 @@ html.in-call .call-ctrl{position:sticky;bottom:0;z-index:5;background:var(--bg);
 .need{color:var(--muted);font-size:12px;font-weight:700;margin-top:-4px}
 /* ---- achievements ---- */
 .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ach-grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.ach2{display:grid;justify-items:center;gap:6px;padding:12px 4px 10px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);font:inherit;color:var(--ink);cursor:pointer}
+.ach2 small{font-size:12px;font-weight:700;line-height:1.2;text-align:center}.ach2:not(.on) small{color:var(--muted)}.ach2.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.ach2-ring{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--c,var(--accent)) calc(var(--p)*360deg),var(--line) 0)}
+.ach2-ring>*{outline:4px solid var(--surface);border-radius:50%}.ach2:not(.on) .ach2-ring>*{filter:grayscale(1);opacity:.55}
+.ach2.on .ach2-ring{animation:achGlow 3.2s ease-in-out infinite}@keyframes achGlow{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--c,var(--accent)) 22%,transparent)}}
+.ach-detail{display:flex;gap:12px;align-items:center;margin-top:10px;padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--accent)}.ach-detail>div{display:grid;gap:2px;flex:1}.ach-detail small{color:var(--muted)}
 .ach{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line)}
 .ach.on{border-color:color-mix(in srgb,var(--c) 40%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,var(--c) 9%,var(--surface)),var(--surface) 70%)}
 .ach-badge{flex:none;border-radius:50%;display:grid;place-items:center;background:var(--bg-2);color:var(--muted);box-shadow:inset 0 0 0 2px var(--line)}
@@ -930,7 +976,7 @@ button,a,input,.opt,.chip{touch-action:manipulation;-webkit-tap-highlight-color:
 .mk-timer.warn{border-color:var(--coin);color:#8a5a00}
 .mk-timer.hot{border-color:var(--bad);color:var(--bad);animation:pulse 1s infinite}
 .mk-arm{background:var(--bad-soft)!important;color:var(--bad);border-color:var(--bad)!important}
-.mk-armtxt{font-size:12.5px;font-weight:800;color:var(--bad)}
+.mk-exit{position:relative;display:inline-flex;flex:none}.mk-armtxt{position:absolute;top:calc(100% + 8px);left:0;z-index:40;white-space:nowrap;font-size:12.5px;font-weight:700;color:var(--bad);background:var(--surface);border:1px solid color-mix(in srgb,var(--bad) 45%,var(--line));border-radius:10px;padding:6px 10px;box-shadow:var(--shadow);animation:tabIn .2s both;pointer-events:none}.mk-armtxt::before{content:'';position:absolute;top:-6px;left:16px;width:10px;height:10px;background:inherit;border-left:inherit;border-top:inherit;transform:rotate(45deg)}
 .mk-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:12px 0;padding:5px;border-radius:18px;background:var(--bg-2)}
 .mk-tabs button{padding:10px 8px;border-radius:14px;font-family:var(--f-display);font-weight:700;font-size:15.5px;color:var(--muted)}
 .mk-tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
@@ -2620,6 +2666,74 @@ button,a,input,.opt,.chip{touch-action:manipulation;-webkit-tap-highlight-color:
 .book-toc .link-btn.on{color:var(--accent-ink);text-decoration:underline} .book-toc span{color:var(--muted);font-size:12px;white-space:nowrap}
 .book-ch{font-family:var(--f-display);font-size:21px;margin:4px 0 12px}
 .book-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 6px} .book-nav .btn{min-width:110px} .book-end{min-width:110px;text-align:center;font-weight:800;color:var(--muted)}
+
+details.vgroup{border-left:4px solid var(--vh,var(--line))!important}details.vgroup .vg-side .bar i{background:var(--vh,var(--accent))!important}details.vgroup>summary{background:linear-gradient(90deg,color-mix(in srgb,var(--vh,var(--accent)) 12%,transparent),transparent 65%)!important;border-radius:var(--r-md) var(--r-md) 0 0}details.vgroup:not([open])>summary{border-radius:var(--r-md)}
+/* ===== Desktop: sidebar navigation and wide, multi-column pages ===== */
+.nav-brand,.nav-ledge{display:none}
+main>[hidden]{display:none!important}
+@media (min-width:1100px){
+  :root{--side:244px}
+  .app{max-width:none;margin:0;padding:0 36px 64px calc(var(--side) + 36px)}
+  .app>main,.app>.topbar{max-width:1200px;margin-inline:auto}
+  .in-call .app{padding-left:36px}
+  .topbar{justify-content:flex-end;margin-top:14px;background:transparent!important;border-color:transparent!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;padding-block:0;position:relative;top:0}
+  main .page-h{margin-top:4px}
+  .tab-learn.is-home>.prac-wrap .prac-row{grid-template-columns:1fr;gap:10px}
+  .tab-learn.is-home>.prac-wrap .prac-card{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;text-align:left;justify-items:start;align-items:center;padding:16px 18px}
+  .tab-learn.is-home>.prac-wrap .prac-ic{grid-row:1/3;font-size:30px;width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:var(--accent-soft)}
+  .tab-learn.is-home>.prac-wrap .prac-card b{font-size:17px;align-self:end}
+  .tab-learn.is-home>.prac-wrap .prac-card small{align-self:start}
+  .ach-grid2{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  .topbar .brand{display:none}
+  .nav{left:0;right:auto;top:0;bottom:0;width:var(--side);padding:18px 16px;display:flex;flex-direction:column;gap:14px;pointer-events:none}
+  .nav-brand{display:flex;align-items:center;gap:10px;padding:6px 10px;font-family:var(--f-display);font-weight:800;font-size:24px;letter-spacing:-.02em;color:var(--ink);pointer-events:auto}
+  .nav-brand svg{width:34px;height:34px}
+  .nav-inner{max-width:none;margin:0;width:100%;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:20px}
+  .nav button{flex-direction:row;justify-content:flex-start;gap:12px;height:48px;padding:0 14px;font-size:15px;font-weight:600;border-radius:14px}
+  .nav button:hover{color:var(--ink)}
+  .nav-ic{width:24px}
+  .nav-ind{left:8px;right:8px;top:8px;bottom:auto;width:auto;height:48px;transform:translateY(calc(var(--x) * 52px))}
+  .nav-ic::after{right:auto;left:22px;top:8px}
+  .nav-ledge{display:grid;gap:6px;margin-top:auto;padding:16px 16px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 28px -14px rgba(20,28,40,.35);pointer-events:auto}
+  .nl-h{font-size:12.5px;font-weight:700;color:var(--muted)}
+  .nav-ledge b{font-family:var(--f-display);font-size:18px}
+  .nl-bar{height:6px;border-radius:99px;background:var(--bg-2);overflow:hidden}
+  .nl-bar i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .6s}
+  .nl-s{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
+  .nl-s svg{width:15px;height:15px}
+  /* Learn home: today + practice side by side, topics in two columns */
+  .tab-learn.is-home{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);column-gap:24px;align-items:start}
+  .tab-learn.is-home>*{grid-column:2;min-width:0}
+  .tab-learn.is-home>.page-h,.tab-learn.is-home>.learn-body{grid-column:1/-1}
+  .tab-learn.is-home>.hero{grid-column:1;grid-row:2/span 8;margin-top:14px}
+  .tab-learn.is-home>.prac-wrap .sec-h{margin-top:14px}
+  .learn-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px;align-items:start}
+  .learn-body>*{grid-column:1/-1;min-width:0}
+  .learn-body>details.vgroup{grid-column:auto;align-self:start}
+  .learn-body>details.vgroup[open]{align-self:stretch}
+  .learn-body>details.vgroup[open]>.units{max-height:470px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--vh,var(--accent)) 55%,transparent) transparent;padding-right:8px}
+  .learn-body>.units{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;align-items:stretch}
+  .learn-body .glist{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .learn-body .ls-grid{grid-template-columns:repeat(10,1fr)}
+  /* lessons, tests and readers keep a comfortable reading width */
+  .tab-learn:not(.is-home)>*{max-width:860px;margin-inline:auto}
+  .mk-exam .tab-learn:not(.is-home)>*{max-width:none}
+  /* games: a grid of cards; a running game stays centred */
+  .tab-games:not(.playing) .games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+  .tab-games:not(.playing) .games>*{margin:0!important;min-width:0}
+  .tab-games:not(.playing) .games>.games-h{grid-column:1/-1;margin-top:14px!important}
+  .tab-games.playing>*{max-width:820px;margin-inline:auto}
+  .tab-shop>*{max-width:980px;margin-inline:auto}
+  /* progress and settings: two columns */
+  .pg-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;align-items:start}
+  .pg-col>:first-child{margin-top:0}
+  .tab-settings{columns:2;column-gap:28px}
+  .tab-settings>.page-h{column-span:all}
+  .tab-settings>.set-group,.tab-settings>.fb-box{break-inside:avoid}
+  .tab-settings>.sec-h{break-after:avoid;break-inside:avoid}
+  .tab-settings>.set-legal,.tab-settings>.set-credit{column-span:all}
+}
+@media (min-width:1500px){ .tab-games:not(.playing) .games{grid-template-columns:repeat(4,minmax(0,1fr))} }
 </style>
 
 <div id="bg-deco" aria-hidden="true"></div>
@@ -3077,9 +3191,10 @@ window.Wordy = (function(){
 
   // ---------- surfaces ----------
   function surf(name){
-    const e=document.querySelector('[data-perch="'+name+'"]'); if(!e) return null;
-    const r=e.getBoundingClientRect(); if(r.width<40||r.height<4) return null;
-    return {left:r.left,right:r.right,top:r.top,width:r.width};
+    /* several elements may carry the same perch (the desktop sidebar has its own home ledge); use the last visible one */
+    const es=document.querySelectorAll('[data-perch="'+name+'"]');
+    for(let i=es.length-1;i>=0;i--){ const r=es[i].getBoundingClientRect(); if(r.width>=40&&r.height>=4) return {left:r.left,right:r.right,top:r.top,width:r.width}; }
+    return null;
   }
   function onScreen(name,sf){
     if(name==='home') return true;
@@ -3424,7 +3539,7 @@ window.Wordy = (function(){
     const h=surf('home'); if(!h) return;
     const hero=surf('hero');
     if(hero && onScreen('hero',hero) && Math.random()<.5) S.wander={surface:'hero',frac:rnd(.2,.85),look:0,dur:rnd(4,7)};
-    else S.wander={surface:'home',localAbs:clamp(anchorLocal(h)-rnd(70,220),36,h.width-36),look:0,dur:rnd(2.5,4)};
+    else S.wander={surface:'home',localAbs:clamp(anchorLocal(h)-rnd(70,220),Math.max(36,60-h.left),h.width-36),look:0,dur:rnd(2.5,4)};
     S.wanderT=rnd(18,32);
   }
   function fallAsleep(){ snd('yawn'); S.snoreT=2.5; S.sleeping=true; S.emotion='sleepy'; S.emoUntil=0; say('Зева-а-аю… немного вздремну.',2400); }
@@ -11726,8 +11841,12 @@ const DEFAULT={p2done:{},essays:[],hwRes:{},essayNotes:{},drillSeen:{},drills:0,
 function normalize(s){
   s={...DEFAULT,...s};
   if(!s.sid) s.sid=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  if(s.today!==dayKey()){ s.today=dayKey(); s.todayCount=0; }
-  if(s.lastDay!==dayKey() && s.lastDay!==dayKey(-1)) s.streak=0;
+  if(s.today!==dayKey()){ s.today=dayKey(); s.todayCount=0; s.todayIds=[]; } else if(!Array.isArray(s.todayIds)){ s.todayIds=[]; s.todayCount=0; } /* old builds counted every answer, even wrong ones */
+  if(s.lastDay!==dayKey() && s.lastDay!==dayKey(-1)){
+    /* ❄️ streak freeze: each missed day uses one freeze bought in the house; otherwise the streak resets */
+    const missed=s.lastDay?(Math.round((Date.UTC(...dayKey().split('-').map((x,i)=>i===1?x-1:+x))-Date.UTC(...s.lastDay.split('-').map((x,i)=>i===1?x-1:+x)))/864e5)-1):0;
+    if(s.streak>0&&missed>0&&(s.freezes|0)>=missed){ s.freezes=(s.freezes|0)-missed; s.lastDay=dayKey(-1); s.frozeNote={n:missed,day:dayKey()}; }
+    else s.streak=0; }
   if(s.mode==='intensive') s.mode='normal';
   if(s.equip&&'face' in s.equip){ const e={...s.equip}, f=e.face; delete e.face; const it=f&&WORDY_ITEMS.find(i=>i.id===f); if(it&&!e[it.slot]) e[it.slot]=f; s.equip=e; }
   return s;
@@ -11743,12 +11862,13 @@ function highlight(ex,word){
   const parts=ex.split(new RegExp('('+stem+'\\w*)','i'));
   return parts.map((p,i)=>i%2?html`<mark key=${i}>${p}</mark>`:p);
 }
-const isTyped=t=>t==='write'||t==='listen'||t==='gap'||t==='fix';
+const isTyped=t=>t==='write'||t==='listen'||t==='gap'||t==='fix'||t==='irr';
 /* words from one unit should not stand next to each other in a review: similar words interfere */
 function spreadUnits(ws){ const uid=w=>String(w.id).split('-')[0], rest=ws.slice(), out=[];
   while(rest.length){ const last=out.length?uid(out[out.length-1]):null; let k=rest.findIndex(w=>uid(w)!==last); if(k<0) k=0; out.push(rest.splice(k,1)[0]); } return out; }
 function quizQ(w,type,words,global){
   if(w.kind==='fix') return {id:w.id,w,type:'fix',answer:w.en};
+  if(w.kind==='irr'){ const a2=String(w.v2).split('/'), a3=String(w.v3).split('/'), alts=[]; a2.forEach(x=>a3.forEach(y=>alts.push(x+' '+y))); return {id:w.id,w,type:'irr',answer:a2[0]+' '+a3[0],alts}; }
   if(type==='gap'){ const en=w.en||'', stem=en.slice(0,Math.max(4,en.length-2)).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     const m=w.ex&&!/\s/.test(en)?w.ex.match(new RegExp('\\b('+stem+"[\\w']*)",'i')):null;
     if(m) return {id:w.id,w,type,answer:m[1],alts:[en],before:w.ex.slice(0,m.index),after:w.ex.slice(m.index+m[1].length)};
@@ -11793,14 +11913,14 @@ const I={
 const Face=()=>html`<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="#FF7A12"/><ellipse cx="11" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/><ellipse cx="19" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/><ellipse cx="11" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><ellipse cx="19" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><circle cx="10.2" cy="11" r=".9" fill="#fff"/><circle cx="18.2" cy="11" r=".9" fill="#fff"/><path d="M12.5 20q2.5 1.8 5 0" stroke="#4A1E0C" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
 
 /* ---------- pieces ---------- */
-function Pill({icon,value,label,id}){
-  const [bump,setBump]=useState(false); const prev=useRef(value);
-  useEffect(()=>{ if(value>prev.current){ setBump(true); const t=setTimeout(()=>setBump(false),520); prev.current=value; return ()=>clearTimeout(t);} prev.current=value; },[value]);
-  return html`<span id=${id} className=${'pill'+(bump?' bump':'')} title=${label} aria-label=${label+': '+value}>${icon} ${value}</span>`;
+function Pill({icon,value,label,id,extra}){
+  const [bump,setBump]=useState(false), [plus,setPlus]=useState(null); const prev=useRef(value);
+  useEffect(()=>{ if(value>prev.current){ const d=value-prev.current; setBump(true); setPlus({d,k:Date.now()}); const t=setTimeout(()=>setBump(false),520), t2=setTimeout(()=>setPlus(null),1100); prev.current=value; return ()=>{ clearTimeout(t); clearTimeout(t2); }; } prev.current=value; },[value]);
+  return html`<span id=${id} className=${'pill'+(bump?' bump':'')} title=${label} aria-label=${label+': '+value}>${icon} ${value}${extra||null}${plus?html`<i key=${plus.k} className="pill-plus" aria-hidden="true">+${plus.d}</i>`:null}</span>`;
 }
 function TopBar({st}){
   return html`<header className="topbar"><div className="brand"><${Face}/>wordy</div>
-    <div className="pills"><${Pill} icon=${I.flame()} value=${st.streak} label="Серия дней"/><${Pill} id="coin-pill" icon=${I.coin()} value=${st.coins} label="Монеты"/><span className="pill xp-pill">${I.bolt()} ${st.xp}</span></div></header>`;
+    <div className="pills"><${Pill} icon=${I.flame()} value=${st.streak} label=${'Серия дней'+((st.freezes|0)?' · заморозок: '+st.freezes:'')} extra=${(st.freezes|0)?html`<sup className="pill-fz" aria-hidden="true">❄${st.freezes>1?st.freezes:''}</sup>`:null}/><${Pill} id="coin-pill" icon=${I.coin()} value=${st.coins} label="Монеты"/><span className="pill xp-pill">${I.bolt()} ${st.xp}</span></div></header>`;
 }
 function Ring({pct,label}){
   const r=27,c=2*Math.PI*r;
@@ -11815,27 +11935,28 @@ const TCOL={basic:'#FF7A12',ielts:'#12A195',sat:'#7C5CFF',idioms:'#E5487A'}, TIC
   ielts:html`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.5 2.4 3.7 5.2 3.7 8.5s-1.2 6.1-3.7 8.5c-2.5-2.4-3.7-5.2-3.7-8.5s1.2-6.1 3.7-8.5z"/></svg>`,
   sat:html`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.3 12 5l9.5 4.3L12 13.6z"/><path d="M6.5 11.3v4.2c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.2"/><path d="M21.5 9.3v5.2"/></svg>`};
 function UnitRing({pct,n}){ const r=20,c=2*Math.PI*r; return html`<div className="uring"><svg width="50" height="50" viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r=${r} className="ur-bg"/><circle cx="25" cy="25" r=${r} className="ur-fg" stroke-dasharray=${c} stroke-dashoffset=${c*(1-pct)} transform="rotate(-90 25 25)"/></svg><span>${n}</span></div>`; }
+const VG_HUES=['#FF7A1A','#2F9E6B','#3B82C4','#8B5CF6','#E0567A','#C99A1A'];
 function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGrammar,openLevel,startReview,startDaily,showLevel,openText,startListen,tsub,setTsub,openMock}){
+  const [allT,setAllT]=useState(false);
   const isEn=track==='basic', view=isEn?sub:(tsub==='mock'?'mock':'vocab'), isList=view==='read'||view==='listen'||view==='mock';
   const t=TRACKS.find(x=>x.id===(isEn&&sub==='idioms'?'idioms':track));
-  const g=st.goal, c=Math.min(st.todayCount,g), done=st.todayCount>=g, left=g-c;
-  const total=ALL.filter(w=>(st.boxes[w.id]||0)>=2).length;
+  const g=st.goal, tc=st.today===dayKey()?st.todayCount:0, c=Math.min(tc,g), done=tc>=g, left=g-c;
+  const plan=st.plan&&st.plan.day===dayKey()&&st.plan.items&&st.plan.items.length?st.plan:null, planN=plan?plan.items.filter(it=>planDone(st,plan,it)).length:0, inPlan=id=>!!(plan&&plan.items.some(it=>it.id===id&&!planDone(st,plan,it)));
   return html`
-   <div className="page-h"><div><span className="date-chip">${new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</span><h1>${greeting()}!</h1></div>${st.level?html`<span className="lvl-chip">Уровень ${st.level}</span>`:null}</div>
+   <div className="page-h"><div><span className="date-chip">${new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</span><h1>${greeting()}!</h1></div>${st.level?html`<button className="lvl-chip" id="lvl-chip" onClick=${showLevel} aria-label=${'Уровень '+st.level+': подробнее'}>Уровень ${st.level}${levelProgress(st).pct>0?html`<i className="lvl-mini"><b style=${{width:Math.round(levelProgress(st).pct*100)+'%'}}></b></i>`:null}</button>`:null}</div>
    <${HomeworkBox} st=${st} update=${update} openMock=${openMock}/>
-   <section className="hero enter" data-perch="hero" aria-label="Цель на сегодня">
-     <${Ring} pct=${c/g} label=${c+'/'+g}/>
-     <div><p className="eyebrow">Цель на сегодня</p>
-       <h2>${done?'Цель выполнена, так держать!':'Ещё '+left+' '+plural(left,'слово','слова','слов')+' до цели'}</h2>
-       <div className="hero-stats"><span>${I.learn()} ${total} ${plural(total,'слово','слова','слов')}</span><span>${I.flame()} ${st.streak} ${plural(st.streak,'день','дня','дней')}</span><span>★ ${gStarsTotal(st)}</span></div></div>
+   <section className=${'hero today enter'+(done?' met':'')} data-perch="hero" aria-label="Сегодня">
+     <div className="today-top"><${Ring} pct=${c/g} label=${c+'/'+g}/>
+     <div><p className="eyebrow">Сегодня${plan?' · план '+planN+' из '+plan.items.length:''}</p>
+       <h2>${done?'Цель выполнена, так держать!':'Ещё '+left+' '+plural(left,'слово','слова','слов')+' до цели'}</h2></div></div>
+     <${PlanCard} embed=${true} st=${st} update=${update} startReview=${startReview} startDaily=${startDaily} openLevel=${openLevel} openGame=${openGame}/>
    </section>
-   <${PlanCard} st=${st} update=${update} startReview=${startReview} startDaily=${startDaily} openLevel=${openLevel} openGame=${openGame}/>
    <${HomeHomework}/>
    <${GuestCard} st=${st}/>
    <${InstallCard}/>
-   ${st.level?html`<${LevelCard} st=${st} onShow=${showLevel}/>`:null}
-   <${DailyCard} st=${st} startDaily=${startDaily}/>
-   ${(()=>{ const due=dueWords(st), seen=Object.keys(st.boxes).length, tm=dueOn(st,1);
+   ${st.level&&levelProgress(st).complete?html`<${LevelCard} st=${st} onShow=${showLevel}/>`:null}
+   ${inPlan('daily')?null:html`<${DailyCard} st=${st} startDaily=${startDaily}/>`}
+   ${(()=>{ const due=dueWords(st), seen=Object.keys(st.boxes).length, tm=dueOn(st,1); if(inPlan('review')||(plan&&!due.length)) return null;
      return html`<button className=${'review-card enter'+(due.length?' has':'')} style=${{'--i':1}} id="review-btn" disabled=${!due.length} onClick=${startReview}>
        <span className="rv-ic">${I.repeat()}</span>
        <span className="rv-main"><b>${due.length?'Повторение на сегодня':seen?'На сегодня всё повторено':'Ежедневное повторение'}</b>
@@ -11864,7 +11985,7 @@ function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGramm
    ${!isEn?html`<div className="subtabs two enter" role="tablist" aria-label=${t.name}>${[['vocab','Слова'],['mock','Пробный тест']].map(([k,n])=>html`<button key=${k} role="tab" id=${'tsub-'+k} aria-selected=${(tsub||'vocab')===k} onClick=${()=>{ SFX('tap'); setTsub(k); }}>${n}</button>`)}</div>`:null}
    ${view==='mock'?html`<${MockHub} st=${st} kind=${track} openMock=${openMock}/>`:null}
    ${view==='read'?html`<${ReadList} st=${st} openText=${openText}/>`:null}
-   ${view==='listen'?html`<${ListenList} st=${st} startListen=${startListen}/>`:null}
+   ${view==='listen'?html`<${ListenList} st=${st} update=${update} startListen=${startListen} openMock=${openMock}/>`:null}
    ${view!=='grammar'&&!isList?html`<div className="sec-h"><h2>${t.id==='idioms'?'Идиомы':'Темы'}</h2><span className="muted">${learned(st,t.units.flatMap(u=>u.words))} / ${countIn(t)} ${t.id==='idioms'?'идиом':'слов'}</span></div>`:null}
    ${view!=='grammar'&&!isList&&(()=>{ const row=(u,i)=>{
      const l=learned(st,u.words), best=st.best[u.id];
@@ -11878,12 +11999,12 @@ function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGramm
      const firstUp=up.length?up[0].cefr:null;
      /* basic course: blocks of one theme are shown together under a foldable theme header */
      const groups=list=>{ const gs=[]; list.forEach(u=>{ const k=u.theme?u.cefr+'-'+u.theme:'_'; const g=gs[gs.length-1]; if(g&&g.k===k) g.us.push(u); else gs.push({k,us:[u]}); }); return gs; };
-     const renderG=(list,auto)=>{ let opened=!auto; return groups(list).map((g,gi)=>{ if(g.k==='_') return html`<div className="units" key=${'p'+gi}>${g.us.map(row)}</div>`;
+     const renderG=(list,auto)=>{ let opened=!auto; const gl=groups(list), cut=auto&&!allT&&gl.length>6?5:gl.length; return gl.slice(0,cut).map((g,gi)=>{ if(g.k==='_') return html`<div className="units" key=${'p'+gi}>${g.us.map(row)}</div>`;
        const ws=g.us.flatMap(u=>u.words), l=learned(st,ws), done=l===ws.length, open=!opened&&!done, u0=g.us[0]; if(open) opened=true;
-       return html`<details className=${'vgroup'+(done?' done':'')} key=${g.k} open=${open}>
+       return html`<details className=${'vgroup'+(done?' done':'')} key=${g.k} open=${open} style=${{'--vh':VG_HUES[gi%VG_HUES.length]}}>
          <summary><span className="vg-main"><b>${u0.ru}</b><small>${u0.title} · ${u0.cefr} · ${g.us.length} ${plural(g.us.length,'блок','блока','блоков')}</small></span>
            <span className="vg-side"><span className=${'vg-n'+(done?' full':'')}>${done?'✓ ':''}${l} / ${ws.length}</span><span className="bar"><i style=${{width:(l/ws.length*100)+'%'}}></i></span></span></summary>
-         <div className="units">${g.us.map(row)}</div></details>`; }); };
+         <div className="units">${g.us.map(row)}</div></details>`; }).concat(cut<gl.length?[html`<button key="more" className="btn ghost wide vg-more" id="topics-all" onClick=${()=>{ SFX('tap'); setAllT(true); }}>Все темы · ещё ${gl.length-cut}</button>`]:[]); };
      const upT=[...new Map(up.map(u=>[u.theme?u.cefr+u.theme:u.id,u])).values()];
      return html`${renderG(act,true)}
        ${act.length?null:html`<p className="empty">${firstUp?'В направлении '+t.name+' нет тем уровня '+st.level+'. Первые темы откроются на уровне '+firstUp+'.':'Все темы этого направления ниже твоего уровня. Их можно повторить ниже.'}</p>`}
@@ -13070,25 +13191,56 @@ const GERREF={
   to:[['afford','позволить себе','We can\'t afford to buy it.'],['agree','соглашаться','They agreed to help.'],['appear','казаться','He appears to be lost.'],['arrange','договориться','We arranged to meet at six.'],['ask','просить','She asked to leave early.'],['attempt','пытаться','He attempted to climb it.'],['choose','решить, выбрать','I chose to stay.'],['decide','решать','We decided to wait.'],['deserve','заслуживать','You deserve to win.'],['expect','ожидать','I expect to finish soon.'],['fail','не суметь','He failed to arrive.'],['hope','надеяться','I hope to see you.'],['learn','учиться','She learned to swim.'],['manage','суметь','I managed to fix it.'],['offer','предлагать (сделать сам)','He offered to drive.'],['plan','планировать','We plan to travel.'],['prepare','готовиться','Prepare to start.'],['pretend','притворяться','She pretended to sleep.'],['promise','обещать','I promise to call.'],['refuse','отказываться','He refused to answer.'],['seem','казаться','You seem to be tired.'],['tend','быть склонным','Prices tend to rise.'],['threaten','угрожать','They threatened to leave.'],['want','хотеть','I want to go.'],['would like','хотел бы','I\'d like to try.'],['wish','желать','I wish to speak to the manager.']],
   both:[['begin / start','начинать — почти без разницы','It started raining. / It started to rain.'],['continue','продолжать — почти без разницы','She continued working / to work.'],['like / love / hate','про привычки чаще -ing','I like swimming. I\'d like to swim now.'],['prefer','предпочитать','I prefer walking. I prefer to walk.']],
   diff:[['stop','-ing: прекратить · to: остановиться, чтобы','I stopped smoking. / I stopped to smoke.'],['remember','-ing: помнить, что делал · to: не забыть сделать','I remember locking it. / Remember to lock it.'],['forget','-ing: забыть, что делал · to: забыть сделать','I\'ll never forget meeting her. / Don\'t forget to call.'],['try','-ing: попробовать (как способ) · to: стараться','Try restarting it. / I tried to open it.'],['regret','-ing: жалеть о сделанном · to: с сожалением сообщать','I regret saying that. / We regret to inform you…'],['go on','-ing: продолжать то же · to: перейти к другому','He went on talking. / He went on to win the cup.'],['mean','-ing: означать · to: намереваться','It means waiting. / I meant to call you.'],['need','-ing: нуждаться в (пассив) · to: нужно сделать','The car needs washing. / I need to wash it.']]};
+const IRR_TOP=['be','have','do','say','go','get','make','know','think','take','see','come','give','find','tell','become','leave','feel','put','bring','begin','keep','hold','write','stand','hear','let','mean','meet','run'];
+const irrPat=r=>{ const f=x=>String(x).split('/')[0].trim().toLowerCase(), a=f(r[0]), b=f(r[1]), c=f(r[2]); return a===b&&b===c?'AAA':b===c?'ABB':a===c?'ABA':'ABC'; };
+const IRR_PAT={AAA:['A-A-A','все три формы одинаковые: cut — cut — cut'],ABB:['A-B-B','2-я и 3-я совпадают: buy — bought — bought'],ABA:['A-B-A','3-я как 1-я: come — came — come'],ABC:['A-B-C','все разные: go — went — gone']};
+/* a verb from the reference → a review card: you see V1 and type V2 V3 */
+function toggleIrrCard(update,r){ const id='irr-'+String(r[0]).split('/')[0].trim().toLowerCase().replace(/[^a-z]+/g,'-');
+  update(s=>{ const my={...(s.myWords||{})}, boxes={...s.boxes}, due={...(s.due||{})};
+    if(my[id]){ delete my[id]; delete boxes[id]; delete due[id]; return {myWords:my,boxes,due}; }
+    my[id]={id,kind:'irr',en:String(r[0]),v2:String(r[1]),v3:String(r[2]),tr:String(r[3]||''),ru:String(r[3]||'')+' — '+r[1]+', '+r[2],def:'',ipa:'',ex:'',track:'my',added:dayKey()}; boxes[id]=0; due[id]=dayKey(); return {myWords:my,boxes,due}; }); return id; }
+const TENSES=[
+ ['Present',[['Present Simple','V1 / V1+s','привычки, факты, расписания','She **works** in a bank.','always, usually, every day'],['Present Continuous','am/is/are + V-ing','происходит сейчас, временно, планы','I **am reading** now.','now, at the moment, this week'],['Present Perfect','have/has + V3','результат сейчас, опыт, «уже/ещё не»','I **have lost** my keys.','already, yet, ever, just'],['Present Perfect Continuous','have/has been + V-ing','длится до сих пор, акцент на процессе','I **have been waiting** for an hour.','for, since, all day']]],
+ ['Past',[['Past Simple','V2 / did + V1','законченное действие в прошлом','We **went** to Paris in 2019.','yesterday, ago, last year'],['Past Continuous','was/were + V-ing','процесс в момент в прошлом','I **was sleeping** at 10 pm.','at 5 pm yesterday, while'],['Past Perfect','had + V3','раньше другого действия в прошлом','The film **had started** when we came.','before, after, by the time'],['Past Perfect Continuous','had been + V-ing','длилось до момента в прошлом','She **had been crying** before he came.','for, since, before']]],
+ ['Future',[['Future Simple','will + V1','решение сейчас, прогноз, обещание','I **will call** you.','tomorrow, soon, I think'],['Future Continuous','will be + V-ing','процесс в момент в будущем','At 8 I **will be flying**.','at this time tomorrow'],['Future Perfect','will have + V3','будет сделано к моменту','I **will have finished** by Monday.','by, by the time'],['Future Perfect Continuous','will have been + V-ing','сколько будет длиться к моменту','By May I **will have been working** here a year.','for … by']]]];
+const MODALS=[['can','могу, умею; можно (разг.)','I **can** swim. **Can** I sit here?'],['could','мог (в прошлом); вежливая просьба; возможно','**Could** you help me? It **could** rain.'],['may','можно (вежливо); возможно','**May** I come in? She **may** be late.'],['might','может быть (менее уверенно)','I **might** go to the party.'],['must','должен (сам так считаю); наверняка','I **must** study. He **must** be tired.'],['have to','должен (так надо, правила)','I **have to** wear a uniform.'],['mustn\'t','нельзя','You **mustn\'t** smoke here.'],['don\'t have to','не обязательно','You **don\'t have to** come.'],['should','следует, стоит (совет)','You **should** see a doctor.'],['ought to','следует (чуть формальнее should)','We **ought to** leave now.'],['need to','нужно','I **need to** charge my phone.'],['would','бы; вежливая форма','I **would** like a coffee.'],['shall','предложение (I/we)','**Shall** we dance?'],['be able to','мочь (в любом времени)','I **will be able to** help tomorrow.']];
+const PREP_T=[['at','точное время, праздники, «на выходных» (брит.)',['at 7 o\'clock','at night','at noon','at the weekend','at Christmas']],['on','дни недели, даты, конкретный день',['on Monday','on 5 May','on my birthday','on Sunday morning','on New Year\'s Day']],['in','месяцы, годы, сезоны, части дня, века; «через» (in 5 minutes)',['in July','in 2026','in winter','in the morning','in 10 minutes']],['— (без предлога)','с this, next, last, every и с today/tomorrow/yesterday',['next week','last year','every day','this morning','tomorrow']]];
+const PHRASAL=[['get up','вставать','I **get up** at 7.'],['wake up','просыпаться','I **woke up** late.'],['look for','искать','I\'m **looking for** my phone.'],['look after','присматривать','She **looks after** her brother.'],['look up','посмотреть (в словаре)','**Look up** this word.'],['look forward to','ждать с нетерпением','I **look forward to** the trip.'],['find out','узнать, выяснить','I **found out** the truth.'],['give up','бросить, сдаться','Don\'t **give up**!'],['turn on / off','включить / выключить','**Turn off** the light.'],['put on','надеть','**Put on** your coat.'],['take off','снять; взлететь','The plane **took off**.'],['pick up','поднять; забрать','I\'ll **pick** you **up** at 6.'],['come back','вернуться','**Come back** soon!'],['go on','продолжать; происходить','What\'s **going on**?'],['carry on','продолжать','**Carry on** reading.'],['set up','основать, настроить','They **set up** a company.'],['break down','сломаться','My car **broke down**.'],['run out of','закончиться (о запасах)','We **ran out of** milk.'],['figure out','понять, разобраться','I can\'t **figure** it **out**.'],['show up','появиться, прийти','He **showed up** late.'],['grow up','вырасти','I **grew up** in Bishkek.'],['get along with','ладить с','I **get along with** my sister.'],['fill in','заполнить (форму)','**Fill in** this form.'],['hang out','тусоваться','Let\'s **hang out** later.'],['calm down','успокоиться','**Calm down**, please.'],['check in','зарегистрироваться','We **checked in** at the hotel.'],['make up','выдумать; помириться','They **made up** after the fight.'],['work out','тренироваться; получиться','I **work out** every day.'],['call back','перезвонить','I\'ll **call** you **back**.'],['turn down','отклонить; убавить','She **turned down** the offer.']];
 function irrRows(){ const out=[], seen={}; ((GBOOK.irr||{}).sections||[]).forEach(sec=>(sec.b||[]).forEach(b=>{ if(b[0]==='tbl'&&b[1]&&b[1][0]==='V1') b[2].forEach(r=>{ const k=r[0]; if(!seen[k]){ seen[k]=1; out.push(r.map(String)); } }); }));
   return out.sort((a,b)=>a[0].localeCompare(b[0])); }
-function RefBook({onBack}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState('');
+const REF_TABS=[['irr','Неправильные глаголы'],['ger','-ing или to'],['tense','12 времён'],['modal','Модальные'],['prep','in · on · at'],['phr','Фразовые']];
+function RefBook({onBack,st,update}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState(''), [view,setView]=useState('abc');
   const pickTab=t=>{ SFX('tap'); setTab(t); setQ(''); try{ localStorage.setItem('wordy.ref',t); }catch(e){} };
-  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(x).toLowerCase().includes(f));
-  const say=t=>{ if(canSpeak){ speak(t); W('react','nod'); } };
+  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(Array.isArray(x)?x.join(' '):x).toLowerCase().includes(f));
+  const say=t=>{ if(canSpeak){ speak(String(t).replace(/\*/g,'')); W('react','nod'); } };
+  const my=(st&&st.myWords)||{}, starred=r=>!!my['irr-'+String(r[0]).split('/')[0].trim().toLowerCase().replace(/[^a-z]+/g,'-')], nStar=Object.values(my).filter(w=>w.kind==='irr').length;
+  const star=r=>{ if(!update) return; const on=starred(r); SFX(on?'tap':'pop'); toggleIrrCard(update,r); if(!on) W('say','Добавил «'+r[0]+'» в повторение!'); };
   const gl=(title,list,note)=>{ const l=list.filter(hit); return l.length?html`<div className="ref-g"><h3>${title}</h3>${note?html`<p className="muted">${note}</p>`:null}
-      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+r[2]} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${r[2]}</small></div></div>`)}</div>`:null; };
+      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+String(r[2]).replace(/\*/g,'')} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${starMark(r[2])}</small></div></div>`)}</div>`:null; };
+  const irrRow=r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span>
+      ${update?html`<button className=${'ref-star'+(starred(r)?' on':'')} aria-pressed=${starred(r)} aria-label=${(starred(r)?'Убрать из повторения: ':'Учить: ')+r[0]} onClick=${()=>star(r)}>${starred(r)?'★':'☆'}</button>`:null}</div>`;
+  const head=html`<div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span>${update?html`<span></span>`:null}</div>`;
+  const list=view==='top'?IRR_TOP.map(v=>rows.find(r=>String(r[0]).split('/')[0].trim()===v)).filter(Boolean):rows;
+  const empty=html`<p className="empty">Не нашёл «${q}».</p>`;
   return html`<section className="refbook">
-    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b><span className="muted">подсматривай, когда нужно</span></div></div>
-    <div className="chips" role="tablist"><button className="chip" role="tab" id="ref-irr" aria-pressed=${tab==='irr'} onClick=${()=>pickTab('irr')}>Неправильные глаголы</button><button className="chip" role="tab" id="ref-ger" aria-pressed=${tab==='ger'} onClick=${()=>pickTab('ger')}>-ing или to</button></div>
-    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder=${tab==='irr'?'Найти: go, ушёл…':'Найти: enjoy, решать…'} onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
-    ${tab==='irr'?html`<p className="muted ref-note">${rows.length} самых нужных глаголов. Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.</p>
-        <div className="ref-tbl" role="table"><div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span></div>
-        ${rows.filter(hit).map(r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span></div>`)}
-        ${!rows.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}</div>`
-    :html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
+    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b></div></div>
+    <div className="chips ref-tabs" role="tablist">${REF_TABS.map(([id,l])=>html`<button key=${id} className="chip" role="tab" id=${'ref-'+id} aria-pressed=${tab===id} onClick=${()=>pickTab(id)}>${l}</button>`)}</div>
+    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder="Найти по-английски или по-русски…" onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
+    ${tab==='irr'?html`<div className="chips ref-view">${[['abc','А–Я'],['pat','По схеме'],['top','Частые 30']].map(([v,l])=>html`<button key=${v} className="chip" id=${'ref-v-'+v} aria-pressed=${view===v} onClick=${()=>{ SFX('tap'); setView(v); }}>${l}</button>`)}</div>
+        <p className="muted ref-note">${update?html`☆ — учить глагол в повторении.${nStar?html` <b>Учишь: ${nStar}</b>`:null}`:'Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.'}</p>
+        ${view==='pat'?['AAA','ABB','ABA','ABC'].map(k=>{ const l=list.filter(r=>irrPat(r)===k).filter(hit); return l.length?html`<div key=${k} className="ref-g"><h3>${IRR_PAT[k][0]} <small className="muted">· ${l.length}</small></h3><p className="muted">${IRR_PAT[k][1]}</p><div className="ref-tbl" role="table">${head}${l.map(irrRow)}</div></div>`:null; })
+          :html`<div className="ref-tbl" role="table">${head}${list.filter(hit).map(irrRow)}</div>`}
+        ${!list.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}`
+    :tab==='ger'?html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
       ${gl('Глагол + -ing',GERREF.ing)}${gl('Глагол + to + глагол',GERREF.to)}${gl('Можно и так, и так',GERREF.both,'Смысл почти не меняется.')}${gl('Смысл меняется',GERREF.diff)}
-      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?html`<p className="empty">Не нашёл «${q}».</p>`:null}`}
+      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?empty:null}`
+    :tab==='tense'?html`<p className="muted ref-note">Все 12 времён: схема, когда употребляем, пример и слова-подсказки.</p>
+      ${TENSES.map(([g,l])=>{ const x=l.filter(hit); return x.length?html`<div key=${g} className="ref-g"><h3>${g}</h3>${x.map(t=>html`<div key=${t[0]} className="ref-tense"><div className="rt-h"><b>${t[0]}</b><code>${t[1]}</code></div><p>${t[2]}</p>
+          <p className="rt-ex"><button className="ex-say" aria-label=${'Послушать: '+t[3].replace(/\*/g,'')} onClick=${()=>say(t[3])}>${I.speaker()}</button><span lang="en">${starMark(t[3])}</span></p><small className="muted">${t[4]}</small></div>`)}</div>`:null; })}
+      ${!TENSES.some(([g,l])=>l.some(hit))?empty:null}`
+    :tab==='modal'?html`${gl('Модальные глаголы',MODALS,'После них глагол без to (кроме have to, ought to, need to, be able to).')}${!MODALS.some(hit)?empty:null}`
+    :tab==='prep'?html`<p className="muted ref-note">Предлоги времени: от точного (at) к широкому (in).</p>${PREP_T.filter(hit).map(p=>html`<div key=${p[0]} className="ref-g ref-prep"><h3 lang="en">${p[0]}</h3><p className="muted">${p[1]}</p><div className="chips">${p[2].map(x=>html`<button key=${x} className="chip" lang="en" onClick=${()=>say(x)}>${x}</button>`)}</div></div>`)}${!PREP_T.some(hit)?empty:null}`
+    :html`${gl('Популярные фразовые глаголы',PHRASAL,'Смысл часто не складывается из частей — учи целиком, с примером.')}${!PHRASAL.some(hit)?empty:null}`}
   </section>`; }
 function GrammarMap({st,onBack,open,openRef}){
   const gs=st.gstars||{};
@@ -13116,7 +13268,7 @@ function GrammarMap({st,onBack,open,openRef}){
   const total=gStarsTotal(st), passed=gPassed(st);
   return html`<section className="gm">
     <div className="sess-top"><button className="icon-btn" id="gmap-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button>
-      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div>
+      <div className="gm-h"><b>Грамматика</b><span className="muted">A1–C1</span></div>
       ${openRef?html`<button className="chip ref-open" id="gmap-ref" onClick=${()=>{ SFX('pop'); openRef(); }}>📘 Справочник</button>`:null}</div>
     <div className="ghead enter">
       <div className="ghead-main"><p className="eyebrow">Твой путь</p><h2>${passed} из ${GL.length} ${plural(GL.length,'уровень','уровня','уровней')} пройдено</h2>
@@ -19476,21 +19628,23 @@ const askPrompt=(lv,lvl,quote,q,exercise)=>'You are a friendly, precise English 
   +'Answer in Russian, simply and accurately, in 2-5 short sentences, as a good teacher would. Then give 2 short natural English examples with Russian translations, and one practical tip. Stay on English grammar and vocabulary; if the question is unrelated to learning English, politely say you can only help with English.'
   +(exercise?'\nIMPORTANT: the learner is in the middle of an exercise that has not been checked yet. Do NOT reveal the answer, do NOT say which option is correct, and do not rewrite the sentence correctly. Explain only the rule behind it and give a hint that helps them decide themselves.':'')
   +'\nReply with ONLY JSON: {"text":"объяснение","examples":[{"en":"...","ru":"..."}],"tip":"совет"}';
-function AskSheet({lv,lvl,ask,onClose,mk,defQ}){ const ai=useSample(); const [q,setQ]=useState(ask.quote?(defQ||'Объясни, пожалуйста'):''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
-  const go=async()=>{ if(!ai||busy||!q.trim()) return; setBusy(true); setErr(null); setAns(null); W('react','think');
-    const P=mk?mk(ask.quote,q):askPrompt(lv,lvl,ask.quote,q,ask.exercise);
+function AskSheet({lv,lvl,ask,onClose,mk,defQ}){ const ai=useSample(); const [q,setQ]=useState(''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
+  const go=async(t)=>{ const qq=String(typeof t==='string'?t:q).trim(); if(!ai||busy||!qq) return; if(typeof t==='string') setQ(t); setBusy(true); setErr(null); setAns(null); W('react','think');
+    const P=mk?mk(ask.quote,qq):askPrompt(lv,lvl,ask.quote,qq,ask.exercise);
     try{ const j=ai.stream?await ai.stream(P,x=>{ if(x&&x.text) setAns({text:String(x.text),examples:[],tip:'',live:true}); }):await ai.json(P,null,{fast:true}); if(!j||typeof j!=='object') throw {code:'invalid_json'};
       setAns({text:String(j.text||''),examples:Array.isArray(j.examples)?j.examples.filter(e=>e&&e.en).slice(0,3).map(e=>({en:String(e.en),ru:String(e.ru||'')})):[],tip:String(j.tip||'')}); SFX('pop'); W('react','happy'); }
     catch(e){ setErr(aiErr(e)); W('react','encourage'); } setBusy(false); };
-  useEffect(()=>{ if(ai&&ask.quote&&ask.auto) go(); },[ai]);
+  /* no automatic question: the learner writes their own, or taps a ready one */
+  useEffect(()=>{ const t=setTimeout(()=>{ const el=document.getElementById('ask-in'); if(el&&innerWidth>700) el.focus(); },250); return ()=>clearTimeout(t); },[]);
   useEffect(()=>{ const esc=e=>{ if(e.key==='Escape') onClose(); }; document.addEventListener('keydown',esc); return ()=>document.removeEventListener('keydown',esc); },[]);
   const ui=html`<div className="sheet-wrap ask-wrap" onClick=${onClose}><div className="sheet ask-sheet enter" role="dialog" aria-label="Спросить Ворди" onClick=${e=>e.stopPropagation()}>
     <div className="sheet-h"><b>Спроси Ворди</b><button className="icon-btn" id="ask-close" onClick=${()=>{ SFX('tap'); onClose(); }} aria-label="Закрыть">${I.close()}</button></div>
     ${ask.quote?html`<blockquote className="ask-q" lang="en">${String(ask.quote).slice(0,300)}</blockquote>`:null}
     ${ask.exercise?html`<p className="muted ask-note">Задание ещё не проверено, поэтому Ворди объяснит правило и подскажет, но не скажет ответ.</p>`:null}
     ${ai===null?html`<p className="empty">${aiOffText()}</p>`
-    :html`<div className="ask-row"><textarea id="ask-in" rows="2" value=${q} maxLength="500" placeholder="Например: почему здесь has, а не have?" onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); go(); } }}></textarea>
-      <button className="btn" id="ask-go" disabled=${!q.trim()||busy||ai===undefined} onClick=${go}>${busy?'Думаю…':'Спросить'}</button></div>`}
+    :html`<div className="ask-row"><textarea id="ask-in" rows="2" value=${q} maxLength="500" placeholder="Твой вопрос: например, почему здесь has, а не have?" onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); go(); } }}></textarea>
+      <button className="btn" id="ask-go" disabled=${!q.trim()||busy||ai===undefined} onClick=${()=>go()}>${busy?'Думаю…':'Спросить'}</button></div>
+      ${!ans&&!busy&&ask.quote?html`<div className="ask-quick" role="group" aria-label="Готовые вопросы">${[defQ||'Объясни, пожалуйста','Объясни проще','Приведи ещё примеры','Почему так, а не иначе?'].map(x=>html`<button key=${x} className="chip" onClick=${()=>{ SFX('tap'); go(x); }}>${x}</button>`)}</div>`:null}`}
     ${err?html`<p className="acc-err" role="alert">${err}</p>`:null}
     ${ans?html`<div className="ask-ans" role="status"><p>${ans.text}</p>
       ${ans.examples.length?html`<ul className="bk-ex">${ans.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en} onClick=${()=>speak(e.en)}>${I.speaker()}</button>`:html`<span></span>`}<div><b lang="en">${e.en}</b><span>${e.ru}</span></div></li>`)}</ul>`:null}
@@ -19536,8 +19690,8 @@ function FinalTest({items,onDone,run}){ const [vals,setVals]=useState({}), [res,
 
 function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved,st}){
   const [voice,setVoice]=useState(false); const canVoice=!!st&&canLiveVoice()&&st.age!=='u13';
-  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · 5 мин</button>`:null;
-  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} onClose=${()=>setVoice(false)}/>`:null;
+  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · ${((st.vlesson||{})[lv.id]||{}).stars?'★'.repeat(st.vlesson[lv.id].stars)+'☆'.repeat(3-st.vlesson[lv.id].stars):'5 мин'}</button>`:null;
+  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} topic=${{id:lv.id,title:lv.title}} onClose=${()=>setVoice(false)}/>`:null;
   const bk=GBOOK[lv.id], [bi,setBi]=useState(0), bsaved=saved||{};
   const saveBk=(b,n,tot)=>update(s=>{ const g={...(s.gbook||{})}, u={...(g[lv.id]||{})}, o=u[b]; u[b]=[Math.max(o?o[0]:0,n),tot]; g[lv.id]=u; return {gbook:g,xp:s.xp+n*2}; });
   const sec=secOf(idx);
@@ -19719,7 +19873,7 @@ function memGrade(st,id,g,wt=1){
   return {mem,boxes,due};
 }
 /* turn an answer into a grade: typing proves more than picking from options */
-const TASK_W={tr:.4,ru:.5,def:.55,write:1,listen:1,gap:1,fix:1};
+const TASK_W={tr:.4,ru:.5,def:.55,write:1,listen:1,gap:1,fix:1,irr:1};
 function ansGrade(ok,type,ms,len,typo){ if(!ok) return 1; if(typo) return 2;
   if(TASK_W[type]<1) return ms>15000?2:3;
   const fast=2600+230*(len||5); return ms>fast*2.8?2:ms<fast?4:3; }
@@ -19735,7 +19889,7 @@ function checkTyped(typed,answers){ const t=normAns(typed); if(!t) return {ok:fa
   if(alts.includes(t)) return {ok:true};
   const near=alts.some(a=>a.length>=5&&editDist(t,a)<=(a.length>=10?2:1));
   return near?{ok:true,typo:true}:{ok:false}; }
-function dueWords(st){ const today=dayKey(), due=st.due||{}; return ALL.concat(Object.values(st.myWords||{})).filter(w=>st.boxes[w.id]!=null&&(due[w.id]||today)<=today).map(w=>[w,w.kind==='fix'&&!(st.mem||{})[w.id]?-1:memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]); }
+function dueWords(st){ const today=dayKey(), due=st.due||{}; return ALL.concat(Object.values(st.myWords||{})).filter(w=>st.boxes[w.id]!=null&&(due[w.id]||today)<=today).map(w=>[w,(w.kind==='fix'||w.kind==='irr')&&!(st.mem||{})[w.id]?-1:memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]); }
 function dueOn(st,off){ const d=dayKey(off), due=st.due||{}; return ALL.filter(w=>st.boxes[w.id]!=null&&due[w.id]===d).length; }
 
 /* ---------- shop ---------- */
@@ -19851,14 +20005,16 @@ function AchToast({a,onDone}){
     <div><span className="eyebrow">Новое достижение</span><b>${a.title}</b><small>${a.desc} · +${ACH_REWARD} монет</small></div></div>`;
 }
 function Achievements({st}){
-  const got=st.ach||{};
+  const got=st.ach||{}, [sel,setSel]=useState(null), [all,setAll]=useState(false);
   const n=ACH.filter(a=>got[a.id]).length;
+  const list=ACH.map((a,i)=>({a,i,on:!!got[a.id],r:Math.min(a.val(st),a.goal)/a.goal})).sort((x,y)=>(y.on-x.on)||(y.r-x.r)||(x.i-y.i));
+  const cur=sel&&ACH.find(a=>a.id===sel);
   return html`<div className="sec-h"><h2>Достижения</h2><span className="muted">${n} / ${ACH.length}</span></div>
-    <div className="ach-grid">${ACH.map((a,i)=>{ const on=!!got[a.id], v=Math.min(a.val(st),a.goal);
-      return html`<div key=${a.id} className=${'ach enter'+(on?' on':'')} style=${{'--i':i,'--c':a.c}}>
-        <${AchBadge} a=${a} on=${on}/>
-        <div className="ach-main"><b>${a.title}</b><small>${a.desc}</small>
-          ${on?html`<span className="ach-done">Получено</span>`:html`<span className="ach-prog"><span className="bar"><i style=${{width:(v/a.goal*100)+'%'}}></i></span><em>${v}/${a.goal}</em></span>`}</div></div>`;})}</div>`;
+    <div className="ach-grid2">${list.slice(0,all?99:(innerWidth>=1100?10:6)).map(({a,on,r},k)=>html`<button key=${a.id} className=${'ach2 enter'+(on?' on':'')+(sel===a.id?' sel':'')} style=${{'--i':Math.min(k,12),'--c':a.c,'--p':on?1:r}} aria-pressed=${sel===a.id} aria-label=${a.title+(on?', получено':', '+Math.round(r*100)+'%')} onClick=${()=>{ SFX('tap'); setSel(x=>x===a.id?null:a.id); }}>
+        <span className="ach2-ring"><${AchBadge} a=${a} on=${on} size=${44}/></span><small>${a.title}</small></button>`)}</div>
+    ${!all&&list.length>(innerWidth>=1100?10:6)?html`<button className="link-btn ach-all" id="ach-all" onClick=${()=>{ SFX('tap'); setAll(true); }}>Все достижения · ещё ${list.length-(innerWidth>=1100?10:6)}</button>`:null}
+    ${cur?html`<div className="ach-detail enter"><${AchBadge} a=${cur} on=${!!got[cur.id]} size=${40}/><div><b>${cur.title}</b><small>${cur.desc}</small>
+      ${got[cur.id]?html`<span className="ach-done">Получено</span>`:html`<span className="ach-prog"><span className="bar"><i style=${{width:(Math.min(cur.val(st),cur.goal)/cur.goal*100)+'%'}}></i></span><em>${Math.min(cur.val(st),cur.goal)}/${cur.goal}</em></span>`}</div></div>`:null}`;
 }
 
 /* ---------- level-aware helpers ---------- */
@@ -20550,13 +20706,64 @@ function makeListening(st){
   const seen=pool.filter(x=>st.boxes[x.w.id]!=null), rest=pool.filter(x=>st.boxes[x.w.id]==null);
   return shuffle([...shuffle(seen).slice(0,5),...shuffle(rest)]).slice(0,8);
 }
-function ListenList({st,startListen}){
+/* Daily podcast: a 1–2 minute dialogue between Wordy and Mia at the learner's level, built around words due for review,
+   then 3 comprehension questions. Text comes from Gemini once a day (cached on the device); voices are the device's TTS. */
+const POD_KEY='wordy.pod';
+function podWords(st){ const d=dueWords(st).filter(w=>!w.kind&&/^[a-z][a-z' -]{1,24}$/i.test(w.en)).slice(0,6); if(d.length>=4) return d.map(w=>w.en);
+  const li=lvlIdx(st.level||'A1'), pool=ALL.filter(w=>lvlIdx(w.cefr)===li&&/^[a-z]{3,14}$/i.test(w.en)); const out=[], h=[...dayKey()].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7); for(let i=0;i<6&&pool.length;i++) out.push(pool[(h+i*7919)%pool.length].en); return [...new Set(d.map(w=>w.en).concat(out))].slice(0,6); }
+const POD_PROMPT=(lvl,words,facts)=>`Write a short, natural English podcast episode for a learner at CEFR ${lvl}. Two hosts: Wordy (a cheerful orange fox-like teacher, male) and Mia (his curious friend, female).
+Length: 12–16 short lines, about 160–220 words total, spoken English with contractions, one clear everyday topic, a small joke or surprise. Vocabulary and grammar strictly at ${lvl}.
+Use each of these words naturally at least once: ${words.join(', ')}.${facts?'\nYou may connect the topic to the listener\'s interests: '+facts:''}
+Then write 3 comprehension questions in simple English, each with 3 options and the index of the correct one (answers must be stated clearly in the dialogue).
+Reply with ONLY JSON {"title":"","title_ru":"","lines":[["Wordy","..."],["Mia","..."]],"q":[{"q":"","o":["","",""],"a":0}]}`;
+function PodcastCard({st,update}){ const [open,setOpen]=useState(false); const done=(st.pods||{}).last===dayKey();
+  if(open) return html`<${Podcast} st=${st} update=${update} onClose=${()=>setOpen(false)}/>`;
+  return html`<button className="listen-card pod-card enter" id="pod-open" disabled=${!canSpeak} onClick=${()=>{ SFX('pop'); setOpen(true); }}>
+    <span className="lc-ic pod-ic" aria-hidden="true">🎙️</span>
+    <span className="lc-main"><b>Подкаст дня${done?' ✓':''}</b><small>${canSpeak?'Ворди и Мия болтают 1–2 минуты на твоём уровне — со словами из твоего повторения. Потом 3 вопроса.':'На этом устройстве нет озвучки текста.'}</small></span>
+    <span className="btn small" aria-hidden="true">${done?'Ещё раз':'Слушать'}</span></button>`; }
+function Podcast({st,update,onClose}){ const lvl=st.level||'A1';
+  const [ep,setEp]=useState(()=>{ try{ const c=JSON.parse(localStorage.getItem(POD_KEY)||'null'); if(c&&c.day===dayKey()&&c.lvl===lvl&&c.ep) return c.ep; }catch(e){} return null; });
+  const [err,setErr]=useState(null), [play,setPlay]=useState(false), [line,setLine]=useState(-1), [heard,setHeard]=useState(false), [txt,setTxt]=useState(false), [ans,setAns]=useState({}), [slow,setSlow]=useState(false);
+  const words=useMemo(()=>podWords(st),[]);
+  const load=()=>{ setErr(null); const facts=((st.wmem&&st.wmem.facts)||[]).slice(0,4).join('; ');
+    getSample().then(ai=>{ if(!ai) throw {code:'no_ai'}; return ai.json(POD_PROMPT(lvl,words,facts),null,{fast:true}); }).then(j=>{ const lines=((j&&j.lines)||[]).filter(l=>Array.isArray(l)&&l[1]).map(l=>[/mia/i.test(l[0])?'Mia':'Wordy',String(l[1]).slice(0,300)]).slice(0,22);
+      const q=((j&&j.q)||[]).filter(x=>x&&x.q&&Array.isArray(x.o)&&x.o.length>=2&&x.a>=0&&x.a<x.o.length).slice(0,3);
+      if(lines.length<6) throw {code:'bad'}; const e={title:String(j.title||'Wordy Podcast').slice(0,80),title_ru:String(j.title_ru||'').slice(0,80),lines,q,words};
+      setEp(e); try{ localStorage.setItem(POD_KEY,JSON.stringify({day:dayKey(),lvl,ep:e})); }catch(x){} })
+      .catch(e=>{ if(e&&e.code==='no_ai'){ setErr('Подкасты работают на сайте Wordy с интернетом.'); return; } errLog('ai','podcast',e&&(e.message||e.code)); setErr('Не удалось сделать выпуск. Проверь интернет и попробуй ещё раз.'); }); };
+  useEffect(()=>{ if(!ep) load(); return ()=>stopSpeak(); },[]);
+  const start=()=>{ if(play){ stopSpeak(); setPlay(false); setLine(-1); return; } setPlay(true); W('react','wave');
+    playScript(ep.lines.map(l=>[l[0],l[1]]),{Wordy:'m',Mia:'f'},i=>setLine(i),ok=>{ setPlay(false); setLine(-1); if(ok!==false) setHeard(true); else setErr('Озвучка остановилась. Нажми «Слушать» ещё раз.'); }); };
+  const nOk=ep?ep.q.filter((x,i)=>ans[i]===x.a).length:0, all=ep&&ep.q.length&&Object.keys(ans).length===ep.q.length;
+  useEffect(()=>{ if(!all) return; const today=dayKey(), first=(st.pods||{}).last!==today; SFX(nOk===ep.q.length?'fanfare':'correct'); W('react',nOk===ep.q.length?'cheer':'correct');
+    update(s=>{ const g={...(s.pods||{})}; g.last=today; g.n=(g.n||0)+(first?1:0); let p={pods:g}; if(first) p={...p,xp:s.xp+10+nOk*5,listens:(s.listens||0)+1};
+      words.forEach(en=>{ const w=wordByEn(en); if(w&&s.boxes[w.id]!=null){ p={...p,...memGrade({...s,...p},w.id,3,.5)}; } }); return p; }); },[all]);
+  return html`<div className="pod enter" id="pod">
+    <div className="pod-head"><button className="link-btn" onClick=${()=>{ stopSpeak(); onClose(); }}>← Назад</button><span className="muted">Подкаст дня · ${lvl}</span></div>
+    ${!ep?html`<div className="pod-load">${err?html`<p className="muted">${err}</p><button className="btn" onClick=${load}>Ещё раз</button>`:html`<p className="muted">🎙️ Ворди и Мия готовят выпуск…</p>`}</div>`
+    :html`<h3 className="pod-title">${ep.title}</h3>${ep.title_ru?html`<p className="muted pod-sub">${ep.title_ru}</p>`:null}
+      <div className="pod-player"><button className=${'pod-play'+(play?' on':'')} id="pod-play" aria-label=${play?'Стоп':'Слушать'} onClick=${start}>${play?'■':'▶'}</button>
+        <div className="pod-wave" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>html`<i key=${i} style=${{'--i':i}} className=${play?'on':''}/>`)}</div>
+        <div className="pod-who">${play&&line>=0?html`<b className=${ep.lines[line][0]==='Mia'?'mia':'wordy'}>${ep.lines[line][0]==='Mia'?'Мия':'Ворди'}</b>`:html`<small className="muted">${heard?'Можно послушать ещё раз':'≈ 1–2 минуты'}</small>`}</div></div>
+      <div className="pod-words">${ep.words.map(w=>html`<span key=${w} className="chip">${w}</span>`)}</div>
+      ${err?html`<p className="muted">${err}</p>`:null}
+      <details className="pod-text" open=${txt} onToggle=${e=>setTxt(e.target.open)}><summary>Текст выпуска</summary>${ep.lines.map((l,i)=>html`<p key=${i} className=${i===line?'cur':''}><b className=${l[0]==='Mia'?'mia':'wordy'}>${l[0]==='Mia'?'Мия':'Ворди'}:</b> ${l[1]}</p>`)}</details>
+      ${heard||all?html`<div className="pod-q"><h4>Проверь себя</h4>${ep.q.map((x,i)=>html`<div key=${i} className="pod-qi"><p>${i+1}. ${x.q}</p><div className="pod-opts">${x.o.map((o,k)=>{ const a=ans[i]; const cls=a==null?'':k===x.a?' ok':a===k?' bad':'';
+          return html`<button key=${k} className=${'chip pod-o'+cls} disabled=${a!=null} onClick=${()=>{ setAns(s=>({...s,[i]:k})); SFX(k===x.a?'correct':'wrong'); }}>${o}</button>`; })}</div></div>`)}
+        ${all?html`<p className="pod-res"><b>${nOk} из ${ep.q.length}</b> — ${nOk===ep.q.length?'отлично, ты всё понял!':nOk?'неплохо! Послушай ещё раз с текстом.':'попробуй ещё раз и открой текст.'}</p>`:null}</div>`
+      :html`<p className="hint-line">Дослушай выпуск до конца — потом будут 3 вопроса.</p>`}`}</div>`; }
+function ListenList({st,update,startListen,openMock}){
   return html`<div className="sec-h"><h2>Аудирование</h2><span className="muted">пройдено ${st.listens||0}</span></div>
+    ${update?html`<${PodcastCard} st=${st} update=${update}/>`:null}
     <button className="listen-card enter" id="listen-start" onClick=${startListen} disabled=${!canSpeak}>
       <span className="lc-ic">${I.speaker()}</span>
       <span className="lc-main"><b>Диктант с Ворди</b><small>${canSpeak?'Ворди читает предложение, а ты вписываешь пропущенное слово. 8 предложений уровня '+(st.level||'A1')+'.':'На этом устройстве нет озвучки текста. Попробуй другой браузер.'}</small></span>
       <span className="btn small" aria-hidden="true">Начать</span></button>
-    <p className="hint-line">Совет: сначала слушай на обычной скорости, а если не понял — нажми «Медленно».</p>`;
+    ${openMock?html`<div className="sec-h ls-h"><h2>IELTS Listening</h2><span className="muted">4 части · ~30 мин</span></div>
+      <div className="ls-grid">${IELTS_MOCKS.map((m,i)=>{ const r=((st.mocks||{})[m.id]||{}).L; return html`<button key=${m.id} className=${'ls-test enter'+(r?' done':'')} style=${{'--i':Math.min(i,8)}} id=${'ls-'+m.id} onClick=${()=>openMock({kind:'ielts',id:m.id,part:'L'})}>
+          <span className="ls-n">${i+1}</span><small>${r&&r.band!=null?'бэнд '+fmtB(r.band):'тест'}</small></button>`; })}</div>
+      <p className="hint-line">Как на экзамене: запись звучит один раз. Начни с теста 1 — он полегче.</p>`:html`<p className="hint-line">Совет: сначала слушай на обычной скорости, а если не понял — нажми «Медленно».</p>`}`;
 }
 function Listening({st,update,onExit}){
   const [items]=useState(()=>makeListening(st));
@@ -20635,7 +20842,7 @@ function Session({track,unit,update,onExit,active,mode,st}){
     setChk({ok,typo}); setResults(r=>[...r,ok]);
     const g=ansGrade(ok,q.type,Date.now()-qT.current,(q.w.en||'').length,typo);
     update(s=>{ const t=dayKey();
-      return {...memGrade(s,q.id,g,TASK_W[q.type]||1),coins:s.coins+(ok?5:0),xp:s.xp+(ok?10:0),today:t,todayCount:(s.today===t?s.todayCount:0)+1}; });
+      return {...memGrade(s,q.id,g,TASK_W[q.type]||1),coins:s.coins+(ok?5:0),xp:s.xp+(ok?10:0),...(()=>{ const ids=s.today===t&&Array.isArray(s.todayIds)?s.todayIds:[]; if(!ok||ids.includes(q.id)) return {today:t,todayIds:ids,todayCount:ids.length}; const n=[...ids,q.id]; return {today:t,todayIds:n,todayCount:n.length}; })()}; });
     /* a mistake comes back once at the end of the session, as an easier task */
     if(!ok&&!q.retry&&quiz.filter(x=>x.retry).length<6) setQuiz(Q=>[...Q,{...quizQ(q.w,q.type==='tr'?'tr':'ru',unit.words,mode==='review'||mode==='daily'),retry:true}]);
     if(ok) setEarned(e=>({...e,coins:e.coins+5,xp:e.xp+10}));
@@ -20726,6 +20933,8 @@ function Session({track,unit,update,onExit,active,mode,st}){
          :q.type==='listen'?html`<p className="qask">Послушай и напиши слово</p>
             <div className="listen-btns"><button className="btn" id="q-play" onClick=${()=>{ SFX('tap'); speak(q.w.en); }}>${I.speaker()} Слушать</button></div>
             ${inp('что ты услышал','Услышанное слово')}${checkBtn}`
+         :q.type==='irr'?html`<p className="qask">Напиши 2-ю и 3-ю формы</p><div className="word" lang="en">${q.w.en}</div><p className="qhint">${q.w.tr||''}</p>
+            ${inp('например: went gone','Вторая и третья формы через пробел')}${checkBtn}`
          :q.type==='fix'?html`<p className="qask">Исправь свою ошибку из разговора</p><div className="word fix-wrong"><s>${q.w.wrong}</s></div>${q.w.why?html`<p className="qhint">${q.w.why}</p>`:null}
             ${inp('как правильно','Правильный вариант')}${checkBtn}`
          :q.type==='gap'?html`<p className="qask">Вставь слово «${q.w.ru}»</p><p className="gsent">${q.before}${inp('','Пропущенное слово')}${q.after}</p>${checkBtn}`
@@ -20766,7 +20975,7 @@ function MemoryPanel({st}){
         <span><i className="mem-m"></i><b>${mid}</b> закрепляются<small>от 4 дней до 3 недель</small></span>
         <span><i className="mem-w"></i><b>${weak}</b> свежие<small>легко забыть, повторяем часто</small></span></div>
       <div className="mem-fc" role="img" aria-label=${'Повторений на неделю: '+fc.join(', ')}>${fc.map((v,k)=>html`<div key=${k}><b>${v||''}</b><span style=${{height:(v/mx*44+2)+'px'}}></span><small>${lab(k)}</small></div>`)}</div>
-      <p className="mem-note">Ворди показывает слово как раз тогда, когда ты начинаешь его забывать. Чем лучше ты помнишь слово, тем реже оно возвращается и тем сложнее задание: сначала выбор ответа, потом ввод с клавиатуры, потом на слух и в предложении.</p>
+      <details className="mem-how"><summary>Как это работает</summary><p className="mem-note">Ворди показывает слово как раз тогда, когда ты начинаешь его забывать. Чем лучше ты помнишь слово, тем реже оно возвращается и тем сложнее задание: сначала выбор ответа, потом ввод с клавиатуры, потом на слух и в предложении.</p></details>
     </div>`;
 }
 function Progress({st,practice,update,startMy,startHard}){
@@ -20774,7 +20983,8 @@ function Progress({st,practice,update,startMy,startHard}){
   const hard=hardWords(st);
   return html`
    <div className="page-h"><h1>Прогресс</h1></div>
-   ${st.level?html`<div className="ladder">${CEFR.map(L=>{ const p=levelProgress(st,L), cur=L===st.level, past=lvlIdx(L)<lvlIdx(st.level);
+   <div className="pg-cols"><div className="pg-col">
+   ${st.level?html`<div className="ladder">${lvlIdx(st.level)>0?html`<div className="rung past rung-sum"><span className="rung-code">✓</span><span className="rung-main"><b>${CEFR.filter(L=>lvlIdx(L)<lvlIdx(st.level)).join(', ')} пройдены</b></span></div>`:null}${CEFR.filter(L=>lvlIdx(L)>=lvlIdx(st.level)&&lvlIdx(L)<=lvlIdx(st.level)+1).map(L=>{ const p=levelProgress(st,L), cur=L===st.level, past=lvlIdx(L)<lvlIdx(st.level);
      return html`<div key=${L} className=${'rung'+(cur?' cur':'')+(past?' past':'')+(lvlIdx(L)>lvlIdx(st.level)?' fut':'')}>
        <span className="rung-code">${past?'✓':L}</span>
        <span className="rung-main"><b>${L} · ${LEVEL_NAMES[L]}</b><small>${past?'пройден':cur?'слова '+p.wd+'/'+p.needW+' · грамматика '+p.gd+'/'+p.needG+' (нужно 60%)':p.total+' '+plural(p.total,'шаг','шага','шагов')+' · закрыт'}</small>
@@ -20786,23 +20996,23 @@ function Progress({st,practice,update,startMy,startHard}){
      <div className="tile"><b>${st.coins}</b><span>монет</span></div>
      <div className="tile"><b>${st.xp}</b><span>XP</span></div>
    </div>
-   <${MemoryPanel} st=${st}/>
+   <${MemoryPanel} st=${st}/></div><div className="pg-col">
    <${Achievements} st=${st}/>
    ${Object.keys(st.qtypes||{}).length?html`<div className="sec-h"><h2>IELTS: типы вопросов</h2></div><div className="set-group qt-prog"><${QtBreak} o=${st.qtypes}/>
      ${weakTypes(st.qtypes).slice(0,2).map(w=>{ const k=Object.keys(QT_NAMES).find(x=>QT_NAMES[x]===w.name), d=k&&drillFor(k,st); return d?html`<div key=${k} className="set-row"><div><strong>Тренировка: ${w.name}</strong><p>${w.pct}% верно. Быстрая тренировка: 8 таких вопросов с разбором, ≈ 5 минут</p></div>
        <button className="btn small" id=${'drill-'+k} onClick=${()=>practice&&practice({kind:'drill',type:k})}>Начать</button></div>`:null; })}</div>`:null}
-   <${MyWords} st=${st} update=${update} startMy=${startMy}/>
-   <${EssayBank} st=${st}/>
+   ${hard.length?html`<div className="sec-h"><h2>Сложные слова</h2><span className="muted">${hard.length}</span></div>
+     <div className="hard">${hard.slice(0,12).map(w=>html`<div key=${w.id}><b>${w.en}</b><span className="muted">${w.ru}</span></div>`)}</div>
+     ${hard.length>12?html`<p className="hint-line">и ещё ${hard.length-12}</p>`:null}
+     <button className="btn wide" id="hard-review" onClick=${startHard}>Повторить сложные слова</button>`:null}
+   ${Object.keys(st.myWords||{}).length?html`<${MyWords} st=${st} update=${update} startMy=${startMy}/>`:null}
+   <${EssayBank} st=${st}/></div></div>
+   <details className="prog-more" id="prog-more"><summary><b>Подробнее</b><span className="muted">направления и все ${GL.length} тем грамматики · ★ ${gStarsTotal(st)} / ${GL.length*3}</span></summary>
    <div className="sec-h"><h2>Направления</h2></div>
    <div className="tracks">${TRACKS.map(t=>{ const words=t.units.flatMap(u=>u.words), l=learned(st,words);
      return html`<div className="trow" key=${t.id}><header><b>${t.name}</b><span className="muted">${l} / ${words.length}</span></header><div className="bar"><i style=${{width:(l/words.length*100)+'%'}}></i></div></div>`;})}</div>
-   <div className="sec-h"><h2>Сложные слова</h2><span className="muted">${hard.length}</span></div>
-   ${hard.length?html`<div className="hard">${hard.slice(0,60).map(w=>html`<div key=${w.id}><b>${w.en}</b><span className="muted">${w.ru}</span></div>`)}</div>
-     ${hard.length>60?html`<p className="hint-line">и ещё ${hard.length-60}</p>`:null}
-     <button className="btn wide" id="hard-review" onClick=${startHard}>Повторить сложные слова</button>`
-     :html`<p className="empty">Здесь появятся слова, на которых ты ошибся. Ворди вернёт их на повторение.</p>`}
    <div className="sec-h"><h2>Грамматика</h2><span className="muted">★ ${gStarsTotal(st)} / ${GL.length*3}</span></div>
-   <div className="path">${GL.map((l,i)=>{ const n=(st.gstars||{})[l.id]||0; return html`<div key=${l.id} className=${n?'done':''}><i></i><span>${i+1}. ${l.title}</span><${Stars} n=${n} size=${14}/></div>`;})}</div>`;
+   <div className="path">${GL.map((l,i)=>{ const n=(st.gstars||{})[l.id]||0; return html`<div key=${l.id} className=${n?'done':''}><i></i><span>${i+1}. ${l.title}</span><${Stars} n=${n} size=${14}/></div>`;})}</div></details>`;
 }
 
 /* ---------- teacher code: Интенсив и повышение уровня ---------- */
@@ -21157,12 +21367,11 @@ function Settings({st,update,reset,restore}){
        <div className="chips">${CEFR.map(l=>html`<button key=${l} className="chip" id=${'set-lvl-'+l} aria-pressed=${st.level===l} onClick=${()=>askLevel(l)}>${l}</button>`)}
          ${canLiveVoice()&&st.age!=='u13'?html`<button className="chip" id="set-lvl-voice" onClick=${()=>{ SFX('pop'); setLc(true); }}>🎙 Определить голосом</button>`:null}</div></div>
      ${lc?html`<${LevelCheck} st=${st} update=${update} onClose=${()=>setLc(false)} onPick=${l=>{ setLc(false); if(l===st.level){ W('say','Твой уровень и так '+l+' — всё верно!',0,true); } else setLvlAsk(l); }}/>`:null}
-     <div className="set-row wrap"><div><strong>Новых слов в день</strong><p>Сколько слов будет в подборке «Слова дня»</p></div>
-       <div className="chips">${[5,10,15,20].map(n=>html`<button key=${n} className="chip" id=${'set-dn-'+n} aria-pressed=${(st.dailyNew||10)===n} onClick=${()=>{ SFX('tap'); update(()=>({dailyNew:n})); W('react','nod'); }}>${n}</button>`)}</div></div>
+     <div className="set-row wrap"><div><strong>Темп на день</strong><p>Новые слова для «Слов дня» и общая цель на кольце «Сегодня» (новые + повторение)</p></div>
+       <div className="pace"><span className="pace-l">Новых слов</span><div className="chips">${[5,10,15,20].map(n=>html`<button key=${n} className="chip" id=${'set-dn-'+n} aria-pressed=${(st.dailyNew||10)===n} onClick=${()=>{ SFX('tap'); update(()=>({dailyNew:n})); W('react','nod'); }}>${n}</button>`)}</div>
+         <span className="pace-l">Цель за день</span><div className="chips">${[5,10,20,30].map(n=>html`<button key=${n} className="chip" id=${'goal-'+n} aria-pressed=${st.goal===n} onClick=${()=>{ update(()=>({goal:n})); W('react','nod'); }}>${n}</button>`)}</div></div></div>
      <div className="set-row wrap"><div><strong>Возраст</strong><p>${st.age==='u13'?'До 13 лет проверка с помощью ИИ выключена: тексты и голос не отправляются в ИИ.':'Нужен, чтобы включать функции, подходящие по возрасту'}</p></div>
-       <${AgeChips} v=${st.age} set=${a=>update(()=>({age:a}))} pre="set-age-"/></div>
-     <div className="set-row"><div><strong>Дневная цель</strong><p>Сколько слов проверять в день</p></div>
-     <div className="chips">${[5,10,20,30].map(n=>html`<button key=${n} className="chip" id=${'goal-'+n} aria-pressed=${st.goal===n} onClick=${()=>{ update(()=>({goal:n})); W('react','nod'); }}>${n}</button>`)}</div></div></div>
+       <${AgeChips} v=${st.age} set=${a=>update(()=>({age:a}))} pre="set-age-"/></div></div>
    <${PushBox} st=${st}/>
    <${AccSettings} st=${st}/>
    <div className="sec-h"><h2>Внешний вид</h2></div>
@@ -23580,8 +23789,8 @@ const Timer=({left,label})=>html`<span className=${'mk-timer'+(left<=300?' warn'
 /* two-step exit so a mis-tap does not throw away an exam */
 function ExitBtn({onExit,id}){ const [arm,setArm]=useState(false);
   useEffect(()=>{ if(!arm) return; const t=setTimeout(()=>setArm(false),2600); return ()=>clearTimeout(t); },[arm]);
-  return html`<button className=${'icon-btn'+(arm?' mk-arm':'')} id=${id||'mk-close'} onClick=${()=>{ SFX('tap'); if(arm){ stopSpeak(); onExit(); } else setArm(true); }} aria-label=${arm?'Нажми ещё раз, чтобы выйти':'Выйти из теста'}>${I.close()}</button>
-    ${arm?html`<span className="mk-armtxt" role="status">Нажми ещё раз — выйти без сохранения</span>`:null}`; }
+  return html`<span className="mk-exit"><button className=${'icon-btn'+(arm?' mk-arm':'')} id=${id||'mk-close'} onClick=${()=>{ SFX('tap'); if(arm){ stopSpeak(); onExit(); } else setArm(true); }} aria-label=${arm?'Нажми ещё раз, чтобы выйти':'Выйти из теста'}>${I.close()}</button>
+    ${arm?html`<span className="mk-armtxt" role="status">Нажми ещё раз, чтобы выйти</span>`:null}</span>`; }
 
 /* ---------- voices for dialogues ---------- */
 let _voices=null;
@@ -23619,7 +23828,7 @@ function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODE
       get2:ai2?(m=>AI.getGenerativeModel(ai2,{model:m,generationConfig:cfg},{timeout:20000})):null,
       plain:m=>AI.getGenerativeModel(ai,{model:m},{timeout:30000}), plain2:ai2?(m=>AI.getGenerativeModel(ai2,{model:m},{timeout:30000})):null,
       voice:(m,v)=>AI.getGenerativeModel(ai,{model:m,generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:v}}}}},{timeout:12000})};
-  })().catch(e=>{ mp=null; console.warn('Gemini SDK',e); throw {code:'load_failed'}; }));
+  })().catch(e=>{ mp=null; console.warn('Gemini SDK',e); errLog('ai','load_failed',e&&e.message); throw {code:'load_failed'}; }));
   const parse=t=>{ try{ return JSON.parse(t); }catch(e){} const m=String(t||'').match(/\{[\s\S]*\}/); if(m){ try{ return JSON.parse(m[0]); }catch(e){} } throw {code:'invalid_json'}; };
   const code=e=>{ const x=String((e&&e.code)||'')+' '+String((e&&e.message)||e||'');
     return /api-not-enabled|app-check|appcheck|API key|PERMISSION_DENIED|403|401/i.test(x)?'not_configured':/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(x)?'rate_limited'
@@ -23654,14 +23863,14 @@ function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODE
       try{ const M=await load(), m=C.fast||MODELS[0], ek=prompt.slice(0,40), t0=Date.now();
         const raw=await streamRaw(M,m,prompt,r=>{ const j=jsonPeek(r); if(j&&onPart) onPart(j); },Math.max(2500,Math.min(8000,(ema[ek]||1500)*2.2)));
         ema[ek]=(ema[ek]||1500)*.7+Math.min(20000,Date.now()-t0)*.3; const j=parse(raw); if(key) remember(key,j); return j; }
-      catch(e){ console.warn('Gemini stream',e); return api.json(prompt,null,{fast:true,fresh}); } },
+      catch(e){ console.warn('Gemini stream',e); errLog('stream',code(e),e&&e.message); return api.json(prompt,null,{fast:true,fresh}); } },
     json:async(prompt,media,opt)=>{ const M=await load(), parts=[{text:prompt}], au=!!(media&&media.length), fast=!!(opt&&opt.fast);
     const key=fast&&!au&&!(opt&&opt.fresh)?hkey(prompt):null; if(key&&cache[key]) return cache[key][1]; const ek=prompt.slice(0,40);
     if(au) media.forEach(x=>parts.push({inlineData:{mimeType:x.mime,data:x.data}}));
     let last=null;
     for(let k=0;k<MODELS.length;k++){ const i=((fast?Math.max(0,MODELS.indexOf(C.fast)):first)+k)%MODELS.length; let r;
       const t0=Date.now();
-      try{ r=fast?await hedged(M,MODELS[i],parts,au,k===MODELS.length-1,Math.max(2500,Math.min(10000,(ema[ek]||1800)*2.2))):await M.get(MODELS[i],au,k===MODELS.length-1).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); last=e; if(busy(e)) continue; throw {code:code(e)}; }
+      try{ r=fast?await hedged(M,MODELS[i],parts,au,k===MODELS.length-1,Math.max(2500,Math.min(10000,(ema[ek]||1800)*2.2))):await M.get(MODELS[i],au,k===MODELS.length-1).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); errLog('ai',code(e)+'-'+String(MODELS[i]).replace('gemini-',''),e&&e.message); last=e; if(busy(e)) continue; throw {code:code(e)}; }
       if(fast) ema[ek]=(ema[ek]||1800)*.7+Math.min(20000,Date.now()-t0)*.3;
       if(!fast) first=i; let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } const j=parse(t); if(key) remember(key,j); return j; }
     throw {code:busy(last)?'busy':code(last)}; },
@@ -24666,18 +24875,16 @@ function IeltsFull({m,st,update,onExit}){
 }
 /* ---------- practice with the AI: a story from your own words, and a conversation with Wordy ---------- */
 /* words to practise: due ones first (most forgotten first), then the weakest learned ones, then new words of the level */
-function practiceWords(st,n){ const seen=new Set(), out=[]; const add=w=>{ if(w&&!seen.has(w.en.toLowerCase())&&out.length<n&&w.track!=='idioms'){ seen.add(w.en.toLowerCase()); out.push(w); } };
+function practiceWords(st,n){ const seen=new Set(), out=[]; const add=w=>{ if(w&&!w.kind&&!/[.!?]$/.test(w.en)&&w.en.split(/\s+/).length<=3&&!seen.has(w.en.toLowerCase())&&out.length<n&&w.track!=='idioms'){ seen.add(w.en.toLowerCase()); out.push(w); } };
   dueWords(st).forEach(add);
   if(out.length<n) ALL.filter(w=>st.boxes[w.id]!=null).map(w=>[w,memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).forEach(x=>add(x[0]));
   if(out.length<n){ const L=st.level||'A1'; shuffle(ALL.filter(w=>w.track==='basic'&&w.cefr===L)).forEach(add); }
   return out; }
 function PracticeRow({openMock}){ const ai=useSample(); if(!ai) return null;
-  return html`<div className="prac-row enter" style=${{'--i':2}}>
-    <button className="prac-card" id="open-story" onClick=${()=>openMock({kind:'story'})}><span className="prac-ic" aria-hidden="true">📖</span><span><b>История из твоих слов</b><small>Ворди сочинит рассказ из слов, которые пора повторить</small></span></button>
-    <button className="prac-card" id="open-call" onClick=${()=>openMock({kind:'call'})}><span className="prac-ic" aria-hidden="true">📞</span><span><b>Видеозвонок с Ворди</b><small>Говори голосом — Ворди отвечает живым голосом и эмоциями</small></span></button>
-    <button className="prac-card" id="open-talk" onClick=${()=>openMock({kind:'talk'})}><span className="prac-ic" aria-hidden="true">💬</span><span><b>Чат с Ворди</b><small>Та же сценка, но можно писать и думать дольше</small></span></button>
-  </div>`; }
-const STORY_TOPICS=[['any','Любая'],['school','Школа'],['adventure','Приключение'],['mystery','Детектив'],['space','Космос'],['sport','Спорт'],['city','Город'],['nature','Природа']];
+  return html`<div className="prac-wrap enter" style=${{'--i':2}}><div className="sec-h prac-h"><h2>Практика с Ворди</h2></div><div className="prac-row">
+    ${[['open-story','story','📖','История','из твоих слов'],['open-call','call','📞','Звонок','голосом'],['open-talk','talk','💬','Чат','текстом']].map(([id,k,ic,t,sub])=>html`<button key=${id} className="prac-card" id=${id} onClick=${()=>openMock({kind:k})}><span className="prac-ic" aria-hidden="true">${ic}</span><b>${t}</b><small>${sub}</small></button>`)}
+  </div></div>`; }
+const STORY_TOPICS=[['any','Любая','🎲'],['school','Школа','🏫'],['adventure','Квест','🗺️'],['mystery','Детектив','🔍'],['space','Космос','🚀'],['sport','Спорт','⚽'],['city','Город','🏙️'],['nature','Природа','🌿']];
 const storyPrompt=(lvl,words,topic)=>'Write a short, engaging story in English for a learner at CEFR '+lvl+' level'+(topic&&topic!=='any'?' on the topic "'+topic+'"':'')+'. '
   +'Use ALL of these words naturally (you may change their grammatical form): '+words.join(', ')+'. Wrap every use of these words in double asterisks, like **word**. '
   +'Length 140-200 words in 3-5 short paragraphs. Other vocabulary and grammar must be at or below the level. Keep it kind and suitable for teenagers. '
@@ -24712,11 +24919,13 @@ function StoryScreen({st,update,onExit}){ const ai=useSample();
     <div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>История из твоих слов</b><span className="muted">${st.level||'A2'}</span></div></div>
     ${!story&&busy&&draft?html`<article className="reader story-text st-draft" aria-busy="true"><h2>${draft.title||'…'}</h2>
         ${draft.paras.map((p,i)=>html`<p key=${i} className="rpara">${p.replace(/\*\*/g,'')}</p>`)}<p className="muted"><span className="mk-spin" aria-hidden="true"></span> Ворди дописывает историю и вопросы…</p></article>`
-    :!story?html`<div className="mk-res enter">
-        <h3>Рассказ из слов, которые пора повторить</h3>
-        <p className="muted">Ворди возьмёт 7 слов из твоего повторения и сочинит короткую историю на твоём уровне. Встретить слово в живом тексте — один из лучших способов его запомнить.</p>
-        <div className="chips" role="group" aria-label="Тема">${STORY_TOPICS.map(([k,l])=>html`<button key=${k} className="chip" aria-pressed=${topic===k} onClick=${()=>setTopic(k)}>${l}</button>`)}</div>
-        <p className="wrel-l">Слова: ${pick.map(w=>w.en).join(', ')}</p>
+    :!story?html`<div className="story-start enter">
+        <div className="ss-hero" aria-hidden="true"><span className="ss-book">📖</span><span className="ss-sp s1">✨</span><span className="ss-sp s2">✨</span></div>
+        <h3>Сказка из твоих слов</h3>
+        <p className="muted">Ворди сочинит короткую историю на уровне ${st.level||'A2'} с этими словами — так они запоминаются лучше.</p>
+        <div className="ss-words">${pick.map((w,i)=>html`<span key=${w.id} className="ss-w" style=${{'--i':i}}>${w.en}</span>`)}</div>
+        <p className="ss-l">О чём будет история?</p>
+        <div className="ss-topics" role="group" aria-label="Тема">${STORY_TOPICS.map(([k,l,e])=>html`<button key=${k} className="ss-t" aria-pressed=${topic===k} onClick=${()=>{ SFX('tap'); setTopic(k); }}><span aria-hidden="true">${e}</span>${l}</button>`)}</div>
         ${err?html`<p className="mk-err">${err}</p>`:null}
         <button className="btn wide" id="story-make" disabled=${busy} onClick=${make}>${busy?'Ворди сочиняет…':'Сочинить историю'}</button></div>`
     :html`<article className="reader story-text enter" data-perch="read">
@@ -24768,8 +24977,8 @@ function TalkScreen({st,update,onExit}){ const ai=useSample();
   const finish=()=>{ if(end) return; setEnd(true); stopSpeak(); addFixCards(update,msgs.filter(m=>m.fix).map(m=>m.fix)); const mineN=msgs.filter(m=>m.who==='me').length; SFX('fanfare'); W('react','cheer'); W('say','Хороший разговор! Ты употребил '+used.length+' из '+targets.length+' слов.');
     update(s=>{ let p={}; targets.filter(w=>used.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*4+used.length*10,coins:s.coins+used.length*5}; }); };
   if(liveSc) return html`<${LiveCall} typed=${true} st=${st} update=${update} onExit=${onExit} sc=${liveSc} onFallback=${()=>{ const x=liveSc; setLiveSc(null); setNoLive(true); begin(x,true); }}/>`;
-  if(!sc) return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Разговор с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
-    <div className="mk-res enter"><h3>Выбери сценку</h3><p className="muted">Ворди сыграет роль и будет говорить на твоём уровне. Отвечай голосом или текстом. В разговоре Ворди даст повод употребить 5 слов из твоего повторения и мягко поправит ошибки.</p>
+  if(!sc) return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Чат с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
+    <div className="mk-res enter"><h3>Выбери сценку</h3><p className="muted">Пиши по-английски — Ворди сыграет роль и ответит голосом. Поможет употребить слова из повторения.</p>
       <div className="talk-sc">${TALK_SC.map(x=>html`<button key=${x[0]} className="prac-card" id=${'talk-'+x[0]} onClick=${()=>begin(x)}><span><b>${x[1]}</b><small>${x[3]}</small></span></button>`)}</div></div></section>`;
   const mineN=msgs.filter(m=>m.who==='me').length;
   return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${mineN} ${plural(mineN,'реплика','реплики','реплик')}</span></div>
@@ -24865,31 +25074,43 @@ const BOARD_TOOL={name:'show_board',description:'Write on the lesson board that 
 /* the lesson board: formula chips, examples with the key part highlighted, the current task with its type, progress dots, the last correction */
 const TASK_T={translate:['🔁','Переведи'],transform:['✏️','Измени'],answer:['💬','Ответь'],create:['🌟','Придумай своё'],repeat:['🔂','Повтори правильно']};
 const starMark=t=>String(t).split(/(\*\*[^*]+\*\*)/).map((p,i)=>{ const m=p.match(/^\*\*([^*]+)\*\*$/); return m?html`<mark key=${i}>${m[1]}</mark>`:p.replace(/\*/g,''); });
-function LessonBoard({b}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
+function LessonBoard({b,said,onMisheard}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
   if(!b) return html`<div className="lboard empty"><p className="muted">Здесь Ворди будет писать правило, примеры и задания.</p></div>`;
+  const ruleBody=html`<${LessonBoardRule} b=${b}/>`;
   const tt=TASK_T[b.type]||TASK_T.translate, key=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
   return html`<div className="lboard" aria-live="polite">
     <div className="lb-head">${b.emoji?html`<span className="lb-emoji" aria-hidden="true">${b.emoji}</span>`:null}<b className="lb-title">${b.title||'Урок'}</b>
       ${b.n?html`<span className="lb-dots" aria-label=${'Задание '+b.n}>${Array.from({length:Math.max(b.n,5)},(_,i)=>html`<i key=${i} className=${b.marks[i]==='ok'?'ok':b.marks[i]==='bad'?'bad':i===b.n-1?'cur':''}></i>`)}</span>`:null}</div>
     ${b.task?html`<div className="lb-task" key=${b.n}><div className="lb-tt"><span aria-hidden="true">${tt[0]}</span>${tt[1]}<small>задание ${b.n}</small></div><p>${b.task}</p>
-        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b></div>`:null}
-        ${b.hint?(hint?html`<p className="lb-hint">💡 ${b.hint}</p>`:html`<button className="link-btn lb-hbtn" onClick=${()=>{ SFX('tap'); setHint(true); }}>💡 Подсказка</button>`):null}</div>`:null}
+        ${said?html`<p className="lb-said"><span>Твой ответ:</span> «${said}»</p>`:null}
+        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b>${onMisheard?html`<button className="link-btn lb-mis" id="lb-misheard" onClick=${onMisheard}>Меня не так расслышали</button>`:null}</div>`:null}
+        ${b.hint&&b.hintOn?html`<p className="lb-hint">💡 ${b.hint}</p>`:null}</div>`:null}
+    ${b.summary?html`<div className="lb-sum">🏁 <b>${b.summary.good}</b>${b.summary.review?html`<span>Повторить: ${b.summary.review}</span>`:null}</div>`:null}
+    ${b.n?html`<details className="lb-rulebox"><summary>📌 Правило${b.title?' · '+b.title:''}</summary>${ruleBody}</details>`:ruleBody}
+  </div>`; }
+const lbKey=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
+function LessonBoardRule({b}){ const key=lbKey; return html`<div className="lb-rulebody">
     ${b.formula.length?html`<div className="lb-formula">${b.formula.map((x,i)=>html`${i?html`<span className="lb-plus" aria-hidden="true">+</span>`:null}<span key=${i} className=${'lb-chip'+(key(x)?' key':'')}>${x}</span>`)}</div>`:null}
     ${b.rule?html`<p className="lb-rule">${b.rule}</p>`:null}
     ${b.examples.length?html`<ul className="lb-ex">${b.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en.replace(/\*/g,'')} onClick=${()=>speak(e.en.replace(/\*/g,''))}>${I.speaker()}</button>`:null}<div><b lang="en">${starMark(e.en)}</b>${e.ru?html`<span>${e.ru}</span>`:null}</div></li>`)}</ul>`:null}
   </div>`; }
-const lessonSys=(lvl,ctx,extra)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
+const SUMMARY_TOOL={name:'lesson_summary',description:'Call once at the very end of the lesson, right before saying goodbye.',parameters:{type:'OBJECT',properties:{
+  good_ru:{type:'STRING',description:'one short line in Russian: what went well'},review_ru:{type:'STRING',description:'one short line in Russian: what to review'}},required:['good_ru']}};
+const lessonSys=(lvl,ctx,extra,weak)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
   +'Темп: говори медленно, спокойно и чётко, с паузами между предложениями — особенно в начале; ученику нужно успевать понять. '
   +'У ученика на экране есть доска: всё важное пиши на неё инструментом show_board, а голосом говори коротко. '
   +'План. 1) Поздоровайся одной фразой. Вызови show_board с title, emoji, formula (схема по частям), rule (когда употребляем, одна строка) и examples (2–3 примера с переводом, главную часть выдели **звёздочками**). Голосом коротко, в 2–3 предложениях по-русски, объясни правило и прочитай один пример. Спроси: «Понятно? Начинаем?» — и дождись ответа ученика. '
   +'2) Дай 5–6 коротких устных заданий по очереди, от простого к сложному; перед каждым заданием вызывай show_board с task (текст задания), task_type и, если полезно, hint — и затем прочитай задание голосом: перевести короткую фразу с русского, превратить предложение в отрицание или вопрос, ответить на вопрос с этой конструкцией, придумать своё предложение. Давай по одному заданию и жди ответа. '
   +'3) Если ответ верный — коротко похвали и дай следующее задание. Если есть ошибка — вызови correction (wrong — фрагмент ученика, right — правильный вариант, why — очень коротко по-русски), мягко скажи правильный вариант и попроси повторить. Вызывай correction только для настоящих ошибок и только для одной фразы ученика за раз. Если ученик ответил грамматически верно, но другой конструкцией (например, Past Simple с yesterday вместо Present Perfect), — засчитай, похвали и коротко объясни разницу, без correction. '
-  +'4) После заданий подведи итог в 2 предложениях по-русски: что получилось и на что обратить внимание — и тепло попрощайся. '
+  +'4) После заданий вызови lesson_summary (что получилось и что повторить), подведи итог голосом в 2 предложениях по-русски и тепло попрощайся. '
+  +'Если ученик просит повторить, говорить медленнее, объяснить иначе или дать подсказку (такие просьбы приходят в скобках) — сделай это сразу и коротко. Если ученик говорит, что его неправильно расслышали, — извинись, не засчитывай это ошибкой и попроси сказать ещё раз. '
+  +(weak&&weak.length?'В прошлый раз по этой теме ученик ошибался так: '+weak.map(f=>'«'+f.wrong+'» → «'+f.right+'»').join('; ')+'. Включи в задания 1–2 таких места, чтобы закрепить. ':'')
   +'Говори живо и коротко, на «ты», как друг-репетитор. Английские фразы произноси чётко, с английским произношением. Не читай весь экран вслух. Показывай эмоции через show_emotion. '+(extra||'');
 /* 🎙 voice mini-lesson on the grammar topic on screen */
-function VoiceLesson({st,update,onClose}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+function VoiceLesson({st,update,onClose,topic}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+  const tid=(topic&&topic.id)||'x', prev=((st.vlesson||{})[tid])||{};
   const ui=html`<div className="lc-wrap" role="dialog" aria-modal="true" aria-label="Урок с Ворди голосом"><${LiveCall} st=${st} update=${update} sc=${['lesson','Урок с Ворди','','']}
-      lesson=${{sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st))}} onExit=${onClose} onFallback=${onClose}/></div>`;
+      lesson=${{id:tid,title:(topic&&topic.title)||'',sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st),prev.weak||[]),best:prev.stars||0}} onExit=${onClose} onFallback=${onClose}/></div>`;
   return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
 const canLiveVoice=()=>!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey&&window.AudioWorkletNode&&navigator.mediaDevices);
 const tutor0=p=>p==='tutor'?.82:.5;
@@ -24929,7 +25150,8 @@ const tutorSys=(lvl,ctx,sel,extra)=>'Ты Ворди — весёлое, нем�
 /* 💡 «Спросить Ворди»: on lesson and exercise screens, a live voice tutor that already sees the screen */
 function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setOpen]=useState(null), [mini,setMini]=useState(false), [run,setRun]=useState(0); const selRef=useRef(''), logRef=useRef([]);
   const ok=!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey)&&st.age!=='u13'&&!!(window.AudioContext||window.webkitAudioContext);
-  useEffect(()=>{ if(!ok) return; const chk=()=>{ const v=!!document.querySelector('[data-perch="card"]:not(button)')&&!document.querySelector('.mk-qnav')&&!document.documentElement.classList.contains('in-call'); setShow(x=>x===v?x:v); };
+  useEffect(()=>{ if(!ok) return; const chk=()=>{ const onLearn=!!document.querySelector('#tab-learn[aria-current="page"]'), study=document.querySelector('.bk-wrap,.gtheory,.gpractice,.bk-ex,.reader,.refbook,.story-text,.mk-sec:not(.call):not(.talk)');
+    const v=onLearn&&!!study&&!document.querySelector('.mk-qnav,.qcard')&&!document.documentElement.classList.contains('in-call'); setShow(x=>x===v?x:v); };
     chk(); const t=setInterval(chk,700); return ()=>clearInterval(t); },[ok]);
   const screen=()=>{ const card=document.querySelector('[data-perch="card"]:not(button)'); const sec=card&&(card.closest('section')||card); return sec?sec.innerText.replace(/\s+/g,' ').trim().slice(0,2500):''; };
   const extra=()=>genderLine(st.gender)+memLine(st);
@@ -24943,8 +25165,34 @@ function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setO
     ${mini&&!inCall?html`<button className="tutor-fab mini" id="tutor-restore" onClick=${restore} aria-label="Вернуться к разговору с Ворди"><span aria-hidden="true">💬</span><b>Ворди</b></button>`:null}
     ${open&&!mini?html`<${LiveCall} key=${run} st=${st} update=${update} typed=${true} tutor=${open} hist=${logRef.current} onMsgs=${m=>{ logRef.current=m; }} sc=${['tutor','Спросить Ворди','','']}
         onMini=${()=>{ SFX('tap'); setMini(true); }} onExit=${()=>{ setOpen(null); setMini(false); logRef.current=[]; }} onFallback=${()=>{ setOpen(null); setMini(false); }}/>`:null}`; }
+/* Pronunciation review: the learner's own voice from the call (16 kHz PCM) + what they said → up to 5 words to work on. */
+function pcmWav(chunks){ const n=chunks.reduce((a,c)=>a+c.length,0); if(n<16000*3) return null; let peak=0; chunks.forEach(c=>{ for(let i=0;i<c.length;i+=31) peak=Math.max(peak,Math.abs(c[i])); });
+  const g=Math.min(4,.9/Math.max(peak,.01)), buf=new ArrayBuffer(44+n*2), v=new DataView(buf), w=(o,t)=>{ for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,16000,true); v.setUint32(28,32000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+  let o=44; chunks.forEach(c=>{ for(let i=0;i<c.length;i++,o+=2){ const x=Math.max(-1,Math.min(1,c[i]*g)); v.setInt16(o,x<0?x*0x8000:x*0x7FFF,true); } });
+  const u=new Uint8Array(buf); let bin=''; for(let i=0;i<u.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return {mime:'audio/wav',data:btoa(bin),secs:Math.round(n/16000)}; }
+const PRON_PROMPT=said=>`You are a friendly English pronunciation coach for a Russian-speaking learner. The attached recording is the learner's own voice from a conversation (pauses removed). What they said, roughly:
+"""${said.slice(0,1500)}"""
+Listen carefully and pick up to 5 English words the learner clearly mispronounced (wrong vowel, th → s/z/f, w → v, missing final consonant, wrong stress, Russian-style r, etc.). Only include real, audible problems in words that appear in the recording; ignore accent features that do not hurt understanding. If the pronunciation was fine, return an empty list.
+For each word give: "word" (lowercase), "ipa" (correct US IPA), "heard" (how it sounded, in simple Latin letters or IPA), "tip_ru" (one short practical tip in Russian, max 120 chars, e.g. where to put the tongue), "ru" (Russian translation of the word).
+Also "good_ru": one short sentence in Russian about what already sounds good.
+Reply with ONLY JSON {"words":[{"word":"","ipa":"","heard":"","tip_ru":"","ru":""}],"good_ru":""}`;
+function addPronWord(update,x){ const w=wordByEn(x.word); update(s=>{ const due={...(s.due||{})}, boxes={...s.boxes}, my={...(s.myWords||{})}; let id;
+  if(w){ id=w.id; } else { id='pr-'+String(x.word).toLowerCase().replace(/[^a-z]+/g,'-').slice(0,30); if(!my[id]) my[id]={id,en:String(x.word).slice(0,40),ru:String(x.ru||'').slice(0,60)||'🔊',ipa:String(x.ipa||'').slice(0,40),def:'',ex:'',track:'my',added:dayKey()}; }
+  boxes[id]=0; due[id]=dayKey(); return {due,boxes,myWords:my}; }); }
+function PronReview({r,said,update}){ const [st,setSt]=useState('wait'), [res,setRes]=useState(null), [added,setAdded]=useState({});
+  useEffect(()=>{ let on=true; const wav=r.rec&&pcmWav(r.rec); if(!wav||!said.trim()){ setSt('none'); return; } r.rec=null;
+    getSample().then(ai=>{ if(!ai||!ai.gemini||window.__wordyKid) throw {code:'no_ai'}; return ai.json(PRON_PROMPT(said),[wav],{fast:true}); }).then(j=>{ if(!on) return; const ws=((j&&j.words)||[]).filter(x=>x&&x.word&&/^[a-z' -]{2,30}$/i.test(x.word)).slice(0,5); setRes({ws,good:String((j&&j.good_ru)||'').slice(0,160)}); setSt('ok'); })
+      .catch(e=>{ if(on){ if(!e||e.code!=='no_ai') errLog('ai','pron',e&&e.message); setSt('none'); } }); return ()=>{ on=false; }; },[]);
+  if(st==='none') return null;
+  return html`<div className="pron-rev" id="pron-rev"><h4>🔊 Произношение</h4>${st==='wait'?html`<p className="muted pron-wait">⏳ Ворди переслушивает твой голос…</p>`
+    :!res.ws.length?html`<p className="muted">${res.good||'Произношение понятное — Ворди не нашёл слов, которые стоит поправить.'}</p>`
+    :html`${res.good?html`<p className="muted">👍 ${res.good}</p>`:null}<div className="pron-list">${res.ws.map((x,i)=>html`<div key=${i} className="pron-item">
+        <button className="pron-say" aria-label=${'Послушать '+x.word} onClick=${()=>speak(x.word)}>🔊</button>
+        <div className="pron-txt"><b>${x.word}</b> <span className="pron-ipa">${x.ipa}</span>${x.heard?html`<small>звучало как «${x.heard}»</small>`:null}<p>${x.tip_ru}</p>
+        <button className=${'chip pron-add'+(added[i]?' on':'')} disabled=${added[i]} onClick=${()=>{ addPronWord(update,x); setAdded(a=>({...a,[i]:1})); SFX('pop'); }}>${added[i]?'✓ В повторении':'+ Повторять'}</button></div></div>`)}</div>`}</div>`; }
 function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess,lesson}){
-  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
+  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(!lesson), [menu,setMenu]=useState(false), [kb,setKb]=useState(false), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
   const targets=useMemo(()=>practiceWords(st,5),[]); const R=useRef({}); const box=useRef(null); const usedRef=useRef([]); usedRef.current=used;
   useCallStage(!end,tutor?1.1:lesson?(innerWidth<520?1.3:1.6):typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
   useEffect(()=>{ if(box.current) box.current.scrollTop=box.current.scrollHeight; },[msgs.length,aiLine]);
@@ -24958,7 +25206,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       const [A,AI]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js')]);
       const app=A.getApps().find(a=>a.name==='wordy-live')||A.initializeApp(C.config,'wordy-live');
       const ai=AI.getAI(app,{backend:new AI.GoogleAIBackend()});
-      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
+      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL,SUMMARY_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
         generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:C.voice||'Puck'}}},inputAudioTranscription:{},outputAudioTranscription:{}}});
       const mlist=[C.model].concat(C.alt||[]).filter((m,i,a)=>m&&a.indexOf(m)===i);
       const out=new (window.AudioContext||window.webkitAudioContext)(); r.out=out; if(out.state==='suspended') await out.resume();
@@ -24978,6 +25226,8 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         if(!r.headset){ const talking=r.next>out.currentTime-.35; let q=0; for(let i=0;i<f.length;i++) q+=f[i]*f[i]; const rms=Math.sqrt(q/f.length);
           if(!talking){ r.floor=r.floor==null?rms:r.floor*.95+rms*.05; r.loud=0; r.barge=false; }
           else if(!r.barge){ const echo=Math.min(.12,Math.max(.035,r.outLvl*.6)); r.loud=rms>echo&&rms>(r.floor||0)*3?(r.loud||0)+1:0; if(r.loud>=3) r.barge=true; else f=new Float32Array(f.length); } }
+        /* keep up to 60 s of the learner's voiced speech for the pronunciation review after the call */
+        if((r.recN||0)<960000){ let q2=0; for(let i=0;i<f.length;i+=4) q2+=f[i]*f[i]; if(Math.sqrt(q2/(f.length/4))>.012){ (r.rec||(r.rec=[])).push(new Float32Array(f)); r.recN=(r.recN||0)+f.length; } }
         try{ r.session.sendAudioRealtime({mimeType:'audio/pcm;rate=16000',data:b64pcm(f)}); }catch(x){} }; };
       if(!typed) await r.startMic();
       /* lip sync from the output level */
@@ -25006,7 +25256,8 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
             if(fc.name==='show_board'){ const ex=Array.isArray(a.examples)?a.examples.filter(x=>x&&x.en).slice(0,3).map(x=>({en:String(x.en),ru:String(x.ru||'')})):null, fo=Array.isArray(a.formula)?a.formula.map(String).filter(Boolean).slice(0,6):null, isTask=!!a.task, newRule=!!(a.rule||ex||fo);
               setBoard(b0=>{ const b=b0||{n:0,marks:[]}, marks=b.marks.slice(); if(isTask&&b.n&&marks[b.n-1]==null) marks[b.n-1]='ok';
                 return {title:a.title?String(a.title):b.title||'',emoji:a.emoji?String(a.emoji).slice(0,4):b.emoji||'',formula:fo&&fo.length?fo:b.formula||[],rule:a.rule?String(a.rule):b.rule||'',examples:ex&&ex.length?ex:b.examples||[],
-                  task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+                  at:isTask?msgsRef.current.length:b.at||0,task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+            if(fc.name==='lesson_summary'&&lesson){ r.summary={good:String(a.good_ru||''),review:String(a.review_ru||'')}; setBoard(b=>b?{...b,summary:r.summary}:b); }
             if(fc.name==='correction'&&a.wrong&&a.right&&lesson) setBoard(b=>b&&b.n?{...b,fix:{wrong:String(a.wrong),right:String(a.right)},marks:Object.assign(b.marks.slice(),{[b.n-1]:'bad'})}:b);
             if(fc.name==='finish_assessment'&&assess&&!r.result){ r.result=a; r.resT=setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },9000); }
             if(fc.name==='word_used'){ const w=String(a.word||'').toLowerCase(); if(targets.some(t=>t.en.toLowerCase()===w)&&!usedRef.current.includes(w)){ setUsed(o=>[...o,w]); SFX('correct'); } }
@@ -25016,25 +25267,35 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         } else if(m.type==='sessionResumptionUpdate'){ if(m.newHandle&&m.resumable!==false) r.handle=m.newHandle; }
         else if(m.type==='goingAwayNotice'){ r.goAway=true; if(!(r.next>out.currentTime)) r.reconnect(); }
         if(r.goAway&&m.type==='serverContent'&&m.turnComplete) r.reconnect();
+        if(lesson&&r.summary&&!r.sumDone&&m.type==='serverContent'&&m.turnComplete){ r.sumDone=1; setTimeout(()=>{ if(r.alive) r.finishNow&&r.finishNow(); },Math.max(1200,(r.next-out.currentTime)*1000+1200)); }
         if(r.result&&m.type==='serverContent'&&m.turnComplete){ clearTimeout(r.resT); setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },Math.max(300,(r.next-out.currentTime)*1000+300)); }
       }
       if(!alive||!r.alive) break;
-      if(r.resuming){ try{ await r.resuming; }catch(e){ console.warn('Live resume',e); break; } r.resuming=null; continue; }
+      if(r.resuming){ try{ await r.resuming; }catch(e){ console.warn('Live resume',e); errLog('live','resume',e&&e.message); break; } r.resuming=null; continue; }
       if(r.handle&&resumes<6){ resumes++; try{ await session.resumeSession({handle:r.handle}); continue; }catch(e){ console.warn('Live resume',e); } }
       break; }
       if(alive&&r.alive) { setPhase('ended'); }
-    }catch(e){ console.warn('Live',e); if(alive) { setErr(String((e&&e.message)||e)); setPhase('failed'); } } })();
+    }catch(e){ console.warn('Live',e); errLog('live',/handshake/i.test(String(e&&e.message))?'handshake':/Permission|NotAllowed/i.test(String(e&&e.message||e))?'mic':'fail',e&&e.message); if(alive) { setErr(String((e&&e.message)||e)); setPhase('failed'); } } })();
     return ()=>{ alive=false; hangup(); }; },[]);
   const hangup=()=>{ const r=R.current; r.alive=false; cancelAnimationFrame(r.raf); try{ r.session&&r.session.close(); }catch(e){} r.session=null;
     try{ r.mic&&r.mic.getTracks().forEach(t=>t.stop()); }catch(e){} try{ r.node&&r.node.disconnect(); }catch(e){} try{ r.inC&&r.inC.close(); }catch(e){} try{ r.out&&r.out.close(); }catch(e){} W('lip',0); };
+  const lessonRes=()=>{ if(!board||!board.n) return null; const marks=board.marks.slice(); if(marks[board.n-1]==null) marks[board.n-1]='ok';
+    const total=board.n, ok=marks.filter(x=>x==='ok').length, stars=total<3?1:ok/total>=.8?3:ok/total>=.5?2:1; return {total,ok,stars}; };
   const finish=()=>{ if(end) return; hangup(); setEnd(true); saveFixes(); SFX('fanfare'); W('react','cheer');
+    if(lesson){ const res=lessonRes(), weak=msgs.filter(m=>m.fix).map(m=>m.fix).filter((f,i,a)=>a.findIndex(x=>x.wrong===f.wrong&&x.right===f.right)===i).slice(-5); R.current.res=res;
+      update(s=>{ const v={...(s.vlesson||{})}, o=v[lesson.id]||{}; v[lesson.id]={stars:Math.max(o.stars||0,res?res.stars:0),last:dayKey(),n:(o.n||0)+1,weak:weak.length?weak:(res&&res.ok===res.total?[]:o.weak||[])}; return {vlesson:v}; }); }
     const mineN=msgs.filter(m=>m.who==='me').length;
     update(s=>{ let p={}; targets.filter(w=>usedRef.current.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*5+usedRef.current.length*10,coins:s.coins+usedRef.current.length*5}; }); };
-  const mineN=msgs.filter(m=>m.who==='me').length, fixes=msgs.filter(m=>m.fix);
+  R.current.finishNow=finish;
+  const mineN=msgs.filter(m=>m.who==='me').length, fixes=msgs.filter(m=>m.fix).filter((m,k,a)=>a.findIndex(x=>x.fix.wrong===m.fix.wrong&&x.fix.right===m.fix.right)===k);
   if(phase==='failed'&&!tutor) return html`<section className="mk-sec call"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>${sc[1]}</b></div></div>
     <div className="mk-res enter"><h3>${typed?'Живой чат не подключился':'Live-звонок не подключился'}</h3><p className="muted">${/Permission|NotAllowed|getUserMedia/i.test(err||'')?'Разреши доступ к микрофону в настройках браузера и попробуй снова.':/Audio|Worklet/i.test(err||'')?'Этот браузер не поддерживает живой звонок. Попробуй Chrome.':'Линия сейчас занята или закончился бесплатный лимит на сегодня.'}</p>
       <div className="actions"><button className="btn ghost" onClick=${onExit}>Назад</button><button className="btn" id="live-fallback" onClick=${onFallback}>${typed?'Обычный чат':'Обычный звонок'}</button></div></div></section>`;
   const sendTxt=()=>{ const t=txt.trim(), r=R.current; if(!t||!r.session) return; setTxt(''); r.flushAi&&r.flushAi(); log('me',t); try{ r.session.send(t); }catch(e){ setErr('Связь прервалась. Выйди и начни заново.'); } };
+  const ask=m=>{ const r=R.current; if(!r.session) return; SFX('tap'); (r.srcs||[]).forEach(x=>{ try{ x.stop(); }catch(e){} }); r.srcs=[]; r.next=0; try{ r.session.send(m); }catch(e){} };
+  /* "I was misheard": drop the last correction (it will not become a review card) and let the learner try again */
+  const misheard=()=>{ SFX('tap'); setMsgs(ms=>{ const i=ms.map(m=>!!m.fix).lastIndexOf(true); return i<0?ms:ms.slice(0,i).concat(ms.slice(i+1)); });
+    setBoard(b=>b?{...b,fix:null,marks:Object.assign(b.marks.slice(),{[b.n-1]:undefined})}:b); ask('(Меня неправильно расслышали — это ошибка распознавания, не моя. Не засчитывай её, я скажу ещё раз.)'); };
   const flip=()=>{ const r=R.current, v=!voiceOff; r.voiceOff=v; setVoiceOff(v); if(v){ (r.srcs||[]).forEach(s=>{ try{ s.stop(); }catch(e){} }); r.srcs=[]; } };
   const micBtn=async()=>{ const r=R.current; if(!r.mic){ try{ await r.startMic(); setMicOn(true); r.muted=false; setMuted(false); }catch(e){ setErr('Разреши доступ к микрофону в настройках браузера.'); } } else { r.muted=!muted; setMuted(!muted); } };
   if(tutor) return html`<div className="sheet-wrap tutor-wrap" onClick=${()=>{ onMini&&onMini(); }}><div className="sheet tutor enter" role="dialog" aria-modal="true" aria-label="Спросить Ворди" onClick=${e=>e.stopPropagation()}>
@@ -25066,26 +25327,37 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       ${mineN>=2?html`<button className="link-btn" id="talk-end" onClick=${finish}>Завершить разговор</button>`:null}</div>
   </section>`;
   return html`<section className="mk-sec call live">
-    <div className="sess-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${phase==='connecting'?'соединяю…':end?'звонок завершён':(R.current.backup?'Live 2 · ':'Live · ')+mineN+' '+plural(mineN,'реплика','реплики','реплик')}</span></div>
-      <button className="chip" id="live-headset" aria-pressed=${headset} title="Я в наушниках: можно перебивать Ворди тихим голосом" aria-label="Наушники" onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}>🎧</button><button className="chip" aria-pressed=${subs} onClick=${()=>setSubs(v=>!v)}>Субтитры</button></div>
+    <div className="sess-top live-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b>${phase==='connecting'?html`<span className="muted">соединяю…</span>`:null}</div>
+      ${!end?html`<div className="live-menu"><button className="icon-btn" id="live-more" aria-label="Настройки звонка" aria-expanded=${menu} onClick=${()=>{ SFX('tap'); setMenu(v=>!v); }}>⋯</button>
+        ${menu?html`<div className="live-pop" role="menu">
+          <button role="menuitemcheckbox" id="live-headset" aria-checked=${headset} onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}><span>🎧 Я в наушниках</span><i>${headset?'вкл':'выкл'}</i></button>
+          <button role="menuitemcheckbox" id="live-subs" aria-checked=${subs} onClick=${()=>setSubs(v=>!v)}><span>💬 Субтитры</span><i>${subs?'вкл':'выкл'}</i></button>
+          <p className="muted">${R.current.backup?'Запасная линия':'Основная линия'} · ${mineN} ${plural(mineN,'реплика','реплики','реплик')}. Перебить Ворди можно, сказав громче; в наушниках — и тихо.</p></div>`:null}</div>`:null}</div>
     ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`
       :lesson&&phase==='connecting'?html`<p className="muted lc-note">Ворди коротко объяснит правило и даст задания — отвечай голосом. Ошибки попадут в повторение.</p>`:null}
     <div className="talk-goal" hidden=${!!(assess||lesson)}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
     <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')+(lesson?' with-board':'')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
-      ${lesson&&!end?html`<${LessonBoard} b=${board}/>`:null}
+      ${lesson&&!end?html`<${LessonBoard} b=${board} said=${meLine||((msgs.slice((board&&board.at)||0).filter(m=>m.who==='me').pop())||{}).text||''} onMisheard=${misheard}/>`:null}
+      ${lesson&&!end&&phase==='live'?html`<div className="lb-quick" role="group" aria-label="Попросить Ворди">${[['🔁','Повтори','(Повтори, пожалуйста, последнее ещё раз — медленно и чётко.)'],['🤔','Не понял','(Я не понял. Объясни иначе: проще, по-русски, на другом примере.)'],['💡','Подсказка','(Дай подсказку к заданию, но не говори ответ.)']].map(([e,l,m])=>html`<button key=${l} className="lq" id=${'lq-'+l} onClick=${()=>{ if(l==='Подсказка'&&board&&board.hint&&!board.hintOn){ SFX('pop'); setBoard(b=>({...b,hintOn:true})); } else ask(m); }}><span aria-hidden="true">${e}</span><small>${l}</small></button>`)}
+          <button className="lq" id="lq-kb" aria-pressed=${kb} onClick=${()=>{ SFX('tap'); setKb(v=>!v); }}><span aria-hidden="true">⌨️</span><small>Написать</small></button></div>
+        ${kb?html`<div className="talk-row lb-type"><input className="set-in" id="lesson-text" autoFocus value=${txt} placeholder="Напиши ответ…" onChange=${e=>setTxt(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'){ e.preventDefault(); sendTxt(); } }} aria-label="Ответ текстом"/><button className="btn" id="lesson-send" disabled=${!txt.trim()} onClick=${sendTxt}>→</button></div>`:null}`:null}
       ${subs&&!end?html`<p className="call-sub" aria-live="polite">${aiLine||([...msgs].reverse().find(m=>m.who==='ai')||{}).text||(phase==='connecting'?'Звоню Ворди…':'')}</p>`:null}
-      ${!end?html`<p className="call-live">${meLine||(muted?'Микрофон выключен':phase==='live'?'Говори — Ворди слушает':'')}</p>`:null}
+      ${!end&&!lesson&&meLine?html`<p className="call-live">${meLine}</p>`:null}
       ${fixes.length&&!end?html`<div className="t-fix live-fix"><s>${fixes[fixes.length-1].fix.wrong}</s> → <b>${fixes[fixes.length-1].fix.right}</b></div>`:null}</div>
     ${err&&!end?html`<p className="muted call-err">${err}</p>`:null}
-    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
+    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3>
+        ${lesson&&R.current.res?html`<div className="vl-stars" aria-label=${R.current.res.stars+' из 3 звёзд'}>${[1,2,3].map(i=>html`<span key=${i} className=${i<=R.current.res.stars?'on':''}>★</span>`)}</div>
+          <p className="vl-score">Без ошибок: <b>${R.current.res.ok}</b> из ${R.current.res.total} заданий</p>`:null}
+        ${lesson&&R.current.summary?html`<div className="lb-sum">🏁 <b>${R.current.summary.good}</b>${R.current.summary.review?html`<span>Повторить: ${R.current.summary.review}</span>`:null}</div>`:null}<p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
         ${fixes.length?html`<h4>Что поправить</h4><p className="muted fix-note">✎ Эти ошибки добавлены в твоё повторение — Ворди спросит их в ближайшие дни.</p><div className="mk-fixes">${fixes.map((m,i)=>html`<div key=${i} className="mk-fix"><s>${m.fix.wrong}</s><b>${m.fix.right}</b><small>${m.fix.why}</small></div>`)}</div>`:html`<p className="muted">Ошибок Ворди не заметил — так держать!</p>`}
+        ${!typed?html`<${PronReview} r=${R.current} update=${update} said=${msgs.filter(m=>m.who==='me').map(m=>m.text).join(' / ')}/>`:null}
         <details className="call-log"><summary>Весь разговор</summary>${msgs.filter(m=>m.who!=='fix').map((m,i)=>html`<p key=${i}><b>${m.who==='ai'?'Ворди':'Ты'}:</b> ${m.text}</p>`)}</details>
         <${AiReport} what="live-звонок" text=${msgs.filter(m=>m.who!=='fix').map(m=>(m.who==='ai'?'AI: ':'Me: ')+m.text).join('\n')}/>
-        <div className="actions"><button className="btn" onClick=${onExit}>Готово</button></div></div>`
-    :html`<div className="call-ctrl"><button className="btn ghost" id="live-mute" aria-pressed=${muted} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'Включить микрофон':'Выключить микрофон'}</button>
+        <div className="actions">${lesson&&fixes.length?html`<button className="btn ghost" id="vl-review" onClick=${()=>{ const ids=fixes.map(m=>'fx-'+String(m.fix.right).trim().slice(0,80).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)); onExit(); setTimeout(()=>window.dispatchEvent(new CustomEvent('wordy:fixreview',{detail:{ids}})),400); }}>Закрепить ошибки</button>`:null}<button className="btn" onClick=${onExit}>Готово</button></div></div>`
+    :html`<div className="call-ctrl"><button className=${'mic-round'+(muted?' off':phase==='live'?' on':'')} id="live-mute" aria-pressed=${muted} aria-label=${muted?'Включить микрофон':'Выключить микрофон'} title=${muted?'Микрофон выключен':'Ворди слушает'} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'🔇':'🎙'}</button>
         ${assess?html`<button className="btn" id="lc-finish" disabled=${phase!=='live'||mineN<3} onClick=${()=>{ try{ R.current.session.send('(Please finish the level check now: call finish_assessment, then say a short goodbye.)'); }catch(e){} }}>${mineN<3?'Поговори ещё немного…':'Узнать уровень'}</button>`
           :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>${lesson?'Завершить урок':'Завершить звонок'}</button>`}</div>
-      <p className="hint-line">Говори как с человеком. Чтобы перебить Ворди, скажи громче. В наушниках нажми 🎧 — тогда можно перебивать и тихо.</p>`}
+`}
   </section>`; }
 function CallScreen({st,update,onExit}){ const ai=useSample();
   const [liveSc,setLiveSc]=useState(null), [noLive,setNoLive]=useState(false);
@@ -25141,7 +25413,7 @@ function CallScreen({st,update,onExit}){ const ai=useSample();
     update(s=>{ let p={}; targets.filter(w=>used.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*5+used.length*10,coins:s.coins+used.length*5}; }); };
   if(liveSc) return html`<${LiveCall} st=${st} update=${update} onExit=${onExit} sc=${liveSc} onFallback=${()=>{ const x=liveSc; setLiveSc(null); setNoLive(true); begin(x); }}/>`;
   if(!sc) return html`<section className="mk-sec call"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Видеозвонок с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
-    <div className="mk-res enter call-pick"><h3>Кому звоним?</h3><p className="muted">Говори вслух, как по телефону: замолчал — Ворди сам услышит, что ты закончил, и ответит голосом. Включи звук и разреши микрофон.</p>
+    <div className="mk-res enter call-pick"><h3>Кому звоним?</h3><p className="muted">Говори вслух, как по телефону. Включи звук и разреши микрофон.</p>
       <div className="talk-sc">${TALK_SC.map(x=>html`<button key=${x[0]} className="prac-card" id=${'call-'+x[0]} onClick=${()=>canLive?(SFX('pop'),setLiveSc(x)):begin(x)}><span><b>${x[1]}</b><small>${x[3]}</small></span></button>`)}</div></div></section>`;
   const last=[...msgs].reverse().find(m=>m.who==='ai'), mineN=msgs.filter(m=>m.who==='me').length;
   const status={listening:'Слушаю тебя…',recording:'Говори, потом нажми «Я закончил»',thinking:'Ворди думает…',speaking:'Ворди говорит',idle:''}[phase];
@@ -26134,7 +26406,7 @@ function certHtml(c){ const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,ch=>({
 function CertsSection({st}){ const {be,user}=useAcc(); const certs=useLive(cb=>be&&user?be.myCerts(cb):(cb([]),()=>{}),[be,user&&user.uid])||[]; const [busy,setBusy]=useState(''), [msg,setMsg]=useState(''), [err,setErr]=useState(null);
   useEffect(()=>{ setMsg(''); setErr(null); },[user&&user.uid]);
   const lv=CEFR.map(L=>({L,p:levelProgress(st,L)})); const done=lv.filter(x=>x.p.complete); const next=lv.find(x=>!x.p.complete&&lvlIdx(x.L)>=lvlIdx(st.level||'A1'));
-  const byL=Object.fromEntries(certs.map(c=>[c.level,c]));
+  const byL=Object.fromEntries(certs.map(c=>[c.level,c])); if(!done.length) return null; /* nothing earned yet: the level ladder above already shows what is needed */
   const get=async x=>{ setErr(null); setMsg(''); setBusy(x.L); try{ const c=byL[x.L]||await be.issueCert({level:x.L,words:x.p.wd,gram:x.p.gd});
       const res=await saveFile('wordy-sertifikat-'+x.L+'-'+String(c.name||'').replace(/\s+/g,'-').slice(0,30)+'.html',certHtml({...c,code:c.code}));
       SFX('fanfare'); W('react','cheer'); setMsg(res==='saved'||res==='link'?'Сертификат '+x.L+' сохранён. Открой файл в браузере, чтобы распечатать или сохранить в PDF. Код: '+c.code:'Сертификат выдан (код '+c.code+'), но файл не сохранился.'); }catch(e){ setErr(e); } setBusy(''); };
@@ -26205,10 +26477,9 @@ function useBack(active,fn){ const ref=useRef(fn); ref.current=fn; const [n,setN
 const TOUR_STEPS=[
   {t:'Привет! Я Ворди',x:'Покажу за минуту, что здесь есть и как всё устроено. Можно пропустить в любой момент.'},
   {sel:'.topbar .pills',t:'Серия, монеты и опыт',x:'🔥 Серия — сколько дней подряд ты занимаешься. Пропустишь день — начнётся заново. Монеты дают за верные ответы, уроки, тесты и достижения. ⚡ Опыт (XP) растёт от каждого задания.'},
-  {sel:'.hero',t:'Цель на сегодня',x:'Сколько слов проверить за день. Цель меняется в Настройках: 5, 10, 20 или 30 слов.'},
-  {sel:'#daily-btn',t:'Слова дня',x:'Каждый день — новая подборка слов твоего уровня: сначала карточки, потом мини-тест. За каждый верный ответ +5 монет, за тест без ошибок ещё +20.'},
-  {sel:'.plan-card',t:'План от Wordy',x:'Каждый день я собираю короткий план: повторение, новые слова, урок и игру. Выполнишь весь план — +30 монет.'},
-  {sel:'#review-btn',t:'Повторение',x:'Выученные слова возвращаются через 1, 2, 4, 7 и 15 дней, чтобы не забылись. Ошибся — слово придёт снова завтра.'},
+  {sel:'.hero',t:'Сегодня',x:'Кольцо — сколько слов ты уже проверил за день (цель меняется в Настройках). Ниже — короткий план от меня: повторение, новые слова, урок и игра.'},
+  {sel:'#daily-btn, #plan-daily',t:'Слова дня',x:'Каждый день — новая подборка слов твоего уровня: сначала карточки, потом мини-тест. За каждый верный ответ +5 монет, за тест без ошибок ещё +20.'},
+  {sel:'#review-btn, #plan-review',t:'Повторение',x:'Выученные слова возвращаются через 1, 2, 4, 7 и 15 дней, чтобы не забылись. Ошибся — слово придёт снова завтра.'},
   {sel:'.seg',t:'Разделы',x:'Английский с грамматикой и текстами, подготовка к IELTS и SAT, идиомы. Переключайся, когда захочешь.'},
   {sel:'.subtabs',t:'Что внутри раздела',x:'{GL} тем грамматики от A1 до C1 с упражнениями и итоговым тестом, слова, идиомы, чтение и аудирование.'},
   {sel:'#tab-games',t:'Игры',x:'Wordle, кроссворд, космический тир, побег из комнаты и другие игры на английские слова. Хорошо, когда хочется отдохнуть, но не бросать.'},
@@ -27696,17 +27967,18 @@ function makePlan(s){ const items=[], due=dueWords(s).length, d=s.daily;
   const atLv=i=>!gKnown(s,i)&&gOpen(s,i);
   let li=-1; for(let i=0;i<GL.length;i++){ const sN=(s.gstars||{})[GL[i].id]||0; if(sN===1&&atLv(i)){ li=i; break; } }
   if(li<0) for(let i=0;i<GL.length;i++){ if(!((s.gstars||{})[GL[i].id])&&atLv(i)){ li=i; break; } }
-  if(li>=0) items.push({id:'lesson',i:li,weak:((s.gstars||{})[GL[li].id]||0)===1});
+  if(li>=0) items.push({id:'lesson',i:li,weak:((s.gstars||{})[GL[li].id]||0)===1,s0:(s.gstars||{})[GL[li].id]||0});
   const dn=new Date(), gi=(dn.getFullYear()*372+dn.getMonth()*31+dn.getDate())%PLAN_GAMES.length; items.push({id:'game',g:PLAN_GAMES[gi][0],name:PLAN_GAMES[gi][1]});
   return {day:dayKey(),items:items.slice(0,4),base:{reviews:s.reviews||0,stars:gStarsTotal(s),games:gamesPlayed(s)},rewarded:false}; }
 function planDone(s,p,it){ if(it.id==='review') return (s.reviews||0)>p.base.reviews||dueWords(s).length===0;
-  if(it.id==='daily') return !!(s.daily&&s.daily.done); if(it.id==='lesson') return gStarsTotal(s)>p.base.stars||((s.gstars||{})[GL[it.i].id]||0)>=2&&!it.weak||((s.gstars||{})[GL[it.i].id]||0)>=(it.weak?2:1);
+  if(it.id==='daily') return !!(s.daily&&s.daily.done&&s.daily.day===p.day); if(it.id==='lesson'){ const n=(s.gstars||{})[GL[it.i].id]||0; return n>(it.s0!=null?it.s0:it.weak?1:0); }
   if(it.id==='game') return gamesPlayed(s)>p.base.games; return false; }
 function planLine(s,p){ const names=p.items.map(it=>it.id==='review'?'повторить '+it.n+' '+plural(it.n,'слово','слова','слов'):it.id==='daily'?'выучить слова дня':it.id==='lesson'?(it.weak?'подтянуть урок «'+GL[it.i].title+'»':'урок «'+GL[it.i].title+'»'):'сыграть в «'+it.name+'»');
   return names.length?'План на сегодня: '+names.join(', ')+'. Поехали?':'Сегодня можно просто поиграть!'; }
-function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
+function PlanCard({st,update,startReview,startDaily,openLevel,openGame,embed}){
   const p=st.plan&&st.plan.day===dayKey()?st.plan:null;
-  useEffect(()=>{ if(!st.level) return; const bad=p&&p.items.some(it=>it.id==='lesson'&&gKnown(st,it.i)); if(!p||bad||(p&&p.lvl&&p.lvl!==st.level)) update(s=>({plan:{...makePlan(s),lvl:s.level}})); },[st.level,p&&p.day]);
+  useEffect(()=>{ if(!st.level) return; const dl=st.daily, noDaily=p&&dl&&dl.day===dayKey()&&!dl.done&&dl.ids&&dl.ids.length&&!p.items.some(it=>it.id==='daily')&&!p.items.some(it=>planDone(st,p,it));
+    const bad=p&&(noDaily||p.items.some(it=>it.id==='lesson'&&gKnown(st,it.i))); if(!p||bad||(p&&p.lvl&&p.lvl!==st.level)) update(s=>({plan:{...makePlan(s),lvl:s.level}})); },[st.level,p&&p.day,st.daily&&st.daily.day]);
   const done=p?p.items.map(it=>planDone(st,p,it)):[], all=p&&p.items.length&&done.every(Boolean), n=done.filter(Boolean).length;
   useEffect(()=>{ if(!p||!all||p.rewarded) return; update(s=>({coins:s.coins+30,plan:{...s.plan,rewarded:true}})); setTimeout(()=>{ SFX('fanfare'); FX('rain',90); W('react','dance'); W('say','План на сегодня выполнен! +30 монет. Горжусь тобой!',0,true); },600); },[all,p&&p.rewarded]);
   // morning greeting once a day
@@ -27720,6 +27992,8 @@ function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
   const row=(it,k)=>{ const d=done[k], title=it.id==='review'?'Повтори '+it.n+' '+plural(it.n,'слово','слова','слов'):it.id==='daily'?'Слова дня':it.id==='lesson'?(it.weak?'Подтяни урок':'Урок грамматики'):'Игра дня',
       sub=it.id==='review'?'Они как раз начали забываться':it.id==='daily'?it.n+' '+plural(it.n,'новое слово','новых слова','новых слов'):it.id==='lesson'?'«'+GL[it.i].title+'»'+(it.weak?' — сейчас 1 звезда':''):'«'+it.name+'»';
     return html`<li key=${it.id} className=${d?'done':''}><span className="pl-chk" aria-hidden="true">${d?'✓':k+1}</span><span className="pl-main"><b>${title}</b><small>${sub}</small></span>${d?html`<span className="pl-ok">Готово</span>`:html`<button className="btn small" id=${'plan-'+it.id} onClick=${()=>go(it)}>${it.id==='game'?'Играть':'Начать'}</button>`}</li>`; };
+  if(embed) return html`<div className=${'plan-card pl-embed'+(all?' all':'')}><ul className="pl-list">${p.items.map(row)}</ul>
+    <p className="pl-reward">${all?'✓ План выполнен — можно отдыхать или играть':html`${I.coin()} +30 монет за весь план`}</p></div>`;
   return html`<section className=${'plan-card enter'+(all?' all':'')} aria-label="План на сегодня">
     <div className="pl-h"><span className="pl-face" aria-hidden="true"><i></i><i></i></span><div><b>${all?'План выполнен!':'План от Wordy на сегодня'}</b><small>${all?'Ты сделал всё, что я задумал. Можно отдыхать или играть.':'Я собрал его по твоему прогрессу'}</small></div><span className="pl-n">${n}/${p.items.length}</span></div>
     <div className="pl-bar"><i style=${{width:(n/p.items.length*100)+'%'}}></i></div>
@@ -27813,6 +28087,12 @@ function HouseArt({lv}){ const w=[150,190,230,270][lv-1], x=180-w/2, h=[90,110,1
     <rect x="150" y="250" width="60" height="50" fill="#D9C2A0"/>
   </svg>`; }
 const HS_EM={sofa:'🛋️',rug:'🟫',plant:'🌿',picture:'🖼️',lamp:'💡',shelf:'📚',tv:'📺',clock:'🕰️',bed:'🛏️',nightstand:'🕯️',teddy:'🧸',wardrobe:'🚪',fridge:'🧊',counter:'🗄️',stove:'🍳',wallcab:'🗃️',table:'🍽️',cake:'🎂',desk:'🪑',computer:'💻',globe:'🌍',board:'📌'};
+const FREEZE_PRICE=150, FREEZE_MAX=2;
+function FreezeCard({st,update}){ const n=st.freezes|0, full=n>=FREEZE_MAX, poor=st.coins<FREEZE_PRICE;
+  const buy=e=>{ if(full) return; if(poor){ SFX('err'); W('say','Не хватает монет — ещё '+(FREEZE_PRICE-st.coins)+'!'); return; } SFX('coin'); FX('burst',30,e.currentTarget); update(s=>({coins:s.coins-FREEZE_PRICE,freezes:(s.freezes|0)+1})); W('react','happy'); W('say','Серия под защитой! Если пропустишь день — я её заморожу.'); };
+  return html`<div className="fz-card"><span className="fz-ic" aria-hidden="true">❄️</span><span className="fz-main"><b>Заморозка серии</b><small>Пропустишь день — серия не сгорит. У тебя ${n} из ${FREEZE_MAX}.</small>
+      <span className="fz-dots" aria-hidden="true">${Array.from({length:FREEZE_MAX},(_,i)=>html`<i key=${i} className=${i<n?'on':''}>❄</i>`)}</span></span>
+    <button className=${'btn small'+(poor&&!full?' poor':'')} id="buy-freeze" disabled=${full} onClick=${buy}>${full?'Максимум':html`${I.coin()} ${FREEZE_PRICE}`}</button></div>`; }
 function House({st,update,preview,setPreview}){
   const [view,setView]=useState('home'); const [rid,setRid]=useState(null); const [grp,setGrp]=useState('furn'); const [tab,setTab]=useState(null); const [prev,setPrev]=useState(null);
   const h=hsState(st), room=HS_ROOMS.find(r=>r.id===rid), rs=room?hsRoom(h,room):null;
@@ -27857,6 +28137,7 @@ function House({st,update,preview,setPreview}){
   const eq=st.equip||{}, worn=SLOT_ORDER.map(sl=>WORDY_ITEMS.find(i=>i.id===eq[sl])).filter(Boolean);
   return html`<section className="hs hs2">
     <div className="page-h"><div><h1>Домик</h1></div></div>
+    <${FreezeCard} st=${st} update=${update}/>
     <button className="hs-wcard" id="hs-r-wardrobe" onClick=${()=>{ SFX('pop'); setView('wardrobe'); W('react','happy'); W('say','Что сегодня наденем?'); }}>
       <span className="hs-wc-art" aria-hidden="true"><span className="wr-rack">${['#E74C3C','#3E7CB1','#F1C40F','#27AE60','#8E44AD'].map((c,i)=>html`<i key=${i} style=${{background:c}}></i>`)}</span></span>
       <span className="hs-wc-main"><b>Гардероб</b><small>${worn.length?'Сейчас: '+worn.map(i=>i.name.toLowerCase()).join(', '):'Наряди Wordy: шапки, очки, костюмы'}</small></span>
@@ -27900,6 +28181,16 @@ function trkFlush(){ if(!TRK.on) return; const fb=window.firebase; if(!fb||!fb.f
   TRK.sess=0; TRK.xp=0; TRK.v={}; TRK.ms-=min*60000;
   try{ fb.firestore().doc('act/'+day+'_'+TRK.aid).set(d,{merge:true}).catch(()=>{ TRK.sess+=snap.sess; TRK.xp+=snap.xp; TRK.ms+=min*60000; vk.forEach(k=>{ TRK.v[k]=(TRK.v[k]||0)+snap.v[k]; }); }); }catch(e){} }
 
+/* silent error report: counts of AI / live failures per device per day (no personal data), visible to the owner */
+const ERRS={e:{},last:'',n:0,t:null};
+function errLog(kind,code,msg){ try{ const k=(String(kind)+':'+String(code||'x')).toLowerCase().replace(/[^a-z0-9:_-]/g,'').slice(0,40);
+  if(!(k in ERRS.e)&&Object.keys(ERRS.e).length>=25) return; ERRS.e[k]=(ERRS.e[k]||0)+1; ERRS.last=(k+' '+String(msg||'')).replace(/AIza[0-9A-Za-z_-]{20,}/g,'…').slice(0,280); ERRS.n++;
+  clearTimeout(ERRS.t); ERRS.t=setTimeout(errFlush,15000); }catch(e){} }
+function errFlush(){ if(!TRK.on||!ERRS.n) return; const fb=window.firebase; if(!fb||!fb.firestore||!fb.apps||!fb.apps.length) return;
+  const day=dayKey(), FV=fb.firestore.FieldValue, snap={...ERRS.e}, ks=Object.keys(snap);
+  const d={aid:TRK.aid,day,ua:navigator.userAgent.slice(0,120),last:ERRS.last,e:Object.fromEntries(ks.map(k=>[k,FV.increment(snap[k])]))}; ERRS.e={}; ERRS.n=0;
+  try{ fb.firestore().doc('errs/'+day+'_'+TRK.aid).set(d,{merge:true}).catch(()=>{ ks.forEach(k=>{ ERRS.e[k]=(ERRS.e[k]||0)+snap[k]; ERRS.n++; }); }); }catch(e){} }
+window.addEventListener('pagehide',()=>errFlush());
 const ST_NAMES={home:'Главная','tab:learn':'Учёба',sess:'Карточки слов','gram:map':'Карта грамматики','gram:lesson':'Урок грамматики','gram:test':'Тест грамматики',read:'Чтение',listen:'Аудирование',mk:'Пробный экзамен','tab:games':'Игры','tab:class':'Класс','tab:shop':'Домик','tab:progress':'Прогресс','tab:settings':'Настройки'};
 const stName=k=>ST_NAMES[k]||(k.startsWith('game:')?'Игра: '+({word:'Угадай слово',cross:'Слова из букв',space:'Космический тир',doors:'Двери',tetris:'Словопад',escape:'Побег из комнаты',catch:'Спаси Wordy'}[k.slice(5)]||k.slice(5)):k.startsWith('gram:')?'Грамматика':k);
 function stCompute(docs,today){ const days=[]; for(let i=13;i>=0;i--){ const d=new Date(today+'T12:00:00'); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
@@ -27920,9 +28211,11 @@ function stCompute(docs,today){ const days=[]; for(let i=13;i>=0;i--){ const d=n
     d1:d1base.length?[d1,d1base.length]:null,d7:d7base.length?[d7,d7base.length]:null,
     funnel:[coh.length,learned,back],views:Object.entries(views).sort((a,b)=>b[1]-a[1]).slice(0,8),lvl:Object.entries(lv).sort((a,b)=>b[1]-a[1])}; }
 const pct=(a)=>a?Math.round(100*a[0]/a[1])+'%':'—';
-function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(false), [data,setData]=useState(null), [err,setErr]=useState(null);
+function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(false), [data,setData]=useState(null), [err,setErr]=useState(null), [errs,setErrs]=useState(null);
   const owner=window.__WORDY_TEST_OWNER||(be&&be.mode==='firebase'&&user&&user.email&&window.WORDY_OWNER&&user.email.toLowerCase()===String(window.WORDY_OWNER).toLowerCase());
   const load=()=>{ setErr(null); setData(null); const from=dayKey(-45);
+    window.firebase.firestore().collection('errs').where('day','>=',dayKey(-6)).get().then(s=>{ const tot={}, dev=new Set(), last=[]; s.docs.forEach(d=>{ const x=d.data(); dev.add(x.aid); Object.entries(x.e||{}).forEach(([k,n])=>{ tot[k]=(tot[k]||0)+(n|0); }); if(x.last) last.push([x.day,x.last]); });
+      setErrs({top:Object.entries(tot).sort((a,b)=>b[1]-a[1]).slice(0,8),dev:dev.size,sum:Object.values(tot).reduce((a,b)=>a+b,0),last:last.sort((a,b)=>b[0].localeCompare(a[0])).slice(0,3)}); }).catch(()=>setErrs({top:[],dev:0,sum:0,last:[],denied:true}));
     window.firebase.firestore().collection('act').where('day','>=',from).get().then(s=>setData(stCompute(s.docs.map(d=>d.data()),dayKey()))).catch(e=>setErr(e&&e.code==='permission-denied'?'Нет доступа: обнови правила Firestore (firebase deploy) и войди под '+window.WORDY_OWNER+'.':'Не удалось загрузить: '+(e&&e.message||e))); };
   if(!owner) return null;
   if(!open) return html`<div className="set-group"><div className="set-row"><div><strong>Статистика Wordy</strong><p>Видишь только ты: сколько людей заходит, возвращается и что открывает</p></div><button className="btn small" id="st-open" onClick=${()=>{ setOpen(true); load(); }}>Открыть</button></div></div>`;
@@ -27939,7 +28232,12 @@ function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(f
           <ol className="st-fun">${[['Открыли Wordy',data.funnel[0]],['Сделали хоть одно задание',data.funnel[1]],['Вернулись в другой день',data.funnel[2]]].map(([t,n],i)=>html`<li key=${i}><span>${t}</span><b>${n}</b><div><i style=${{width:(data.funnel[0]?100*n/data.funnel[0]:0)+'%'}}></i></div></li>`)}</ol></div>
         <div><h4>Что открывают, 7 дней</h4><ol className="st-top">${data.views.length?data.views.map(([k,n])=>html`<li key=${k}><span>${stName(k)}</span><b>${n}</b></li>`):html`<li><span>Пока пусто</span></li>`}</ol>
           ${data.lvl.length?html`<h4>Уровни</h4><p className="st-lv">${data.lvl.map(([l,n])=>l+' · '+n).join('   ')}</p>`:null}</div></div>
+      ${errs?html`<div className="st-errs"><h4>Сбои ИИ и живых функций, 7 дней</h4>${errs.denied?html`<p className="muted">Нет доступа: задеплой новые правила Firestore (firebase deploy --only firestore).</p>`
+        :!errs.sum?html`<p className="muted">Сбоев не было 🎉</p>`:html`<p><b>${errs.sum}</b> ${plural(errs.sum,'сбой','сбоя','сбоев')} у <b>${errs.dev}</b> ${plural(errs.dev,'устройства','устройств','устройств')}</p>
+        <ol className="st-top">${errs.top.map(([k,n])=>html`<li key=${k}><span>${ERR_NAMES(k)}</span><b>${n}</b></li>`)}</ol>
+        ${errs.last.length?html`<details><summary>Последние сообщения</summary>${errs.last.map(([d,t],i)=>html`<p key=${i} className="st-errmsg"><small>${d}</small> ${t}</p>`)}</details>`:null}`}</div>`:null}
       <p className="st-note">Отзывы и сообщения об ошибках лежат в консоли Firebase → Firestore → feedback.</p></div>`}</div>`; }
+const ERR_NAMES=k=>{ const [a,b]=k.split(':'); const A={ai:'ИИ (текст)',stream:'ИИ (поток)',live:'Живой Ворди'}[a]||a, B={busy:'перегружен',rate_limited:'лимит',offline:'нет сети',load_failed:'не загрузился',handshake:'не подключился',mic:'нет доступа к микрофону',resume:'не переподключился',fail:'ошибка'}; return A+' · '+(B[(b||'').split('-')[0]]||b); };
 
 /* ================= «Ошибка в задании?» — report straight from an exercise ================= */
 const bkReport=(ctx,body)=>{ SFX('tap'); window.dispatchEvent(new CustomEvent('wordy-report',{detail:{ctx:String(ctx||''),body:String(body||'')}})); };
@@ -28132,37 +28430,40 @@ function App(){
     if(u.to) setTimeout(()=>{ W('react','happy'); W('say','Уровень '+u.to+' открыт. Начнём с новых слов!',0,true); },600); };
   const startDaily=()=>{ const d=st.daily; if(!d||d.done||!d.ids.length) return; SFX('pop'); setSession({mode:'daily',ids:d.ids,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say','Слова дня! Сначала карточки.'); };
   const openText=id=>{ SFX('pop'); setReading(id); window.scrollTo({top:0}); W('react','happy'); const t=TEXTS.find(x=>x.id===id)||{}; W('say',t.poem?'Стихи! Попробуй прочитать вслух.':t.cat==='lit'?'Классика! Устраивайся поудобнее.':t.cat==='sci'?'Наука — моё любимое!':t.cat==='facts'?'Сейчас удивимся!':'Читаем! Не знаешь слово — нажми на него.'); };
-  const openMock=o=>{ SFX('pop'); setMk({...o,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say',o.kind==='p2'?'Выбирай карточку — потренируем монолог!':o.kind==='drill'?'Короткая тренировка — поехали!':o.kind==='pron'?'Читай фразу вслух — я слушаю!':o.kind==='sat'?'Пробный SAT! Сосредоточься, я рядом.':'Пробный IELTS! Удачи!',0,true); };
+  const openMock=o=>{ SFX('pop'); setMk({...o,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say',o.kind==='p2'?'Выбирай карточку — потренируем монолог!':o.kind==='drill'?'Короткая тренировка — поехали!':o.kind==='pron'?'Читай фразу вслух — я слушаю!':o.kind==='sat'?'Пробный SAT! Сосредоточься, я рядом.':o.kind==='story'?'Сочиним историю из твоих слов!':o.kind==='call'?'Позвонишь мне? Я жду!':o.kind==='talk'?'Пиши — я отвечу голосом!':'Пробный IELTS! Удачи!',0,true); };
   useEffect(()=>{ const f=e=>{ const h=e.detail, ws=(h.words||[]).map(w=>({id:myId(w.en),en:w.en,ru:w.ru||'—',def:w.def||'',ipa:w.ipa||'',ex:'',src:'Учитель',track:'my',added:dayKey()}));
     if(ws.length<1) return; setSt(s=>{ const m={...(s.myWords||{})}; ws.forEach(w=>{ if(!m[w.id]) m[w.id]=w; }); return {...s,myWords:m}; });
     SFX('pop'); setTab('learn'); setSession({mode:'my',ids:ws.map(w=>w.id),key:Date.now(),extra:ws}); window.scrollTo({top:0}); W('react','happy'); W('say','Слова от учителя! Сначала карточки.'); };
     window.addEventListener('wordy:hwwords',f); return ()=>window.removeEventListener('wordy:hwwords',f); },[]);
   useEffect(()=>{ const f=e=>{ setTab('learn'); setGame(null); openMock(e.detail); }; window.addEventListener('wordy:open',f); return ()=>window.removeEventListener('wordy:open',f); },[]);
   const startListen=()=>{ SFX('pop'); setListen(Date.now()); window.scrollTo({top:0}); W('react','wave'); W('say','Слушай внимательно!'); };
+  useEffect(()=>{ const f=st.frozeNote; if(!f||f.seen||f.day!==dayKey()) return; const t=setTimeout(()=>{ SFX('pop'); W('react','happy'); W('say','❄️ Серия спасена! Потратил '+f.n+' '+plural(f.n,'заморозку','заморозки','заморозок')+'. Серия: '+st.streak+'.',0,true); update(s=>({frozeNote:{...s.frozeNote,seen:true}})); },4500); return ()=>clearTimeout(t); },[]);
+  useEffect(()=>{ const h=e=>{ const ids=((e.detail&&e.detail.ids)||[]).filter(id=>(st.myWords||{})[id]); if(!ids.length) return; SFX('pop'); setTab('learn'); setSession({mode:'my',ids,key:Date.now(),title:'Ошибки из урока'}); window.scrollTo({top:0}); W('say','Закрепим твои ошибки из урока!'); };
+    window.addEventListener('wordy:fixreview',h); return ()=>window.removeEventListener('wordy:fixreview',h); },[st.myWords]);
   const startMy=()=>{ const today=dayKey(), list=Object.values(st.myWords||{}); if(list.length<4) return;
     const ids=list.slice().sort((a,b)=>((st.due||{})[a.id]||'0').localeCompare((st.due||{})[b.id]||'0')||((st.boxes[a.id]||0)-(st.boxes[b.id]||0))).slice(0,12).map(w=>w.id);
     SFX('pop'); setTab('learn'); setSession({mode:'my',ids,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say','Твои слова из тестов! Сначала карточки.'); };
   const isRev=session&&(session.mode==='review'||session.mode==='daily');
   const tr=session&&(session.mode==='my'?{id:'my',name:'Мои слова'}:isRev?{name:session.mode==='daily'?'Слова дня':'Повторение'}:TRACKS.find(t=>t.id===session.tid));
-  const unRef=useRef({key:null,un:null}); if(!session) unRef.current={key:null,un:null}; else if(unRef.current.key!==session.key||!unRef.current.un) unRef.current={key:session.key,un:(session&&(session.mode==='my'?{id:'my',title:'Слова из тестов',words:session.ids.map(id=>(st.myWords||{})[id]||(session.extra||[]).find(w=>w.id===id)).filter(Boolean)}:isRev?{id:session.mode,title:session.mode==='daily'?'Подборка на сегодня':'Слова на сегодня',words:session.ids.map(id=>ALL.find(w=>w.id===id)||(st.myWords||{})[id]).filter(Boolean)}:tr&&tr.units.find(u=>u.id===session.uid)))||null};
+  const unRef=useRef({key:null,un:null}); if(!session) unRef.current={key:null,un:null}; else if(unRef.current.key!==session.key||!unRef.current.un) unRef.current={key:session.key,un:(session&&(session.mode==='my'?{id:'my',title:session.title||'Слова из тестов',words:session.ids.map(id=>(st.myWords||{})[id]||(session.extra||[]).find(w=>w.id===id)).filter(Boolean)}:isRev?{id:session.mode,title:session.mode==='daily'?'Подборка на сегодня':'Слова на сегодня',words:session.ids.map(id=>ALL.find(w=>w.id===id)||(st.myWords||{})[id]).filter(Boolean)}:tr&&tr.units.find(u=>u.id===session.uid)))||null};
   const un=session&&unRef.current.un;
   const NavBtn=(id,label,icon,extra)=>html`<button id=${'tab-'+id} aria-current=${tab===id?'page':undefined} onClick=${()=>go(id)} ...${extra||{}}><span className="nav-ic" key=${tab===id?'on':'off'}>${icon}</span><span>${label}</span></button>`;
   return html`<div className="app">
      <${TopBar} st=${st}/>
      <main>
-       <div hidden=${tab!=='learn'}>${mk?html`<${MockScreen} key=${mk.key} mk=${mk} st=${st} update=${update} onExit=${()=>{ setMk(null); window.scrollTo({top:0}); }}/>`
+       <div className=${'tab-learn'+(!mk&&!reading&&!listen&&!(session&&un)&&!gram?' is-home':'')} hidden=${tab!=='learn'}>${mk?html`<${MockScreen} key=${mk.key} mk=${mk} st=${st} update=${update} onExit=${()=>{ setMk(null); window.scrollTo({top:0}); }}/>`
          :reading?html`<${Reader} key=${reading} x=${TEXTS.find(x=>x.id===reading)} st=${st} update=${update} onExit=${()=>{ setReading(null); window.scrollTo({top:0}); }}/>`
          :listen?html`<${Listening} key=${listen} st=${st} update=${update} onExit=${()=>{ setListen(null); window.scrollTo({top:0}); }}/>`
          :session&&un?html`<${Session} key=${session.key} track=${tr} unit=${un} mode=${session.mode||'learn'} st=${st} update=${update} onExit=${exit} active=${tab==='learn'}/>`
          :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} st=${st} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
-         :gram&&gram.view==='ref'?html`<${RefBook} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
+         :gram&&gram.view==='ref'?html`<${RefBook} st=${st} update=${update} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
          :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel} openRef=${()=>{ setGram({view:'ref'}); window.scrollTo({top:0}); }}/>`
          :html`<${Learn} st=${st} update=${update} openText=${openText} startListen=${startListen} tsub=${tsub} setTsub=${setTsub} openMock=${openMock} track=${track} setTrack=${setTrack} sub=${sub} setSub=${setSub} openLevel=${openLevel} startUnit=${startUnit} openGrammar=${openGrammar} startReview=${startReview} startDaily=${startDaily} openGame=${id=>{ SFX('pop'); setTab('games'); setGame(id); window.scrollTo({top:0}); }} showLevel=${()=>go('progress')}/>`}</div>
-       ${acc.be?html`<div hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
-       <div hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>
-       <div hidden=${tab!=='shop'}><${House} st=${st} update=${update} preview=${preview} setPreview=${setPreview}/></div>
-       <div hidden=${tab!=='progress'}><${Progress} st=${st} update=${update} startMy=${startMy} startHard=${startHard} practice=${o=>{ setTab('learn'); openMock(o); }}/></div>
-       <div hidden=${tab!=='settings'}><${Settings} st=${st} update=${update} reset=${reset} restore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }}/></div>
+       ${acc.be?html`<div className="tab-class" hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
+       <div className=${'tab-games'+(game?' playing':'')} hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>
+       <div className="tab-shop" hidden=${tab!=='shop'}><${House} st=${st} update=${update} preview=${preview} setPreview=${setPreview}/></div>
+       <div className="tab-progress" hidden=${tab!=='progress'}><${Progress} st=${st} update=${update} startMy=${startMy} startHard=${startHard} practice=${o=>{ setTab('learn'); openMock(o); }}/></div>
+       <div className="tab-settings" hidden=${tab!=='settings'}><${Settings} st=${st} update=${update} reset=${reset} restore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }}/></div>
      </main>
      ${st.level&&!st.age?html`<${AgeAsk} onPick=${a=>{ SFX('pop'); update(()=>({age:a})); }}/>`:null}
      ${!st.level?html`<${Onboarding} st=${st} update=${update} onRestore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }} onDone=${(l,n,a)=>{ update(()=>({level:l,dailyNew:n,newbie:dayKey(),age:a})); SFX('fanfare'); FX('rain',110); W('react','cheer'); W('say','Отлично! Уровень '+l+'. Поехали учиться!',0,true); window.scrollTo({top:0}); }}/>`:null}
@@ -28173,9 +28474,9 @@ function App(){
      ${!lvlUp&&!tourOn&&!tourAsk?html`<${PushAsk} st=${st} update=${update}/>`:null}
      ${toasts.length&&!lvlUp?html`<${AchToast} key=${toasts[0].id} a=${toasts[0]} onDone=${()=>setToasts(q=>q.slice(1))}/>`:null}
      <${TutorFab} st=${st} update=${update}/>
-     <nav className="nav" aria-label="Разделы"><div className="nav-inner" data-perch="home" style=${{'--x':Math.max(0,TABS.indexOf(tab)),'--n':TABS.length}}><span className="nav-ind" aria-hidden="true"></span>
+     <nav className="nav" aria-label="Разделы"><div className="nav-brand" aria-hidden="true"><${Face}/>wordy</div><div className="nav-inner" data-perch="home" style=${{'--x':Math.max(0,TABS.indexOf(tab)),'--n':TABS.length}}><span className="nav-ind" aria-hidden="true"></span>
        ${NavBtn('learn','Учить',I.learn())}${NavBtn('games','Игры',gamesIcon())}${acc.be?NavBtn('class','Класс',accIcon(),acc.ready&&!acc.user?{'data-dot':'1','aria-label':'Класс: войди или зарегистрируйся'}:{}):null}${NavBtn('shop','Домик',I.home())}${NavBtn('progress','Прогресс',I.progress())}${NavBtn('settings','Настройки',I.settings(),{'data-home-anchor':''})}
-     </div></nav></div>`;
+     </div>${(()=>{ const g=st.goal||10, c=Math.min(st.today===dayKey()?st.todayCount:0,g); return html`<div className="nav-ledge" data-perch="home"><span className="nl-h">Сегодня</span><b>${c} / ${g} ${plural(g,'слово','слова','слов')}</b><span className="nl-bar"><i style=${{width:(c/g*100)+'%'}}></i></span><span className="nl-s">${I.flame()} ${st.streak} ${plural(st.streak,'день','дня','дней')} подряд</span></div>`; })()}</nav></div>`;
 }
 class Boundary extends React.Component{ constructor(p){ super(p); this.state={e:null}; }
   static getDerivedStateFromError(e){ return {e}; }

@@ -873,8 +873,12 @@ const DEFAULT=__WD[729];
 function normalize(s){
   s={...DEFAULT,...s};
   if(!s.sid) s.sid=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-  if(s.today!==dayKey()){ s.today=dayKey(); s.todayCount=0; }
-  if(s.lastDay!==dayKey() && s.lastDay!==dayKey(-1)) s.streak=0;
+  if(s.today!==dayKey()){ s.today=dayKey(); s.todayCount=0; s.todayIds=[]; } else if(!Array.isArray(s.todayIds)){ s.todayIds=[]; s.todayCount=0; } /* old builds counted every answer, even wrong ones */
+  if(s.lastDay!==dayKey() && s.lastDay!==dayKey(-1)){
+    /* ❄️ streak freeze: each missed day uses one freeze bought in the house; otherwise the streak resets */
+    const missed=s.lastDay?(Math.round((Date.UTC(...dayKey().split('-').map((x,i)=>i===1?x-1:+x))-Date.UTC(...s.lastDay.split('-').map((x,i)=>i===1?x-1:+x)))/864e5)-1):0;
+    if(s.streak>0&&missed>0&&(s.freezes|0)>=missed){ s.freezes=(s.freezes|0)-missed; s.lastDay=dayKey(-1); s.frozeNote={n:missed,day:dayKey()}; }
+    else s.streak=0; }
   if(s.mode==='intensive') s.mode='normal';
   if(s.equip&&'face' in s.equip){ const e={...s.equip}, f=e.face; delete e.face; const it=f&&WORDY_ITEMS.find(i=>i.id===f); if(it&&!e[it.slot]) e[it.slot]=f; s.equip=e; }
   return s;
@@ -890,12 +894,13 @@ function highlight(ex,word){
   const parts=ex.split(new RegExp('('+stem+'\\w*)','i'));
   return parts.map((p,i)=>i%2?html`<mark key=${i}>${p}</mark>`:p);
 }
-const isTyped=t=>t==='write'||t==='listen'||t==='gap'||t==='fix';
+const isTyped=t=>t==='write'||t==='listen'||t==='gap'||t==='fix'||t==='irr';
 /* words from one unit should not stand next to each other in a review: similar words interfere */
 function spreadUnits(ws){ const uid=w=>String(w.id).split('-')[0], rest=ws.slice(), out=[];
   while(rest.length){ const last=out.length?uid(out[out.length-1]):null; let k=rest.findIndex(w=>uid(w)!==last); if(k<0) k=0; out.push(rest.splice(k,1)[0]); } return out; }
 function quizQ(w,type,words,global){
   if(w.kind==='fix') return {id:w.id,w,type:'fix',answer:w.en};
+  if(w.kind==='irr'){ const a2=String(w.v2).split('/'), a3=String(w.v3).split('/'), alts=[]; a2.forEach(x=>a3.forEach(y=>alts.push(x+' '+y))); return {id:w.id,w,type:'irr',answer:a2[0]+' '+a3[0],alts}; }
   if(type==='gap'){ const en=w.en||'', stem=en.slice(0,Math.max(4,en.length-2)).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     const m=w.ex&&!/\s/.test(en)?w.ex.match(new RegExp('\\b('+stem+"[\\w']*)",'i')):null;
     if(m) return {id:w.id,w,type,answer:m[1],alts:[en],before:w.ex.slice(0,m.index),after:w.ex.slice(m.index+m[1].length)};
@@ -940,14 +945,14 @@ const I={
 const Face=()=>html`<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13.5" fill="#FF7A12"/><ellipse cx="11" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/><ellipse cx="19" cy="12.5" rx="3.3" ry="4.6" fill="#fff"/><ellipse cx="11" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><ellipse cx="19" cy="12.8" rx="2.4" ry="3.5" fill="#24130A"/><circle cx="10.2" cy="11" r=".9" fill="#fff"/><circle cx="18.2" cy="11" r=".9" fill="#fff"/><path d="M12.5 20q2.5 1.8 5 0" stroke="#4A1E0C" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
 
 /* ---------- pieces ---------- */
-function Pill({icon,value,label,id}){
-  const [bump,setBump]=useState(false); const prev=useRef(value);
-  useEffect(()=>{ if(value>prev.current){ setBump(true); const t=setTimeout(()=>setBump(false),520); prev.current=value; return ()=>clearTimeout(t);} prev.current=value; },[value]);
-  return html`<span id=${id} className=${'pill'+(bump?' bump':'')} title=${label} aria-label=${label+': '+value}>${icon} ${value}</span>`;
+function Pill({icon,value,label,id,extra}){
+  const [bump,setBump]=useState(false), [plus,setPlus]=useState(null); const prev=useRef(value);
+  useEffect(()=>{ if(value>prev.current){ const d=value-prev.current; setBump(true); setPlus({d,k:Date.now()}); const t=setTimeout(()=>setBump(false),520), t2=setTimeout(()=>setPlus(null),1100); prev.current=value; return ()=>{ clearTimeout(t); clearTimeout(t2); }; } prev.current=value; },[value]);
+  return html`<span id=${id} className=${'pill'+(bump?' bump':'')} title=${label} aria-label=${label+': '+value}>${icon} ${value}${extra||null}${plus?html`<i key=${plus.k} className="pill-plus" aria-hidden="true">+${plus.d}</i>`:null}</span>`;
 }
 function TopBar({st}){
   return html`<header className="topbar"><div className="brand"><${Face}/>wordy</div>
-    <div className="pills"><${Pill} icon=${I.flame()} value=${st.streak} label="Серия дней"/><${Pill} id="coin-pill" icon=${I.coin()} value=${st.coins} label="Монеты"/><span className="pill xp-pill">${I.bolt()} ${st.xp}</span></div></header>`;
+    <div className="pills"><${Pill} icon=${I.flame()} value=${st.streak} label=${'Серия дней'+((st.freezes|0)?' · заморозок: '+st.freezes:'')} extra=${(st.freezes|0)?html`<sup className="pill-fz" aria-hidden="true">❄${st.freezes>1?st.freezes:''}</sup>`:null}/><${Pill} id="coin-pill" icon=${I.coin()} value=${st.coins} label="Монеты"/><span className="pill xp-pill">${I.bolt()} ${st.xp}</span></div></header>`;
 }
 function Ring({pct,label}){
   const r=27,c=2*Math.PI*r;
@@ -962,27 +967,28 @@ const TCOL={basic:'#FF7A12',ielts:'#12A195',sat:'#7C5CFF',idioms:'#E5487A'}, TIC
   ielts:html`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c2.5 2.4 3.7 5.2 3.7 8.5s-1.2 6.1-3.7 8.5c-2.5-2.4-3.7-5.2-3.7-8.5s1.2-6.1 3.7-8.5z"/></svg>`,
   sat:html`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.3 12 5l9.5 4.3L12 13.6z"/><path d="M6.5 11.3v4.2c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.2"/><path d="M21.5 9.3v5.2"/></svg>`};
 function UnitRing({pct,n}){ const r=20,c=2*Math.PI*r; return html`<div className="uring"><svg width="50" height="50" viewBox="0 0 50 50" aria-hidden="true"><circle cx="25" cy="25" r=${r} className="ur-bg"/><circle cx="25" cy="25" r=${r} className="ur-fg" stroke-dasharray=${c} stroke-dashoffset=${c*(1-pct)} transform="rotate(-90 25 25)"/></svg><span>${n}</span></div>`; }
+const VG_HUES=['#FF7A1A','#2F9E6B','#3B82C4','#8B5CF6','#E0567A','#C99A1A'];
 function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGrammar,openLevel,startReview,startDaily,showLevel,openText,startListen,tsub,setTsub,openMock}){
+  const [allT,setAllT]=useState(false);
   const isEn=track==='basic', view=isEn?sub:(tsub==='mock'?'mock':'vocab'), isList=view==='read'||view==='listen'||view==='mock';
   const t=TRACKS.find(x=>x.id===(isEn&&sub==='idioms'?'idioms':track));
-  const g=st.goal, c=Math.min(st.todayCount,g), done=st.todayCount>=g, left=g-c;
-  const total=ALL.filter(w=>(st.boxes[w.id]||0)>=2).length;
+  const g=st.goal, tc=st.today===dayKey()?st.todayCount:0, c=Math.min(tc,g), done=tc>=g, left=g-c;
+  const plan=st.plan&&st.plan.day===dayKey()&&st.plan.items&&st.plan.items.length?st.plan:null, planN=plan?plan.items.filter(it=>planDone(st,plan,it)).length:0, inPlan=id=>!!(plan&&plan.items.some(it=>it.id===id&&!planDone(st,plan,it)));
   return html`
-   <div className="page-h"><div><span className="date-chip">${new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</span><h1>${greeting()}!</h1></div>${st.level?html`<span className="lvl-chip">Уровень ${st.level}</span>`:null}</div>
+   <div className="page-h"><div><span className="date-chip">${new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'})}</span><h1>${greeting()}!</h1></div>${st.level?html`<button className="lvl-chip" id="lvl-chip" onClick=${showLevel} aria-label=${'Уровень '+st.level+': подробнее'}>Уровень ${st.level}${levelProgress(st).pct>0?html`<i className="lvl-mini"><b style=${{width:Math.round(levelProgress(st).pct*100)+'%'}}></b></i>`:null}</button>`:null}</div>
    <${HomeworkBox} st=${st} update=${update} openMock=${openMock}/>
-   <section className="hero enter" data-perch="hero" aria-label="Цель на сегодня">
-     <${Ring} pct=${c/g} label=${c+'/'+g}/>
-     <div><p className="eyebrow">Цель на сегодня</p>
-       <h2>${done?'Цель выполнена, так держать!':'Ещё '+left+' '+plural(left,'слово','слова','слов')+' до цели'}</h2>
-       <div className="hero-stats"><span>${I.learn()} ${total} ${plural(total,'слово','слова','слов')}</span><span>${I.flame()} ${st.streak} ${plural(st.streak,'день','дня','дней')}</span><span>★ ${gStarsTotal(st)}</span></div></div>
+   <section className=${'hero today enter'+(done?' met':'')} data-perch="hero" aria-label="Сегодня">
+     <div className="today-top"><${Ring} pct=${c/g} label=${c+'/'+g}/>
+     <div><p className="eyebrow">Сегодня${plan?' · план '+planN+' из '+plan.items.length:''}</p>
+       <h2>${done?'Цель выполнена, так держать!':'Ещё '+left+' '+plural(left,'слово','слова','слов')+' до цели'}</h2></div></div>
+     <${PlanCard} embed=${true} st=${st} update=${update} startReview=${startReview} startDaily=${startDaily} openLevel=${openLevel} openGame=${openGame}/>
    </section>
-   <${PlanCard} st=${st} update=${update} startReview=${startReview} startDaily=${startDaily} openLevel=${openLevel} openGame=${openGame}/>
    <${HomeHomework}/>
    <${GuestCard} st=${st}/>
    <${InstallCard}/>
-   ${st.level?html`<${LevelCard} st=${st} onShow=${showLevel}/>`:null}
-   <${DailyCard} st=${st} startDaily=${startDaily}/>
-   ${(()=>{ const due=dueWords(st), seen=Object.keys(st.boxes).length, tm=dueOn(st,1);
+   ${st.level&&levelProgress(st).complete?html`<${LevelCard} st=${st} onShow=${showLevel}/>`:null}
+   ${inPlan('daily')?null:html`<${DailyCard} st=${st} startDaily=${startDaily}/>`}
+   ${(()=>{ const due=dueWords(st), seen=Object.keys(st.boxes).length, tm=dueOn(st,1); if(inPlan('review')||(plan&&!due.length)) return null;
      return html`<button className=${'review-card enter'+(due.length?' has':'')} style=${{'--i':1}} id="review-btn" disabled=${!due.length} onClick=${startReview}>
        <span className="rv-ic">${I.repeat()}</span>
        <span className="rv-main"><b>${due.length?'Повторение на сегодня':seen?'На сегодня всё повторено':'Ежедневное повторение'}</b>
@@ -1011,7 +1017,7 @@ function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGramm
    ${!isEn?html`<div className="subtabs two enter" role="tablist" aria-label=${t.name}>${[['vocab','Слова'],['mock','Пробный тест']].map(([k,n])=>html`<button key=${k} role="tab" id=${'tsub-'+k} aria-selected=${(tsub||'vocab')===k} onClick=${()=>{ SFX('tap'); setTsub(k); }}>${n}</button>`)}</div>`:null}
    ${view==='mock'?html`<${MockHub} st=${st} kind=${track} openMock=${openMock}/>`:null}
    ${view==='read'?html`<${ReadList} st=${st} openText=${openText}/>`:null}
-   ${view==='listen'?html`<${ListenList} st=${st} startListen=${startListen}/>`:null}
+   ${view==='listen'?html`<${ListenList} st=${st} update=${update} startListen=${startListen} openMock=${openMock}/>`:null}
    ${view!=='grammar'&&!isList?html`<div className="sec-h"><h2>${t.id==='idioms'?'Идиомы':'Темы'}</h2><span className="muted">${learned(st,t.units.flatMap(u=>u.words))} / ${countIn(t)} ${t.id==='idioms'?'идиом':'слов'}</span></div>`:null}
    ${view!=='grammar'&&!isList&&(()=>{ const row=(u,i)=>{
      const l=learned(st,u.words), best=st.best[u.id];
@@ -1025,12 +1031,12 @@ function Learn({openGame,st,update,track,setTrack,sub,setSub,startUnit,openGramm
      const firstUp=up.length?up[0].cefr:null;
      /* basic course: blocks of one theme are shown together under a foldable theme header */
      const groups=list=>{ const gs=[]; list.forEach(u=>{ const k=u.theme?u.cefr+'-'+u.theme:'_'; const g=gs[gs.length-1]; if(g&&g.k===k) g.us.push(u); else gs.push({k,us:[u]}); }); return gs; };
-     const renderG=(list,auto)=>{ let opened=!auto; return groups(list).map((g,gi)=>{ if(g.k==='_') return html`<div className="units" key=${'p'+gi}>${g.us.map(row)}</div>`;
+     const renderG=(list,auto)=>{ let opened=!auto; const gl=groups(list), cut=auto&&!allT&&gl.length>6?5:gl.length; return gl.slice(0,cut).map((g,gi)=>{ if(g.k==='_') return html`<div className="units" key=${'p'+gi}>${g.us.map(row)}</div>`;
        const ws=g.us.flatMap(u=>u.words), l=learned(st,ws), done=l===ws.length, open=!opened&&!done, u0=g.us[0]; if(open) opened=true;
-       return html`<details className=${'vgroup'+(done?' done':'')} key=${g.k} open=${open}>
+       return html`<details className=${'vgroup'+(done?' done':'')} key=${g.k} open=${open} style=${{'--vh':VG_HUES[gi%VG_HUES.length]}}>
          <summary><span className="vg-main"><b>${u0.ru}</b><small>${u0.title} · ${u0.cefr} · ${g.us.length} ${plural(g.us.length,'блок','блока','блоков')}</small></span>
            <span className="vg-side"><span className=${'vg-n'+(done?' full':'')}>${done?'✓ ':''}${l} / ${ws.length}</span><span className="bar"><i style=${{width:(l/ws.length*100)+'%'}}></i></span></span></summary>
-         <div className="units">${g.us.map(row)}</div></details>`; }); };
+         <div className="units">${g.us.map(row)}</div></details>`; }).concat(cut<gl.length?[html`<button key="more" className="btn ghost wide vg-more" id="topics-all" onClick=${()=>{ SFX('tap'); setAllT(true); }}>Все темы · ещё ${gl.length-cut}</button>`]:[]); };
      const upT=[...new Map(up.map(u=>[u.theme?u.cefr+u.theme:u.id,u])).values()];
      return html`${renderG(act,true)}
        ${act.length?null:html`<p className="empty">${firstUp?'В направлении '+t.name+' нет тем уровня '+st.level+'. Первые темы откроются на уровне '+firstUp+'.':'Все темы этого направления ниже твоего уровня. Их можно повторить ниже.'}</p>`}
@@ -1190,25 +1196,53 @@ function CountUp({to,dur}){
 
 /* ---------- Справочник: tables to look things up any time (not a lesson — nobody learns 97 verbs at once) ---------- */
 const GERREF=__WD[815];
+const IRR_TOP=['be','have','do','say','go','get','make','know','think','take','see','come','give','find','tell','become','leave','feel','put','bring','begin','keep','hold','write','stand','hear','let','mean','meet','run'];
+const irrPat=r=>{ const f=x=>String(x).split('/')[0].trim().toLowerCase(), a=f(r[0]), b=f(r[1]), c=f(r[2]); return a===b&&b===c?'AAA':b===c?'ABB':a===c?'ABA':'ABC'; };
+const IRR_PAT={AAA:['A-A-A','все три формы одинаковые: cut — cut — cut'],ABB:['A-B-B','2-я и 3-я совпадают: buy — bought — bought'],ABA:['A-B-A','3-я как 1-я: come — came — come'],ABC:['A-B-C','все разные: go — went — gone']};
+/* a verb from the reference → a review card: you see V1 and type V2 V3 */
+function toggleIrrCard(update,r){ const id='irr-'+String(r[0]).split('/')[0].trim().toLowerCase().replace(/[^a-z]+/g,'-');
+  update(s=>{ const my={...(s.myWords||{})}, boxes={...s.boxes}, due={...(s.due||{})};
+    if(my[id]){ delete my[id]; delete boxes[id]; delete due[id]; return {myWords:my,boxes,due}; }
+    my[id]={id,kind:'irr',en:String(r[0]),v2:String(r[1]),v3:String(r[2]),tr:String(r[3]||''),ru:String(r[3]||'')+' — '+r[1]+', '+r[2],def:'',ipa:'',ex:'',track:'my',added:dayKey()}; boxes[id]=0; due[id]=dayKey(); return {myWords:my,boxes,due}; }); return id; }
+const TENSES=__WD[816];
+const MODALS=__WD[817];
+const PREP_T=__WD[818];
+const PHRASAL=__WD[819];
 function irrRows(){ const out=[], seen={}; ((GBOOK.irr||{}).sections||[]).forEach(sec=>(sec.b||[]).forEach(b=>{ if(b[0]==='tbl'&&b[1]&&b[1][0]==='V1') b[2].forEach(r=>{ const k=r[0]; if(!seen[k]){ seen[k]=1; out.push(r.map(String)); } }); }));
   return out.sort((a,b)=>a[0].localeCompare(b[0])); }
-function RefBook({onBack}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState('');
+const REF_TABS=[['irr','Неправильные глаголы'],['ger','-ing или to'],['tense','12 времён'],['modal','Модальные'],['prep','in · on · at'],['phr','Фразовые']];
+function RefBook({onBack,st,update}){ const [tab,setTab]=useState(()=>{ try{ return localStorage.getItem('wordy.ref')||'irr'; }catch(e){ return 'irr'; } }), [q,setQ]=useState(''), [view,setView]=useState('abc');
   const pickTab=t=>{ SFX('tap'); setTab(t); setQ(''); try{ localStorage.setItem('wordy.ref',t); }catch(e){} };
-  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(x).toLowerCase().includes(f));
-  const say=t=>{ if(canSpeak){ speak(t); W('react','nod'); } };
+  const rows=useMemo(irrRows,[]), f=q.trim().toLowerCase(), hit=r=>!f||r.some(x=>String(Array.isArray(x)?x.join(' '):x).toLowerCase().includes(f));
+  const say=t=>{ if(canSpeak){ speak(String(t).replace(/\*/g,'')); W('react','nod'); } };
+  const my=(st&&st.myWords)||{}, starred=r=>!!my['irr-'+String(r[0]).split('/')[0].trim().toLowerCase().replace(/[^a-z]+/g,'-')], nStar=Object.values(my).filter(w=>w.kind==='irr').length;
+  const star=r=>{ if(!update) return; const on=starred(r); SFX(on?'tap':'pop'); toggleIrrCard(update,r); if(!on) W('say','Добавил «'+r[0]+'» в повторение!'); };
   const gl=(title,list,note)=>{ const l=list.filter(hit); return l.length?html`<div className="ref-g"><h3>${title}</h3>${note?html`<p className="muted">${note}</p>`:null}
-      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+r[2]} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${r[2]}</small></div></div>`)}</div>`:null; };
+      ${l.map(r=>html`<div key=${r[0]} className="ref-row ger"><button className="ex-say" aria-label=${'Послушать: '+String(r[2]).replace(/\*/g,'')} onClick=${()=>say(r[2])}>${I.speaker()}</button><div><b lang="en">${r[0]}</b> <span className="muted">${r[1]}</span><small lang="en">${starMark(r[2])}</small></div></div>`)}</div>`:null; };
+  const irrRow=r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span>
+      ${update?html`<button className=${'ref-star'+(starred(r)?' on':'')} aria-pressed=${starred(r)} aria-label=${(starred(r)?'Убрать из повторения: ':'Учить: ')+r[0]} onClick=${()=>star(r)}>${starred(r)?'★':'☆'}</button>`:null}</div>`;
+  const head=html`<div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span>${update?html`<span></span>`:null}</div>`;
+  const list=view==='top'?IRR_TOP.map(v=>rows.find(r=>String(r[0]).split('/')[0].trim()===v)).filter(Boolean):rows;
+  const empty=html`<p className="empty">Не нашёл «${q}».</p>`;
   return html`<section className="refbook">
-    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b><span className="muted">подсматривай, когда нужно</span></div></div>
-    <div className="chips" role="tablist"><button className="chip" role="tab" id="ref-irr" aria-pressed=${tab==='irr'} onClick=${()=>pickTab('irr')}>Неправильные глаголы</button><button className="chip" role="tab" id="ref-ger" aria-pressed=${tab==='ger'} onClick=${()=>pickTab('ger')}>-ing или to</button></div>
-    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder=${tab==='irr'?'Найти: go, ушёл…':'Найти: enjoy, решать…'} onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
-    ${tab==='irr'?html`<p className="muted ref-note">${rows.length} самых нужных глаголов. Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.</p>
-        <div className="ref-tbl" role="table"><div className="ref-row head" role="row"><span></span><span>V1</span><span>V2</span><span>V3</span><span>Перевод</span></div>
-        ${rows.filter(hit).map(r=>html`<div key=${r[0]} className="ref-row" role="row"><button className="ex-say" aria-label=${'Послушать: '+r.slice(0,3).join(', ')} onClick=${()=>say(r.slice(0,3).join(', '))}>${I.speaker()}</button><b lang="en">${r[0]}</b><span lang="en">${r[1]}</span><span lang="en">${r[2]}</span><span className="muted">${r[3]}</span></div>`)}
-        ${!rows.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}</div>`
-    :html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
+    <div className="sess-top"><button className="icon-btn" id="ref-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button><div className="gm-h"><b>Справочник</b></div></div>
+    <div className="chips ref-tabs" role="tablist">${REF_TABS.map(([id,l])=>html`<button key=${id} className="chip" role="tab" id=${'ref-'+id} aria-pressed=${tab===id} onClick=${()=>pickTab(id)}>${l}</button>`)}</div>
+    <input className="set-in ref-q" id="ref-q" type="search" value=${q} placeholder="Найти по-английски или по-русски…" onChange=${e=>setQ(e.target.value)} aria-label="Поиск"/>
+    ${tab==='irr'?html`<div className="chips ref-view">${[['abc','А–Я'],['pat','По схеме'],['top','Частые 30']].map(([v,l])=>html`<button key=${v} className="chip" id=${'ref-v-'+v} aria-pressed=${view===v} onClick=${()=>{ SFX('tap'); setView(v); }}>${l}</button>`)}</div>
+        <p className="muted ref-note">${update?html`☆ — учить глагол в повторении.${nStar?html` <b>Учишь: ${nStar}</b>`:null}`:'Учить их лучше группами в уроке «Неправильные глаголы» — а здесь можно быстро проверить форму.'}</p>
+        ${view==='pat'?['AAA','ABB','ABA','ABC'].map(k=>{ const l=list.filter(r=>irrPat(r)===k).filter(hit); return l.length?html`<div key=${k} className="ref-g"><h3>${IRR_PAT[k][0]} <small className="muted">· ${l.length}</small></h3><p className="muted">${IRR_PAT[k][1]}</p><div className="ref-tbl" role="table">${head}${l.map(irrRow)}</div></div>`:null; })
+          :html`<div className="ref-tbl" role="table">${head}${list.filter(hit).map(irrRow)}</div>`}
+        ${!list.filter(hit).length?html`<p className="empty">Не нашёл «${q}». Возможно, это правильный глагол: к нему просто добавляется -ed.</p>`:null}`
+    :tab==='ger'?html`<p className="muted ref-note">Тема уровня B1 (урок «Герундий или инфинитив»). Здесь — списки, чтобы быстро проверить.</p>
       ${gl('Глагол + -ing',GERREF.ing)}${gl('Глагол + to + глагол',GERREF.to)}${gl('Можно и так, и так',GERREF.both,'Смысл почти не меняется.')}${gl('Смысл меняется',GERREF.diff)}
-      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?html`<p className="empty">Не нашёл «${q}».</p>`:null}`}
+      ${!['ing','to','both','diff'].some(k=>GERREF[k].some(hit))?empty:null}`
+    :tab==='tense'?html`<p className="muted ref-note">Все 12 времён: схема, когда употребляем, пример и слова-подсказки.</p>
+      ${TENSES.map(([g,l])=>{ const x=l.filter(hit); return x.length?html`<div key=${g} className="ref-g"><h3>${g}</h3>${x.map(t=>html`<div key=${t[0]} className="ref-tense"><div className="rt-h"><b>${t[0]}</b><code>${t[1]}</code></div><p>${t[2]}</p>
+          <p className="rt-ex"><button className="ex-say" aria-label=${'Послушать: '+t[3].replace(/\*/g,'')} onClick=${()=>say(t[3])}>${I.speaker()}</button><span lang="en">${starMark(t[3])}</span></p><small className="muted">${t[4]}</small></div>`)}</div>`:null; })}
+      ${!TENSES.some(([g,l])=>l.some(hit))?empty:null}`
+    :tab==='modal'?html`${gl('Модальные глаголы',MODALS,'После них глагол без to (кроме have to, ought to, need to, be able to).')}${!MODALS.some(hit)?empty:null}`
+    :tab==='prep'?html`<p className="muted ref-note">Предлоги времени: от точного (at) к широкому (in).</p>${PREP_T.filter(hit).map(p=>html`<div key=${p[0]} className="ref-g ref-prep"><h3 lang="en">${p[0]}</h3><p className="muted">${p[1]}</p><div className="chips">${p[2].map(x=>html`<button key=${x} className="chip" lang="en" onClick=${()=>say(x)}>${x}</button>`)}</div></div>`)}${!PREP_T.some(hit)?empty:null}`
+    :html`${gl('Популярные фразовые глаголы',PHRASAL,'Смысл часто не складывается из частей — учи целиком, с примером.')}${!PHRASAL.some(hit)?empty:null}`}
   </section>`; }
 function GrammarMap({st,onBack,open,openRef}){
   const gs=st.gstars||{};
@@ -1236,7 +1270,7 @@ function GrammarMap({st,onBack,open,openRef}){
   const total=gStarsTotal(st), passed=gPassed(st);
   return html`<section className="gm">
     <div className="sess-top"><button className="icon-btn" id="gmap-back" onClick=${()=>{ SFX('tap'); onBack(); }} aria-label="Назад">${I.back()}</button>
-      <div className="gm-h"><b>Грамматика</b><span className="muted">${GL.length} уровней · A1–C1</span></div>
+      <div className="gm-h"><b>Грамматика</b><span className="muted">A1–C1</span></div>
       ${openRef?html`<button className="chip ref-open" id="gmap-ref" onClick=${()=>{ SFX('pop'); openRef(); }}>📘 Справочник</button>`:null}</div>
     <div className="ghead enter">
       <div className="ghead-main"><p className="eyebrow">Твой путь</p><h2>${passed} из ${GL.length} ${plural(GL.length,'уровень','уровня','уровней')} пройдено</h2>
@@ -1269,460 +1303,460 @@ function GrammarMap({st,onBack,open,openRef}){
    order:[[answers],why] · error:[sent with *wrong part*,fix|null,why] · tr:[ru,[answers]] */
 const GBOOK={};
 /* ---------- Старт с нуля: теория и упражнения ---------- */
-GBOOK.abc=__WD[816];
+GBOOK.abc=__WD[820];
 
-GBOOK.rules=__WD[817];
+GBOOK.rules=__WD[821];
 
-GBOOK.ipa=__WD[818];
+GBOOK.ipa=__WD[822];
 
-GBOOK.svo=__WD[819];
+GBOOK.svo=__WD[823];
 
-GBOOK.nums=__WD[820];
+GBOOK.nums=__WD[824];
 
-Object.assign(SIMPLE,__WD[821]);
+Object.assign(SIMPLE,__WD[825]);
 
-GBOOK.g2=__WD[822];
+GBOOK.g2=__WD[826];
 
-GBOOK.g3=__WD[823];
+GBOOK.g3=__WD[827];
 
-GBOOK.g4=__WD[824];
+GBOOK.g4=__WD[828];
 
 /*GB_MORE_START*/
-GBOOK.g1=__WD[825];
+GBOOK.g1=__WD[829];
 
-GBOOK.dem=__WD[826];
+GBOOK.dem=__WD[830];
 
-GBOOK.imp=__WD[827];
+GBOOK.imp=__WD[831];
 
-GBOOK.pron=__WD[828];
+GBOOK.pron=__WD[832];
 
-GBOOK.can=__WD[829];
+GBOOK.can=__WD[833];
 
-GBOOK.qw=__WD[830];
+GBOOK.qw=__WD[834];
 
-GBOOK.freq=__WD[831];
+GBOOK.freq=__WD[835];
 
-GBOOK.art=__WD[832];
+GBOOK.art=__WD[836];
 
-GBOOK.pl=__WD[833];
+GBOOK.pl=__WD[837];
 
-GBOOK.there=__WD[834];
+GBOOK.there=__WD[838];
 
-GBOOK.hgot=__WD[835];
+GBOOK.hgot=__WD[839];
 
-GBOOK.poss=__WD[836];
+GBOOK.poss=__WD[840];
 
-GBOOK.likeing=__WD[837];
+GBOOK.likeing=__WD[841];
 
-GBOOK.waswere=__WD[838];
+GBOOK.waswere=__WD[842];
 
-GBOOK.g5=__WD[839];
+GBOOK.g5=__WD[843];
 
-GBOOK.g6=__WD[840];
+GBOOK.g6=__WD[844];
 
-GBOOK.prepl=__WD[841];
+GBOOK.prepl=__WD[845];
 
-GBOOK.atin=__WD[842];
+GBOOK.atin=__WD[846];
 
-GBOOK.prep=__WD[843];
+GBOOK.prep=__WD[847];
 
-GBOOK.some=__WD[844];
+GBOOK.some=__WD[848];
 
-GBOOK.few=__WD[845];
+GBOOK.few=__WD[849];
 
-GBOOK.too=__WD[846];
+GBOOK.too=__WD[850];
 
-GBOOK.adv=__WD[847];
+GBOOK.adv=__WD[851];
 
-GBOOK.asas=__WD[848];
+GBOOK.asas=__WD[852];
 
-GBOOK.conj=__WD[849];
+GBOOK.conj=__WD[853];
 
-GBOOK.posspron=__WD[850];
+GBOOK.posspron=__WD[854];
 
-GBOOK.wlike=__WD[851];
+GBOOK.wlike=__WD[855];
 
-GBOOK.g10=__WD[852];
+GBOOK.g10=__WD[856];
 
-GBOOK.pcfut=__WD[853];
+GBOOK.pcfut=__WD[857];
 
-GBOOK.g12=__WD[854];
+GBOOK.g12=__WD[858];
 
-GBOOK.g11=__WD[855];
+GBOOK.g11=__WD[859];
 
-GBOOK.haveto=__WD[856];
+GBOOK.haveto=__WD[860];
 
-GBOOK.g7=__WD[857];
+GBOOK.g7=__WD[861];
 
-GBOOK.g8=__WD[858];
+GBOOK.g8=__WD[862];
 
-GBOOK.g9=__WD[859];
+GBOOK.g9=__WD[863];
 
-GBOOK.edadj=__WD[860];
+GBOOK.edadj=__WD[864];
 
-GBOOK.subjq=__WD[861];
+GBOOK.subjq=__WD[865];
 
-GBOOK.allowed=__WD[862];
+GBOOK.allowed=__WD[866];
 
-GBOOK.tags=__WD[863];
+GBOOK.tags=__WD[867];
 
-GBOOK.sodoi=__WD[864];
+GBOOK.sodoi=__WD[868];
 
-GBOOK.zero=__WD[865];
+GBOOK.zero=__WD[869];
 
-GBOOK.cond1=__WD[866];
+GBOOK.cond1=__WD[870];
 
-GBOOK.timec=__WD[867];
+GBOOK.timec=__WD[871];
 
-GBOOK.maymight=__WD[868];
+GBOOK.maymight=__WD[872];
 
-GBOOK.cond2=__WD[869];
+GBOOK.cond2=__WD[873];
 
-GBOOK.quant=__WD[870];
+GBOOK.quant=__WD[874];
 
-GBOOK.compadv=__WD[871];
+GBOOK.compadv=__WD[875];
 
-GBOOK.pass=__WD[872];
+GBOOK.pass=__WD[876];
 
-GBOOK.ger=__WD[873];
+GBOOK.ger=__WD[877];
 
-GBOOK.purpose=__WD[874];
+GBOOK.purpose=__WD[878];
 
-GBOOK.makelet=__WD[875];
+GBOOK.makelet=__WD[879];
 
-GBOOK.rel=__WD[876];
+GBOOK.rel=__WD[880];
 
-GBOOK.refl=__WD[877];
+GBOOK.refl=__WD[881];
 
-GBOOK.sosuch=__WD[878];
+GBOOK.sosuch=__WD[882];
 
-GBOOK.phr=__WD[879];
+GBOOK.phr=__WD[883];
 
-GBOOK.indq=__WD[880];
+GBOOK.indq=__WD[884];
 
-GBOOK.ppc=__WD[881];
+GBOOK.ppc=__WD[885];
 
-GBOOK.ppc2=__WD[882];
+GBOOK.ppc2=__WD[886];
 
-GBOOK.narr=__WD[883];
+GBOOK.narr=__WD[887];
 
-GBOOK.cond3=__WD[884];
+GBOOK.cond3=__WD[888];
 
-GBOOK.modpast=__WD[885];
+GBOOK.modpast=__WD[889];
 
-GBOOK.needn=__WD[886];
+GBOOK.needn=__WD[890];
 
-GBOOK.rep=__WD[887];
+GBOOK.rep=__WD[891];
 
-GBOOK.repq=__WD[888];
+GBOOK.repq=__WD[892];
 
-GBOOK.used=__WD[889];
+GBOOK.used=__WD[893];
 
-GBOOK.deduct=__WD[890];
+GBOOK.deduct=__WD[894];
 
-GBOOK.hadbetter=__WD[891];
+GBOOK.hadbetter=__WD[895];
 
-GBOOK.futc=__WD[892];
+GBOOK.futc=__WD[896];
 
-GBOOK.futpast=__WD[893];
+GBOOK.futpast=__WD[897];
 
-GBOOK.pass3=__WD[894];
+GBOOK.pass3=__WD[898];
 
-GBOOK.gerinf2=__WD[895];
+GBOOK.gerinf2=__WD[899];
 
-GBOOK.provided=__WD[896];
+GBOOK.provided=__WD[900];
 
-GBOOK.nondef=__WD[897];
+GBOOK.nondef=__WD[901];
 
-GBOOK.contrast=__WD[898];
+GBOOK.contrast=__WD[902];
 
-GBOOK.each=__WD[899];
+GBOOK.each=__WD[903];
 
-GBOOK.adjorder=__WD[900];
+GBOOK.adjorder=__WD[904];
 
-GBOOK.mixed=__WD[901];
+GBOOK.mixed=__WD[905];
 
-GBOOK.condinv=__WD[902];
+GBOOK.condinv=__WD[906];
 
-GBOOK.befut=__WD[903];
+GBOOK.befut=__WD[907];
 
-GBOOK.inv=__WD[904];
+GBOOK.inv=__WD[908];
 
-GBOOK.wish=__WD[905];
+GBOOK.wish=__WD[909];
 
-GBOOK.subj=__WD[906];
+GBOOK.subj=__WD[910];
 
-GBOOK.emph=__WD[907];
+GBOOK.emph=__WD[911];
 
-GBOOK.ellip=__WD[908];
+GBOOK.ellip=__WD[912];
 
-GBOOK.pass2=__WD[909];
+GBOOK.pass2=__WD[913];
 
-GBOOK.relad=__WD[910];
+GBOOK.relad=__WD[914];
 
-GBOOK.cleft=__WD[911];
+GBOOK.cleft=__WD[915];
 
-GBOOK.part=__WD[912];
+GBOOK.part=__WD[916];
 
-GBOOK.nominal=__WD[913];
+GBOOK.nominal=__WD[917];
 
-GBOOK.hedge=__WD[914];
+GBOOK.hedge=__WD[918];
 
-GBOOK.discourse=__WD[915];
+GBOOK.discourse=__WD[919];
 
-GBOOK.acad=__WD[916];
+GBOOK.acad=__WD[920];
 
-GBOOK.irr=__WD[917];
-SIMPLE.irr=__WD[918];
+GBOOK.irr=__WD[921];
+SIMPLE.irr=__WD[922];
 /* ---------- Теория B1–C1: «По-русски и по-английски» + ошибки ---------- */
 const GX={};
 const RU_H="По-русски и по-английски";
 const gxT=(rows,key,note)=>{const b=[['p',"Русский и английский устроены по-разному, поэтому дословный перевод здесь чаще всего подводит. Сравни:"],['tbl',["По-русски","По-английски","Почему так"],rows]]; if(key) b.push(['key',key]); if(note) b.push(['note',note]); return {h:RU_H,b}; };
 
-GX.g7={s:gxT(__WD[919],
+GX.g7={s:gxT(__WD[923],
  "В русском одно прошедшее время, в английском — два. Спроси себя: важно **когда** (Past Simple) или **что есть сейчас в результате** (Present Perfect)?",
  "Yet ставится в конце вопросов и отрицаний (Have you finished yet?), already — между have и V3 (I've already finished), just — тоже между ними (She's just left)."),
  m:[["I have already went home.","I have already gone home.","После have — V3."],["I have finished it two hours ago.","I finished it two hours ago.","Ago → Past Simple."]]};
 
-GX.g8={s:gxT(__WD[920],
+GX.g8={s:gxT(__WD[924],
  "Типичный разговор: первый вопрос — Present Perfect (Have you ever…?), все уточнения — Past Simple (When did you…? Who did you go with?).",
  "This morning, today, this week — Present Perfect, если период ещё не закончился (I've had two coffees today), и Past Simple, если закончился (I had coffee this morning — сейчас вечер)."),
  m:[["Yesterday I have met Aibek.","Yesterday I met Aibek.","Yesterday → Past Simple."],["When have you bought it?","When did you buy it?","When → Past Simple."]]};
 
-GX.g9={s:gxT(__WD[921],
+GX.g9={s:gxT(__WD[925],
  "В русском «уже начался» и «начался» — одно время, а смысл разный. По-английски эту разницу показывает Past Perfect.",
  "Если порядок и так ясен из before / after, Past Perfect не обязателен: I had breakfast before I left. Обе формы верны."),
  m:[["I had saw him before.","I had seen him before.","Had + V3."],["After she has finished, she went home.","After she had finished, she went home.","Прошлое до прошлого → had + V3."]]};
 
-GX.edadj={s:gxT(__WD[922],
+GX.edadj={s:gxT(__WD[926],
  "Правило-подсказка: **-ed — что я чувствую, -ing — что это вызывает**. «I'm boring» значит «я зануда».",
  "Так работают пары: interested / interesting, excited / exciting, confused / confusing, surprised / surprising, embarrassed / embarrassing, frightened / frightening."),
  m:[["I'm very confusing about this rule.","I'm very confused about this rule.","Чувство → -ed."],["The news was very surprised.","The news was very surprising.","Причина → -ing."]]};
 
-GX.subjq={s:gxT(__WD[923],
+GX.subjq={s:gxT(__WD[927],
  "Подставь ответ: «**Аскар** позвонил мне» — вопрос к подлежащему, did не нужен. «Я позвонил **Аскару**» — вопрос к дополнению, нужен did.",
  "В вопросе к подлежащему глагол стоит в форме he / she / it: Who **knows** the answer? (не know)."),
  m:[["Who did break the window?","Who broke the window?","Вопрос к подлежащему — без did."],["What did make you laugh?","What made you laugh?","What — подлежащее."]]};
 
-GX.allowed={s:gxT(__WD[924],
+GX.allowed={s:gxT(__WD[928],
  "**Let** — без to и без пассива («I was let»); **allow** — с to и бывает в пассиве: They allowed us **to** leave → We were allowed **to** leave.",
  null),
  m:[["Can I to ask a question?","Can I ask a question?","После can — без to."],["Students don't allowed to use phones.","Students aren't allowed to use phones.","Be allowed — с be."]]};
 
-GX.tags={s:gxT(__WD[925],
+GX.tags={s:gxT(__WD[929],
  "Русское «да?», «правда?», «ведь» — одно слово на всё. В английском хвостик каждый раз собирается из глагола предложения.",
  "Если ответ «нет» на отрицательное предложение, англичанин говорит No: — You didn't call, did you? — **No**, I didn't. (По-русски мы бы сказали «Да, не звонил».)"),
  m:[["You live here, isn't it?","You live here, don't you?","Хвостик строится от глагола: live → don't."],["She can swim, can't her?","She can swim, can't she?","В хвостике — подлежащее (she), а не him / her."]]};
 
-GX.sodoi={s:gxT(__WD[926],
+GX.sodoi={s:gxT(__WD[930],
  "Русское «я тоже» подходит и к «да», и к «нет». В английском на отрицание «Me too» звучит ошибкой — нужно **Neither do I / Me neither**.",
  null),
  m:[["— I can't drive. — Me too.","— I can't drive. — Me neither. / Neither can I.","На отрицание → neither."],["— She has a cat. — So does I.","— She has a cat. — So do I.","I → do."]]};
 
-GX.zero={s:gxT(__WD[927],
+GX.zero={s:gxT(__WD[931],
  "Русское безличное «если нагреть» по-английски требует подлежащего: **If you** heat… (you = любой человек).",
  null),
  m:[["If heat ice, it melts.","If you heat ice, it melts.","Нужно подлежащее."],["Unless you don't practise, you forget.","Unless you practise, you forget.","Unless уже содержит not."]]};
 
-GX.cond1={s:gxT(__WD[928],
+GX.cond1={s:gxT(__WD[932],
  "Русский переносит «будет» и в часть с «если». Английский — нет: **if + Present, will + глагол**. Это самая частая ошибка русскоговорящих.",
  "Will после if возможен только в значении «согласишься ли»: If you'll wait a moment, I'll check. (Если вы не против подождать…) Это вежливая форма, а не будущее."),
  m:[["If I will see him, I'll tell him.","If I see him, I'll tell him.","После if — Present."],["We will go out if it won't rain.","We'll go out if it doesn't rain.","После if — Present."]]};
 
-GX.timec={s:gxT(__WD[929],
+GX.timec={s:gxT(__WD[933],
  "Правило то же, что с if: после **when, as soon as, until, before, after, while** будущее выражаем настоящим временем.",
  "Не путай с вопросом: **When will** he come? — тут when — вопросительное слово, will нужен."),
  m:[["Wait here until I won't come back.","Wait here until I come back.","Until уже значит «пока не»."],["I'll tell you after I will finish.","I'll tell you after I finish / after I've finished.","После after — Present."]]};
 
-GX.maymight={s:gxT(__WD[930],
+GX.maymight={s:gxT(__WD[934],
  "Не соединяй maybe и might: ««Maybe I might»» — двойное «может быть». Выбери одно: **Maybe I'll** come или **I might** come.",
  null),
  m:[["She might comes later.","She might come later.","После might — V1."],["I will maybe go.","Maybe I'll go. / I might go.","Maybe — в начале."]]};
 
-GX.cond2={s:gxT(__WD[931],
+GX.cond2={s:gxT(__WD[935],
  "Русское «бы» ставится в обе части, английское would — **только в одну**, без if. После if — прошедшее время: If I **had**, If I **knew**.",
  "If I were — для всех лиц (If she were, If it were) в письменной речи. If I was тоже говорят, но в тестах и IELTS выбирай were."),
  m:[["If I would know, I would tell you.","If I knew, I would tell you.","После if — без would."],["If I were rich, I will travel.","If I were rich, I would travel.","Нереальное → would."]]};
 
-GX.quant={s:gxT(__WD[932],
+GX.quant={s:gxT(__WD[936],
  "В русском двойное отрицание нормально («никто не пришёл»). В английском — только одно: Neither came / Nobody came, но не «Neither didn't come».",
  "Both, either, neither — только для двух. Для трёх и больше: all, any, none: None of my three friends came."),
  m:[["Neither of my friends didn't call.","Neither of my friends called.","Одно отрицание."],["Both of us likes pizza.","Both of us like pizza.","Both → множественное число."]]};
 
-GX.compadv={s:gxT(__WD[933],
+GX.compadv={s:gxT(__WD[937],
  "Русское «гораздо», «намного» = **much / far / a lot**, но не very: «very taller» → much taller.",
  null),
  m:[["It's very more difficult.","It's much more difficult.","Very не стоит перед сравнением."],["The more he practises, more confident he becomes.","The more he practises, the more confident he becomes.","The в обеих частях."]]};
 
-GX.pass={s:gxT(__WD[934],
+GX.pass={s:gxT(__WD[938],
  "Русские фразы «говорят», «построили», «продают» (без подлежащего) почти всегда переводятся пассивом.",
  "Пассив образуется только от глаголов с дополнением. Нельзя сказать «It was happened» — happen не имеет дополнения: It happened."),
  m:[["It was happened yesterday.","It happened yesterday.","Happen не бывает в пассиве."],["I am born in 2008.","I was born in 2008.","Born — в прошедшем."]]};
 
-GX.ger={s:gxT(__WD[935],
+GX.ger={s:gxT(__WD[939],
  "Русский инфинитив «-ть» переводится то через to, то через -ing — это зависит от первого глагола. Запоминай глагол вместе с формой: **enjoy doing**, **want to do**.",
  "После предлогов (in, on, at, about, for, of, without, before, after) — всегда -ing: without saying, before leaving, interested in learning."),
  m:[["I avoid to eat sugar.","I avoid eating sugar.","Avoid + -ing."],["I can't afford buying it.","I can't afford to buy it.","Afford + to."]]};
 
-GX.purpose={s:gxT(__WD[936],
+GX.purpose={s:gxT(__WD[940],
  "Русское «для того чтобы» + глагол — никогда не **for + глагол**: «for study» → **to study**.",
  null),
  m:[["I save money for buy a car.","I save money to buy a car.","For + глагол нельзя."],["She studies hard for not fail.","She studies hard so as not to fail.","Цель с отрицанием."]]};
 
-GX.makelet={s:gxT(__WD[937],
+GX.makelet={s:gxT(__WD[941],
  "«Я подстригся» по-английски — **I had my hair cut**. «I cut my hair» значит, что ты стриг себя сам.",
  null),
  m:[["I repaired my car at the garage.","I had my car repaired at the garage.","Чинили другие → have something done."],["She made me cried.","She made me cry.","После make — V1."]]};
 
-GX.rel={s:gxT(__WD[938],
+GX.rel={s:gxT(__WD[942],
  "В русском «который» склоняется (которого, которому), а в английском нет: who / which / that для всех падежей. Не повторяй местоимение: «the book which I read **it**».",
  null),
  m:[["The people which work here are friendly.","The people who work here are friendly.","О людях — who / that."],["This is the place where we met there.","This is the place where we met.","Where уже значит «там»."]]};
 
-GX.refl={s:gxT(__WD[939],
+GX.refl={s:gxT(__WD[943],
  "Русское «-ся» далеко не всегда = myself: **одеваться** — get dressed, **мыться** — have a wash / wash, **волноваться** — worry, **расслабляться** — relax.",
  "By myself = сам, без помощи / в одиночестве: I did it by myself."),
  m:[["I worry myself about the exam.","I worry about the exam.","Worry — без myself."],["We enjoyed at the party.","We enjoyed ourselves at the party.","Enjoy требует дополнения: enjoy yourself."]]};
 
-GX.sosuch={s:gxT(__WD[940],
+GX.sosuch={s:gxT(__WD[944],
  "Русское «такой» — это и so, и such. Смотри, что идёт следом: **есть существительное → such**, только прилагательное → so.",
  null),
  m:[["She is such kind.","She is so kind.","Нет существительного → so."],["It was so a nice day.","It was such a nice day.","Есть существительное → such a."]]};
 
-GX.phr={s:gxT(__WD[941],
+GX.phr={s:gxT(__WD[945],
  "Многим русским глаголам в английском соответствует глагол + частица: **вставать** — get up, **сдаваться** — give up, **продолжать** — go on, **выяснять** — find out.",
  "В IELTS Writing лучше нейтральные синонимы: find out → discover, put off → postpone, go up → increase. В Speaking фразовые глаголы — плюс."),
  m:[["Pick up it.","Pick it up.","Местоимение — между глаголом и частицей."],["I gave up to smoke.","I gave up smoking.","Give up + -ing."]]};
 
-GX.indq={s:gxT(__WD[942],
+GX.indq={s:gxT(__WD[946],
  "Русское «ли» не превращается в вопросительный порядок слов. Нужно **if** или **whether**: Do you know **if** he's home?",
  null),
  m:[["Can you tell me what time is it?","Can you tell me what time it is?","Прямой порядок."],["I don't know does he like it.","I don't know if he likes it.","«Ли» → if."]]};
-GX.ppc={s:gxT(__WD[943],
+GX.ppc={s:gxT(__WD[947],
  "Главный сигнал — русское настоящее время + «уже», «с …», «… лет»: «живу здесь с 2020» → **I've been living / I've lived here since 2020**. Present Simple или Continuous здесь — ошибка.",
  "For — срок (for two hours, for ages), since — точка начала (since Monday, since 2015, since I was a child)."),
  m:[["I've been waiting you for an hour.","I've been waiting for you for an hour.","Wait for someone."],["I work here since March.","I've been working here since March.","Since → Perfect."]]};
 
-GX.ppc2={s:gxT(__WD[944],
+GX.ppc2={s:gxT(__WD[948],
  "Если в русском есть **срок** («уже час», «три года») и **момент в прошлом** («когда…», «до того как…»), нужен Past Perfect Continuous.",
  null),
  m:[["He was tired because he had been run.","He was tired because he had been running.","Had been + -ing."],["When I met her, she has been living in Osh for years.","When I met her, she had been living in Osh for years.","Прошлое → had."]]};
 
-GX.narr={s:gxT(__WD[945],
+GX.narr={s:gxT(__WD[949],
  "В русском рассказе всё в одном прошедшем времени, а смысл понятен из «уже», «раньше», «в это время». В английском эти слова «встроены» во время глагола.",
  "В IELTS Speaking Part 2 (рассказ о событии) три времени — Past Simple, Past Continuous и Past Perfect — заметно поднимают оценку за грамматику."),
  m:[["While I walked home, I was seeing an accident.","While I was walking home, I saw an accident.","Фон — Continuous, событие — Simple."],["When we got there, the train left. (поезд уже ушёл)","When we got there, the train had left.","Ушёл раньше → Past Perfect."]]};
 
-GX.cond3={s:gxT(__WD[946],
+GX.cond3={s:gxT(__WD[950],
  "В русском «если бы» одно и для сейчас, и для прошлого. В английском смотри на время: **сейчас** → If I knew…, I would…; **в прошлом** → If I had known…, I would have…",
  "В речи would have звучит как [вудэв] или [вудв], отсюда частая ошибка в письме: «would of». Пиши только would have / would've."),
  m:[["If I knew about it yesterday, I would have helped.","If I had known about it yesterday, I would have helped.","Прошлое → had + V3."],["I would have came if you had called.","I would have come if you had called.","Would have + V3."]]};
 
-GX.modpast={s:gxT(__WD[947],
+GX.modpast={s:gxT(__WD[951],
  "Русское «надо было» (упрёк) — **should have done**, а не «had to»: had to значит, что ты был вынужден и сделал.",
  null),
  m:[["You must have told me earlier! (упрёк)","You should have told me earlier!","Упрёк → should have."],["I had to call you, but I forgot.","I should have called you, but I forgot.","Had to = пришлось и сделал."]]};
 
-GX.needn={s:gxT(__WD[948],
+GX.needn={s:gxT(__WD[952],
  "Не путай: **mustn't** — нельзя, **don't need to / don't have to** — не обязательно. «You mustn't come» — это запрет, а не «можешь не приходить».",
  null),
  m:[["You mustn't pay — it's free.","You don't need to pay — it's free.","Не обязательно ≠ нельзя."],["She doesn't need come today.","She doesn't need to come today.","Need как обычный глагол — с to."]]};
 
-GX.rep={s:gxT(__WD[949],
+GX.rep={s:gxT(__WD[953],
  "В русском время в косвенной речи не меняется («сказал, что устал» — про тогдашнее «устал»). В английском после **said / told** время сдвигается на шаг в прошлое.",
  null),
  m:[["He told to me that he was busy.","He told me that he was busy.","Tell без to."],["He said he will call me tomorrow. (говорил вчера)","He said he would call me the next day.","Will → would, tomorrow → the next day."]]};
 
-GX.repq={s:gxT(__WD[950],
+GX.repq={s:gxT(__WD[954],
  "Русское «сказал, чтобы…» — это **told someone to**: Он сказал, чтобы я подождал → He **told me to wait**.",
  null),
  m:[["She said me to wait.","She told me to wait.","Say не берёт «кому + to»."],["He asked me don't tell anyone.","He asked me not to tell anyone.","Not to + V1."]]};
 
-GX.used={s:gxT(__WD[951],
+GX.used={s:gxT(__WD[955],
  "Три похожие формы, три смысла: **used to do** — раньше делал; **be used to doing** — привык; **get used to doing** — привыкаю.",
  "Would не используют для состояний: «I would live in Osh» — ошибка, нужно I used to live."),
  m:[["I used to going to the gym.","I used to go to the gym.","Used to + V1."],["Did you use to playing football?","Did you use to play football?","Used to + V1."]]};
 
-GX.deduct={s:gxT(__WD[952],
+GX.deduct={s:gxT(__WD[956],
  "Русское «не может быть» = **can't**. «Mustn't» значит «нельзя» и для выводов не подходит.",
  null),
  m:[["He can't be come yet.","He can't have come yet.","О прошлом → can't have + V3."],["It mustn't be true!","It can't be true!","Отрицательный вывод → can't."]]};
 
-GX.hadbetter={s:gxT(__WD[953],
+GX.hadbetter={s:gxT(__WD[957],
  "Had better выглядит как прошедшее, но говорит о **сейчас и будущем**. Это не вежливое «лучше бы», а совет с намёком на последствия — с учителем звучит резко.",
  null),
  m:[["I prefer staying at home than going out.","I prefer staying at home to going out. / I'd rather stay at home than go out.","Prefer … to; would rather … than."],["You'd better not to go.","You'd better not go.","Had better not + V1."]]};
 
-GX.futc={s:gxT(__WD[954],
+GX.futc={s:gxT(__WD[958],
  "Русское «к» (к пятнице, к 8 часам) — главный сигнал Future Perfect: **by Friday, by 8 o'clock, by the time**.",
  "Until и by: until — «до тех пор, пока» (действие длится), by — «не позже чем» (к сроку): I'll wait until 5. I'll finish by 5."),
  m:[["I will have finished it until Monday.","I will have finished it by Monday.","К сроку → by."],["At 9 tomorrow I will sleep.","At 9 tomorrow I will be sleeping.","Процесс → will be + -ing."]]};
 
-GX.futpast={s:gxT(__WD[955],
+GX.futpast={s:gxT(__WD[959],
  "Русское «должен был» бывает двух видов: обязанность-договорённость → **was supposed to**, вывод → **must have**. «Ты должен был позвонить» (а не позвонил) = You were supposed to call.",
  null),
  m:[["I knew she will like it.","I knew she would like it.","После прошедшего → would."],["We were going to visiting her.","We were going to visit her.","Going to + V1."]]};
 
-GX.pass3={s:gxT(__WD[956],
+GX.pass3={s:gxT(__WD[960],
  "Русские «нужно сделать», «можно купить», «нельзя трогать» по-английски часто звучат пассивом: **must be done, can be bought, mustn't be touched**.",
  null),
  m:[["The results will announce tomorrow.","The results will be announced tomorrow.","Will be + V3."],["This problem can solve easily.","This problem can be solved easily.","Can be + V3."]]};
 
-GX.gerinf2={s:gxT(__WD[957],
+GX.gerinf2={s:gxT(__WD[961],
  "Простое правило: **-ing смотрит назад** (действие уже было), **to смотрит вперёд** (действие ещё впереди). Работает для remember, forget, regret, stop.",
  "Try to do = стараться (трудно): I tried to open the window, but it was stuck. Try doing = попробовать (вдруг поможет)."),
  m:[["Don't forget calling your grandma.","Don't forget to call your grandma.","Действие впереди → to."],["I regret to say that to her yesterday.","I regret saying that to her yesterday.","Прошлое → -ing."]]};
 
-GX.provided={s:gxT(__WD[958],
+GX.provided={s:gxT(__WD[962],
  "**In case** — «на всякий случай» (делаю заранее), **if** — «если» (делаю потом, когда случится). Русское «на случай, если пойдёт дождь» = in case **it rains**. In case of + существительное звучит официально: In case of fire, call 101.",
  null),
  m:[["As long as you will study, you'll pass.","As long as you study, you'll pass.","После союза — Present."],["Even I'm tired, I'll help.","Even though I'm tired, I'll help. / Even if I'm tired, I'll help.","Нужен even though / even if."]]};
 
-GX.nondef={s:gxT(__WD[959],
+GX.nondef={s:gxT(__WD[963],
  "В русском запятые перед «который» ставятся всегда. В английском запятые **меняют смысл**: The students, who studied, passed (все учились и сдали) ≠ The students who studied passed (сдали только те, кто учился).",
  "That после запятой не используется: «Osh, that is…» — ошибка."),
  m:[["My sister who lives in Osh is a nurse. (сестра одна)","My sister, who lives in Osh, is a nurse.","Единственная → запятые."],["I spoke to the manager, who's name I forgot.","I spoke to the manager, whose name I forgot.","Чей = whose."]]};
 
-GX.contrast={s:gxT(__WD[960],
+GX.contrast={s:gxT(__WD[964],
  "Русское «хотя …, но …» — два союза. В английском — **только один**: Although it was cold, we went (без but).",
  null),
  m:[["However it was late, we continued working.","Although it was late, we continued working.","However не соединяет две части одного предложения."],["Although he is rich, but he is unhappy.","Although he is rich, he is unhappy.","Один союз."]]};
 
-GX.each={s:gxT(__WD[961],
+GX.each={s:gxT(__WD[965],
  "Русское «все» = **everyone** (люди, ед. ч.) или **all** (с существительным). «Все пришли» — Everyone **has** come, а не have.",
  "Every day (каждый день) — два слова. Everyday (одно слово) — прилагательное «повседневный»: everyday clothes."),
  m:[["I've been waiting the all day.","I've been waiting all day.","All day — без the."],["Each students has a laptop.","Each student has a laptop.","Each + ед. ч."]]};
 
-GX.adjorder={s:gxT(__WD[962],
+GX.adjorder={s:gxT(__WD[966],
  "В русском порядок прилагательных свободный, в английском — почти фиксированный: **мнение — размер — возраст — форма — цвет — происхождение — материал — назначение**.",
  "Больше трёх прилагательных подряд носители почти не ставят. В эссе лучше разбить: a large wooden table that is over a hundred years old."),
  m:[["a dining wooden table","a wooden dining table","Назначение — у самого существительного."],["a Turkish beautiful carpet","a beautiful Turkish carpet","Мнение — первым."]]};
-GX.mixed={s:gxT(__WD[963],
+GX.mixed={s:gxT(__WD[967],
  "В русском «если бы» одинаково для любого времени, поэтому смешанное условие получается само собой. В английском каждую часть ставь в своё время: **когда было условие** и **когда результат**.",
  null),
- m:__WD[964]};
+ m:__WD[968]};
 
-GX.condinv={s:gxT(__WD[965],
+GX.condinv={s:gxT(__WD[969],
  "Инверсия вместо if звучит официально: письма, отчёты, IELTS Writing. В разговоре она кажется книжной.",
  "Отрицание не сокращается: **Had I not** known (не «Hadn't I known»)."),
  m:[["Should you will have questions, contact us.","Should you have questions, contact us.","После should — V1."],["Hadn't she helped us, we would have failed.","Had she not helped us, we would have failed.","Not — после подлежащего."]]};
 
-GX.befut={s:gxT(__WD[966],
+GX.befut={s:gxT(__WD[970],
  "Русское «должен» здесь — не обязанность (must), а **план или расписание**: is due to, is to. «The flight is due to land at 6» — так пишут на табло и в новостях.",
  null),
  m:[["The plane is due to landing at 6.","The plane is due to land at 6.","Due to + V1."],["The meeting is to be start at 9.","The meeting is to start at 9.","Be to + V1."]]};
 
-GX.inv={s:gxT(__WD[967],
+GX.inv={s:gxT(__WD[971],
  "В русском мы просто ставим «никогда» в начало для эмоции. В английском это **запускает вопросительный порядок слов**: Never **have I**, Rarely **do we**, Not until… **did I**.",
  "Без отрицательного слова в начале инверсии нет: I have never seen it (обычный порядок)."),
  m:[["Little I knew that she was lying.","Little did I know that she was lying.","Little в начале → did I."],["Only after the exam I relaxed.","Only after the exam did I relax.","Only after → did I + V1."]]};
 
-GX.wish={s:gxT(__WD[968],
+GX.wish={s:gxT(__WD[972],
  "Русское «жаль, что я **не** умею» → английское I wish I **could** (без not). Отрицание переворачивается: «жаль, что не» = wish + утверждение.",
  "Would после wish не используют о себе: «I wish I would…» — ошибка. Только о других и о том, что раздражает."),
  m:[["I wish I can speak French.","I wish I could speak French.","После wish — сдвиг назад."],["I wish I would have more free time.","I wish I had more free time.","О себе — без would."]]};
 
-GX.subj={s:gxT(__WD[969],
+GX.subj={s:gxT(__WD[973],
  "Русское «чтобы» + прошедшее («чтобы ты остался») часто соответствует английскому прошедшему: I'd rather you **stayed**, It's time you **went**.",
  "Subjunctive после suggest, recommend, insist, it's essential: She insisted that he **apologise** (без -s, без should). В британском можно и should apologise."),
  m:[["It's high time you start working.","It's high time you started working.","High time + Past."],["The doctor recommended that she takes a rest.","The doctor recommended that she take a rest.","Subjunctive — без -s."]]};
@@ -1736,66 +1770,66 @@ GX.emph={s:gxT([
  null),
  m:[["She doesn't sing well, but she do dance well.","She doesn't sing well, but she does dance well.","She → does."],["Do comes in!","Do come in!","Do + V1."]]};
 
-GX.ellip={s:gxT(__WD[970],
+GX.ellip={s:gxT(__WD[974],
  "Русский просто выбрасывает слова («Думаю, да»), английский оставляет «заменитель»: **so, not, one, to, do**. Без него фраза звучит обрывисто.",
  "I don't think so — обычный ответ «думаю, нет». I think not — звучит книжно."),
  m:[["— Is she coming? — I think yes.","— Is she coming? — I think so.","Да → so."],["I wanted to go but I couldn't go there.","I wanted to go, but I couldn't.","Повтор лишний."]]};
 
-GX.pass2={s:gxT(__WD[971],
+GX.pass2={s:gxT(__WD[975],
  "Русские безличные «говорят», «считается», «полагают» — это IELTS-стиль: **It is believed that…, X is thought to…** Они делают текст объективным.",
  null),
  m:[["He is said that he is rich.","He is said to be rich. / It is said that he is rich.","Две формы нельзя смешивать."],["The suspect is reported to be escaped.","The suspect is reported to have escaped.","Прошлое → to have + V3."]]};
 
-GX.relad={s:gxT(__WD[972],
+GX.relad={s:gxT(__WD[976],
  "Русское «то, что» = **what**, а не «that what» или «the thing which»: What I need is time.",
  "В разговоре предлог уходит в конец, а whom заменяется who или опускается: the man (who) I spoke to. Whom — признак письменного стиля."),
  m:[["This is that what I wanted.","This is what I wanted.","«То, что» = what."],["Whereby I mean that…","By which I mean that…","Whereby = «посредством которого», а не «под этим я имею в виду»."]]};
 
-GX.cleft={s:gxT(__WD[973],
+GX.cleft={s:gxT(__WD[977],
  "Русский выделяет слово порядком или словом «именно», английский — **конструкцией**: It is / was … that / who, What … is.",
  null),
  m:[["It was in 2020 when I moved here.","It was in 2020 that I moved here.","В cleft — that."],["What surprised me were his honesty.","What surprised me was his honesty.","What … was (ед. ч.)."]]};
 
-GX.part={s:gxT(__WD[974],
+GX.part={s:gxT(__WD[978],
  "Русское деепричастие («придя», «зная») почти всегда = английское причастие. Но подлежащее у обеих частей **должно совпадать**: «Walking home, it started to rain» — ошибка (дождь не шёл домой).",
  null),
  m:[["Having finishing the work, I left.","Having finished the work, I left.","Having + V3."],["Being tired, the film seemed long to me.","Being tired, I found the film long.","Подлежащее должно быть тем, кто устал."]]};
 
-GX.nominal={s:gxT(__WD[975],
+GX.nominal={s:gxT(__WD[979],
  "Русский научный стиль тоже любит существительные («рост», «снижение», «принятие решения»), поэтому номинализация даётся легко. Главное — не перегружать: два-три таких оборота на абзац достаточно.",
  null),
  m:[["There was a significant increase of prices.","There was a significant increase in prices.","Increase / rise / fall in."],["The protection nature is important.","The protection of nature is important.","Нужен of."]]};
 
-GX.hedge={s:gxT(__WD[976],
+GX.hedge={s:gxT(__WD[980],
  "Русская речь допускает категоричность («все», «всегда», «очевидно»). В академическом английском это минус: **tend to, appear to, may, likely, to some extent** делают аргумент точнее.",
  "Не смягчай всё подряд. Факты и цифры из графика (IELTS Task 1) подаются прямо: Sales rose by 20%."),
  m:[["It seems to be that prices will rise.","It seems that prices will rise. / Prices seem likely to rise.","It seems that или seem to."],["It is maybe true.","It may be true. / It is possibly true.","Maybe — разговорное, перед глаголом не ставят."]]};
 
-GX.discourse={s:gxT(__WD[977],
+GX.discourse={s:gxT(__WD[981],
  "Ложный друг: **actually** = «на самом деле», а не «актуально» (актуальный = relevant, current). **Eventually** = «в конце концов», а не «возможно».",
  null),
  m:[["Shortly, we were late.","In short, we were late. / Long story short, we were late.","«Короче» ≠ shortly (= скоро)."],["By the way, firstly, I'll answer the question.","First of all, I'll answer the question.","By the way — только для смены темы."]]};
 
-GX.acad={s:gxT(__WD[978],
+GX.acad={s:gxT(__WD[982],
  "Русское «но» в начале предложения в эссе лучше заменить на **However,**. Связки ставь в начало предложения и отделяй запятой.",
  "Не переусердствуй: связка в каждом предложении снижает оценку за Coherence. Достаточно 1–2 на абзац."),
  m:[["Besides of this, it is cheap.","Besides this, it is cheap. / In addition to this, it is cheap.","Besides — без of."],["In conclusion, to sum up, …","In conclusion, …","Одна связка."]]};
 
 for(const k in GX){ const b=GBOOK[k]; if(!b) continue; b.sections.push(GX[k].s); if(GX[k].m) b.mistakes.push(...GX[k].m); }
-GBOOK.movep=__WD[979];
+GBOOK.movep=__WD[983];
 SIMPLE.movep=["Предлоги движения показывают дорогу: куда идёшь, откуда и как. В комнату — into, из комнаты — out of, через дорогу — across, сквозь лес — through, вдоль реки — along, мимо школы — past.","Где? — in, on. Куда? — into, onto, to. Как? — across, through, along, past."];
 
-GBOOK.sugg=__WD[980];
-SIMPLE.sugg=__WD[981];
-GBOOK.art2=__WD[982];
-SIMPLE.art2=__WD[983];
+GBOOK.sugg=__WD[984];
+SIMPLE.sugg=__WD[985];
+GBOOK.art2=__WD[986];
+SIMPLE.art2=__WD[987];
 
-GBOOK.deppr=__WD[984];
-SIMPLE.deppr=__WD[985];
-GBOOK.wantyou=__WD[986];
+GBOOK.deppr=__WD[988];
+SIMPLE.deppr=__WD[989];
+GBOOK.wantyou=__WD[990];
 SIMPLE.wantyou=["По-русски говорим «хочу, чтобы ты пришёл», а по-английски проще: I want you to come — «хочу тебя прийти». Никаких that. Так же: ask me to, tell me to. А «видел, как он ушёл» — I saw him leave, без to.","Хочу, чтобы ты… = I want you to… Видел, как он… = I saw him + глагол."];
 
-GBOOK.seem=__WD[987];
+GBOOK.seem=__WD[991];
 SIMPLE.seem=["Когда говоришь, каким что-то кажется — на вид, на слух, на вкус, — бери look, sound, taste и т. д. и сразу прилагательное: You look tired. Если дальше предмет или человек — вставь like: You look like your mum.","Look / sound / seem + прилагательное. Look / sound + like + существительное."];
 /*GB_MORE_END*/
 /* ---------- grammar book UI ---------- */
@@ -1904,21 +1938,23 @@ const askPrompt=(lv,lvl,quote,q,exercise)=>'You are a friendly, precise English 
   +'Answer in Russian, simply and accurately, in 2-5 short sentences, as a good teacher would. Then give 2 short natural English examples with Russian translations, and one practical tip. Stay on English grammar and vocabulary; if the question is unrelated to learning English, politely say you can only help with English.'
   +(exercise?'\nIMPORTANT: the learner is in the middle of an exercise that has not been checked yet. Do NOT reveal the answer, do NOT say which option is correct, and do not rewrite the sentence correctly. Explain only the rule behind it and give a hint that helps them decide themselves.':'')
   +'\nReply with ONLY JSON: {"text":"объяснение","examples":[{"en":"...","ru":"..."}],"tip":"совет"}';
-function AskSheet({lv,lvl,ask,onClose,mk,defQ}){ const ai=useSample(); const [q,setQ]=useState(ask.quote?(defQ||'Объясни, пожалуйста'):''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
-  const go=async()=>{ if(!ai||busy||!q.trim()) return; setBusy(true); setErr(null); setAns(null); W('react','think');
-    const P=mk?mk(ask.quote,q):askPrompt(lv,lvl,ask.quote,q,ask.exercise);
+function AskSheet({lv,lvl,ask,onClose,mk,defQ}){ const ai=useSample(); const [q,setQ]=useState(''), [busy,setBusy]=useState(false), [ans,setAns]=useState(null), [err,setErr]=useState(null);
+  const go=async(t)=>{ const qq=String(typeof t==='string'?t:q).trim(); if(!ai||busy||!qq) return; if(typeof t==='string') setQ(t); setBusy(true); setErr(null); setAns(null); W('react','think');
+    const P=mk?mk(ask.quote,qq):askPrompt(lv,lvl,ask.quote,qq,ask.exercise);
     try{ const j=ai.stream?await ai.stream(P,x=>{ if(x&&x.text) setAns({text:String(x.text),examples:[],tip:'',live:true}); }):await ai.json(P,null,{fast:true}); if(!j||typeof j!=='object') throw {code:'invalid_json'};
       setAns({text:String(j.text||''),examples:Array.isArray(j.examples)?j.examples.filter(e=>e&&e.en).slice(0,3).map(e=>({en:String(e.en),ru:String(e.ru||'')})):[],tip:String(j.tip||'')}); SFX('pop'); W('react','happy'); }
     catch(e){ setErr(aiErr(e)); W('react','encourage'); } setBusy(false); };
-  useEffect(()=>{ if(ai&&ask.quote&&ask.auto) go(); },[ai]);
+  /* no automatic question: the learner writes their own, or taps a ready one */
+  useEffect(()=>{ const t=setTimeout(()=>{ const el=document.getElementById('ask-in'); if(el&&innerWidth>700) el.focus(); },250); return ()=>clearTimeout(t); },[]);
   useEffect(()=>{ const esc=e=>{ if(e.key==='Escape') onClose(); }; document.addEventListener('keydown',esc); return ()=>document.removeEventListener('keydown',esc); },[]);
   const ui=html`<div className="sheet-wrap ask-wrap" onClick=${onClose}><div className="sheet ask-sheet enter" role="dialog" aria-label="Спросить Ворди" onClick=${e=>e.stopPropagation()}>
     <div className="sheet-h"><b>Спроси Ворди</b><button className="icon-btn" id="ask-close" onClick=${()=>{ SFX('tap'); onClose(); }} aria-label="Закрыть">${I.close()}</button></div>
     ${ask.quote?html`<blockquote className="ask-q" lang="en">${String(ask.quote).slice(0,300)}</blockquote>`:null}
     ${ask.exercise?html`<p className="muted ask-note">Задание ещё не проверено, поэтому Ворди объяснит правило и подскажет, но не скажет ответ.</p>`:null}
     ${ai===null?html`<p className="empty">${aiOffText()}</p>`
-    :html`<div className="ask-row"><textarea id="ask-in" rows="2" value=${q} maxLength="500" placeholder="Например: почему здесь has, а не have?" onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); go(); } }}></textarea>
-      <button className="btn" id="ask-go" disabled=${!q.trim()||busy||ai===undefined} onClick=${go}>${busy?'Думаю…':'Спросить'}</button></div>`}
+    :html`<div className="ask-row"><textarea id="ask-in" rows="2" value=${q} maxLength="500" placeholder="Твой вопрос: например, почему здесь has, а не have?" onChange=${e=>setQ(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); go(); } }}></textarea>
+      <button className="btn" id="ask-go" disabled=${!q.trim()||busy||ai===undefined} onClick=${()=>go()}>${busy?'Думаю…':'Спросить'}</button></div>
+      ${!ans&&!busy&&ask.quote?html`<div className="ask-quick" role="group" aria-label="Готовые вопросы">${[defQ||'Объясни, пожалуйста','Объясни проще','Приведи ещё примеры','Почему так, а не иначе?'].map(x=>html`<button key=${x} className="chip" onClick=${()=>{ SFX('tap'); go(x); }}>${x}</button>`)}</div>`:null}`}
     ${err?html`<p className="acc-err" role="alert">${err}</p>`:null}
     ${ans?html`<div className="ask-ans" role="status"><p>${ans.text}</p>
       ${ans.examples.length?html`<ul className="bk-ex">${ans.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en} onClick=${()=>speak(e.en)}>${I.speaker()}</button>`:html`<span></span>`}<div><b lang="en">${e.en}</b><span>${e.ru}</span></div></li>`)}</ul>`:null}
@@ -1964,8 +2000,8 @@ function FinalTest({items,onDone,run}){ const [vals,setVals]=useState({}), [res,
 
 function GrammarLesson({lv,idx,prevStars,update,onBack,onNext,saved,st}){
   const [voice,setVoice]=useState(false); const canVoice=!!st&&canLiveVoice()&&st.age!=='u13';
-  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · 5 мин</button>`:null;
-  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} onClose=${()=>setVoice(false)}/>`:null;
+  const voiceBtn=canVoice?html`<button className="btn ghost wide vl-btn" id="g-voice" onClick=${()=>{ SFX('pop'); setVoice(true); }}>🎙 Урок с Ворди голосом · ${((st.vlesson||{})[lv.id]||{}).stars?'★'.repeat(st.vlesson[lv.id].stars)+'☆'.repeat(3-st.vlesson[lv.id].stars):'5 мин'}</button>`:null;
+  const voiceUi=voice?html`<${VoiceLesson} st=${st} update=${update} topic=${{id:lv.id,title:lv.title}} onClose=${()=>setVoice(false)}/>`:null;
   const bk=GBOOK[lv.id], [bi,setBi]=useState(0), bsaved=saved||{};
   const saveBk=(b,n,tot)=>update(s=>{ const g={...(s.gbook||{})}, u={...(g[lv.id]||{})}, o=u[b]; u[b]=[Math.max(o?o[0]:0,n),tot]; g[lv.id]=u; return {gbook:g,xp:s.xp+n*2}; });
   const sec=secOf(idx);
@@ -2147,7 +2183,7 @@ function memGrade(st,id,g,wt=1){
   return {mem,boxes,due};
 }
 /* turn an answer into a grade: typing proves more than picking from options */
-const TASK_W={tr:.4,ru:.5,def:.55,write:1,listen:1,gap:1,fix:1};
+const TASK_W={tr:.4,ru:.5,def:.55,write:1,listen:1,gap:1,fix:1,irr:1};
 function ansGrade(ok,type,ms,len,typo){ if(!ok) return 1; if(typo) return 2;
   if(TASK_W[type]<1) return ms>15000?2:3;
   const fast=2600+230*(len||5); return ms>fast*2.8?2:ms<fast?4:3; }
@@ -2163,13 +2199,13 @@ function checkTyped(typed,answers){ const t=normAns(typed); if(!t) return {ok:fa
   if(alts.includes(t)) return {ok:true};
   const near=alts.some(a=>a.length>=5&&editDist(t,a)<=(a.length>=10?2:1));
   return near?{ok:true,typo:true}:{ok:false}; }
-function dueWords(st){ const today=dayKey(), due=st.due||{}; return ALL.concat(Object.values(st.myWords||{})).filter(w=>st.boxes[w.id]!=null&&(due[w.id]||today)<=today).map(w=>[w,w.kind==='fix'&&!(st.mem||{})[w.id]?-1:memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]); }
+function dueWords(st){ const today=dayKey(), due=st.due||{}; return ALL.concat(Object.values(st.myWords||{})).filter(w=>st.boxes[w.id]!=null&&(due[w.id]||today)<=today).map(w=>[w,(w.kind==='fix'||w.kind==='irr')&&!(st.mem||{})[w.id]?-1:memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]); }
 function dueOn(st,off){ const d=dayKey(off), due=st.due||{}; return ALL.filter(w=>st.boxes[w.id]!=null&&due[w.id]===d).length; }
 
 /* ---------- shop ---------- */
 const SLOTS=[{id:'all',name:'Всё'},{id:'hat',name:'Шапки'},{id:'eyes',name:'Очки'},{id:'mouth',name:'Усы и борода'},{id:'cheeks',name:'Щёчки'},{id:'neck',name:'На шею'},{id:'suit',name:'Костюмы'},{id:'back',name:'За спину'}];
 const SLOT_ORDER=['hat','eyes','mouth','cheeks','neck','suit','back'];
-const LOOKS=__WD[988];
+const LOOKS=__WD[992];
 const ART_VB={hat:'-50 -116 100 76',eyes:'-38 -64 76 40',mouth:'-36 -54 72 58',cheeks:'-36 -56 72 40',neck:'-40 -40 80 48',suit:'-46 -74 92 86',back:'-76 -80 152 104',look:'-76 -124 152 144'};
 let _artN=0;
 function dollSvg(ids,full){ const by={}; ids.forEach(id=>{ const it=WORDY_ITEMS.find(x=>x.id===id); if(it) by[it.slot]=it; }); const g=k=>by[k]?by[k].svg:'', cid='dc'+(++_artN), B='#FF7A12';
@@ -2233,7 +2269,7 @@ function Wardrobe({st,update,preview,setPreview}){
 
 /* ---------- achievements ---------- */
 const learnedTotal=st=>ALL.filter(w=>(st.boxes[w.id]||0)>=2).length;
-const AIC=__WD[989];
+const AIC=__WD[993];
 const ACH=[
   {id:'first',title:'Первый шаг',desc:'Пройди первую тему со словами',icon:'flag',c:'#FF7A12',val:st=>Object.keys(st.best||{}).length,goal:1},
   {id:'w10',title:'Словарный запас',desc:'Выучи 10 слов',icon:'book',c:'#12A195',val:learnedTotal,goal:10},
@@ -2265,14 +2301,16 @@ function AchToast({a,onDone}){
     <div><span className="eyebrow">Новое достижение</span><b>${a.title}</b><small>${a.desc} · +${ACH_REWARD} монет</small></div></div>`;
 }
 function Achievements({st}){
-  const got=st.ach||{};
+  const got=st.ach||{}, [sel,setSel]=useState(null), [all,setAll]=useState(false);
   const n=ACH.filter(a=>got[a.id]).length;
+  const list=ACH.map((a,i)=>({a,i,on:!!got[a.id],r:Math.min(a.val(st),a.goal)/a.goal})).sort((x,y)=>(y.on-x.on)||(y.r-x.r)||(x.i-y.i));
+  const cur=sel&&ACH.find(a=>a.id===sel);
   return html`<div className="sec-h"><h2>Достижения</h2><span className="muted">${n} / ${ACH.length}</span></div>
-    <div className="ach-grid">${ACH.map((a,i)=>{ const on=!!got[a.id], v=Math.min(a.val(st),a.goal);
-      return html`<div key=${a.id} className=${'ach enter'+(on?' on':'')} style=${{'--i':i,'--c':a.c}}>
-        <${AchBadge} a=${a} on=${on}/>
-        <div className="ach-main"><b>${a.title}</b><small>${a.desc}</small>
-          ${on?html`<span className="ach-done">Получено</span>`:html`<span className="ach-prog"><span className="bar"><i style=${{width:(v/a.goal*100)+'%'}}></i></span><em>${v}/${a.goal}</em></span>`}</div></div>`;})}</div>`;
+    <div className="ach-grid2">${list.slice(0,all?99:(innerWidth>=1100?10:6)).map(({a,on,r},k)=>html`<button key=${a.id} className=${'ach2 enter'+(on?' on':'')+(sel===a.id?' sel':'')} style=${{'--i':Math.min(k,12),'--c':a.c,'--p':on?1:r}} aria-pressed=${sel===a.id} aria-label=${a.title+(on?', получено':', '+Math.round(r*100)+'%')} onClick=${()=>{ SFX('tap'); setSel(x=>x===a.id?null:a.id); }}>
+        <span className="ach2-ring"><${AchBadge} a=${a} on=${on} size=${44}/></span><small>${a.title}</small></button>`)}</div>
+    ${!all&&list.length>(innerWidth>=1100?10:6)?html`<button className="link-btn ach-all" id="ach-all" onClick=${()=>{ SFX('tap'); setAll(true); }}>Все достижения · ещё ${list.length-(innerWidth>=1100?10:6)}</button>`:null}
+    ${cur?html`<div className="ach-detail enter"><${AchBadge} a=${cur} on=${!!got[cur.id]} size=${40}/><div><b>${cur.title}</b><small>${cur.desc}</small>
+      ${got[cur.id]?html`<span className="ach-done">Получено</span>`:html`<span className="ach-prog"><span className="bar"><i style=${{width:(Math.min(cur.val(st),cur.goal)/cur.goal*100)+'%'}}></i></span><em>${Math.min(cur.val(st),cur.goal)}/${cur.goal}</em></span>`}</div></div>`:null}`;
 }
 
 /* ---------- level-aware helpers ---------- */
@@ -2296,7 +2334,7 @@ function pickDaily(st){
   for(let r=0;out.length<n&&keys.some(k=>groups[k].length);r++) keys.forEach(k=>{ if(out.length<n&&groups[k].length) out.push(groups[k].shift()); });
   return out.map(w=>w.id);
 }
-const LEVELS=__WD[990];
+const LEVELS=__WD[994];
 
 /* neutral age question (Google Play Families): under 13 the AI features are off, so nothing a child writes or says leaves the device for AI */
 const AGES=[['u13','До 13 лет'],['teen','13–17 лет'],['adult','18 и старше']];
@@ -2389,13 +2427,9 @@ function LevelUp({from,to,onGo}){
 }
 
 /* ---------- reading texts ---------- */
-const TEXTS=__WD[991];
+const TEXTS=__WD[995];
 /* ---------- reading texts pack 2 ---------- */
 TEXTS.push(
- __WD[992],
- __WD[993],
- __WD[994],
- __WD[995],
  __WD[996],
  __WD[997],
  __WD[998],
@@ -2409,14 +2443,14 @@ TEXTS.push(
  __WD[1006],
  __WD[1007],
  __WD[1008],
- __WD[1009]
-);
-/* ---------- reading texts pack 3 ---------- */
-TEXTS.push(
+ __WD[1009],
  __WD[1010],
  __WD[1011],
  __WD[1012],
- __WD[1013],
+ __WD[1013]
+);
+/* ---------- reading texts pack 3 ---------- */
+TEXTS.push(
  __WD[1014],
  __WD[1015],
  __WD[1016],
@@ -2432,17 +2466,17 @@ TEXTS.push(
  __WD[1026],
  __WD[1027],
  __WD[1028],
- __WD[1029]
+ __WD[1029],
+ __WD[1030],
+ __WD[1031],
+ __WD[1032],
+ __WD[1033]
 );
 /* rotate answer options of pack 3 so the correct one isn't always in the same slot */
 TEXTS.forEach((t,ti)=>{ if(+t.id.slice(1)>30) t.q.forEach((q,qi)=>{ const k=(ti*3+qi*5+1)%q[1].length, c=q[1][q[2]]; q[1]=q[1].slice(k).concat(q[1].slice(0,k)); q[2]=q[1].indexOf(c); }); });
 /* reading library: science, interesting facts, literature (retellings + public-domain poems) */
 TEXTS.forEach(t=>{ if(!t.cat) t.cat='life'; });
 TEXTS.push(
-__WD[1030],
-__WD[1031],
-__WD[1032],
-__WD[1033],
 __WD[1034],
 __WD[1035],
 __WD[1036],
@@ -2528,7 +2562,11 @@ __WD[1115],
 __WD[1116],
 __WD[1117],
 __WD[1118],
-__WD[1119]
+__WD[1119],
+__WD[1120],
+__WD[1121],
+__WD[1122],
+__WD[1123]
 );
 
 /* ---------- word lookup for reading ---------- */
@@ -2570,8 +2608,8 @@ function stopSpeak(){ try{ speechSynthesis.cancel(); W('talk',0); }catch(e){} }
 /* ---------- word card 2.0 ----------
    WREL: synonyms, antonyms and word family inside the course, from Open English WordNet (CC BY 4.0, based on Princeton WordNet),
    filtered by meaning and checked by hand. WFF: false friends for Russian speakers. The rest comes from the AI on request. */
-const WREL=__WD[1120];
-const WFF=__WD[1121];
+const WREL=__WD[1124];
+const WFF=__WD[1125];
 let _wbyEn=null; const wordByEn=en=>{ if(!_wbyEn){ _wbyEn=new Map(); ALL.forEach(w=>{ const k=w.en.toLowerCase(); if(!_wbyEn.has(k)) _wbyEn.set(k,w); }); } return _wbyEn.get(String(en).toLowerCase()); };
 const wordRel=w=>{ const r=WREL[w.en]||[[],[],[]]; return {syn:r[0],ant:r[1],fam:r[2],ff:WFF[w.en]||null}; };
 const wxPrompt=w=>'Help a Russian-speaking learner remember the English word "'+w.en+'" in this meaning: '+w.ru+(w.def?' ("'+w.def+'")':'')+'. Level '+(w.cefr||'B1')+'.'
@@ -2707,13 +2745,64 @@ function makeListening(st){
   const seen=pool.filter(x=>st.boxes[x.w.id]!=null), rest=pool.filter(x=>st.boxes[x.w.id]==null);
   return shuffle([...shuffle(seen).slice(0,5),...shuffle(rest)]).slice(0,8);
 }
-function ListenList({st,startListen}){
+/* Daily podcast: a 1–2 minute dialogue between Wordy and Mia at the learner's level, built around words due for review,
+   then 3 comprehension questions. Text comes from Gemini once a day (cached on the device); voices are the device's TTS. */
+const POD_KEY='wordy.pod';
+function podWords(st){ const d=dueWords(st).filter(w=>!w.kind&&/^[a-z][a-z' -]{1,24}$/i.test(w.en)).slice(0,6); if(d.length>=4) return d.map(w=>w.en);
+  const li=lvlIdx(st.level||'A1'), pool=ALL.filter(w=>lvlIdx(w.cefr)===li&&/^[a-z]{3,14}$/i.test(w.en)); const out=[], h=[...dayKey()].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7); for(let i=0;i<6&&pool.length;i++) out.push(pool[(h+i*7919)%pool.length].en); return [...new Set(d.map(w=>w.en).concat(out))].slice(0,6); }
+const POD_PROMPT=(lvl,words,facts)=>`Write a short, natural English podcast episode for a learner at CEFR ${lvl}. Two hosts: Wordy (a cheerful orange fox-like teacher, male) and Mia (his curious friend, female).
+Length: 12–16 short lines, about 160–220 words total, spoken English with contractions, one clear everyday topic, a small joke or surprise. Vocabulary and grammar strictly at ${lvl}.
+Use each of these words naturally at least once: ${words.join(', ')}.${facts?'\nYou may connect the topic to the listener\'s interests: '+facts:''}
+Then write 3 comprehension questions in simple English, each with 3 options and the index of the correct one (answers must be stated clearly in the dialogue).
+Reply with ONLY JSON {"title":"","title_ru":"","lines":[["Wordy","..."],["Mia","..."]],"q":[{"q":"","o":["","",""],"a":0}]}`;
+function PodcastCard({st,update}){ const [open,setOpen]=useState(false); const done=(st.pods||{}).last===dayKey();
+  if(open) return html`<${Podcast} st=${st} update=${update} onClose=${()=>setOpen(false)}/>`;
+  return html`<button className="listen-card pod-card enter" id="pod-open" disabled=${!canSpeak} onClick=${()=>{ SFX('pop'); setOpen(true); }}>
+    <span className="lc-ic pod-ic" aria-hidden="true">🎙️</span>
+    <span className="lc-main"><b>Подкаст дня${done?' ✓':''}</b><small>${canSpeak?'Ворди и Мия болтают 1–2 минуты на твоём уровне — со словами из твоего повторения. Потом 3 вопроса.':'На этом устройстве нет озвучки текста.'}</small></span>
+    <span className="btn small" aria-hidden="true">${done?'Ещё раз':'Слушать'}</span></button>`; }
+function Podcast({st,update,onClose}){ const lvl=st.level||'A1';
+  const [ep,setEp]=useState(()=>{ try{ const c=JSON.parse(localStorage.getItem(POD_KEY)||'null'); if(c&&c.day===dayKey()&&c.lvl===lvl&&c.ep) return c.ep; }catch(e){} return null; });
+  const [err,setErr]=useState(null), [play,setPlay]=useState(false), [line,setLine]=useState(-1), [heard,setHeard]=useState(false), [txt,setTxt]=useState(false), [ans,setAns]=useState({}), [slow,setSlow]=useState(false);
+  const words=useMemo(()=>podWords(st),[]);
+  const load=()=>{ setErr(null); const facts=((st.wmem&&st.wmem.facts)||[]).slice(0,4).join('; ');
+    getSample().then(ai=>{ if(!ai) throw {code:'no_ai'}; return ai.json(POD_PROMPT(lvl,words,facts),null,{fast:true}); }).then(j=>{ const lines=((j&&j.lines)||[]).filter(l=>Array.isArray(l)&&l[1]).map(l=>[/mia/i.test(l[0])?'Mia':'Wordy',String(l[1]).slice(0,300)]).slice(0,22);
+      const q=((j&&j.q)||[]).filter(x=>x&&x.q&&Array.isArray(x.o)&&x.o.length>=2&&x.a>=0&&x.a<x.o.length).slice(0,3);
+      if(lines.length<6) throw {code:'bad'}; const e={title:String(j.title||'Wordy Podcast').slice(0,80),title_ru:String(j.title_ru||'').slice(0,80),lines,q,words};
+      setEp(e); try{ localStorage.setItem(POD_KEY,JSON.stringify({day:dayKey(),lvl,ep:e})); }catch(x){} })
+      .catch(e=>{ if(e&&e.code==='no_ai'){ setErr('Подкасты работают на сайте Wordy с интернетом.'); return; } errLog('ai','podcast',e&&(e.message||e.code)); setErr('Не удалось сделать выпуск. Проверь интернет и попробуй ещё раз.'); }); };
+  useEffect(()=>{ if(!ep) load(); return ()=>stopSpeak(); },[]);
+  const start=()=>{ if(play){ stopSpeak(); setPlay(false); setLine(-1); return; } setPlay(true); W('react','wave');
+    playScript(ep.lines.map(l=>[l[0],l[1]]),{Wordy:'m',Mia:'f'},i=>setLine(i),ok=>{ setPlay(false); setLine(-1); if(ok!==false) setHeard(true); else setErr('Озвучка остановилась. Нажми «Слушать» ещё раз.'); }); };
+  const nOk=ep?ep.q.filter((x,i)=>ans[i]===x.a).length:0, all=ep&&ep.q.length&&Object.keys(ans).length===ep.q.length;
+  useEffect(()=>{ if(!all) return; const today=dayKey(), first=(st.pods||{}).last!==today; SFX(nOk===ep.q.length?'fanfare':'correct'); W('react',nOk===ep.q.length?'cheer':'correct');
+    update(s=>{ const g={...(s.pods||{})}; g.last=today; g.n=(g.n||0)+(first?1:0); let p={pods:g}; if(first) p={...p,xp:s.xp+10+nOk*5,listens:(s.listens||0)+1};
+      words.forEach(en=>{ const w=wordByEn(en); if(w&&s.boxes[w.id]!=null){ p={...p,...memGrade({...s,...p},w.id,3,.5)}; } }); return p; }); },[all]);
+  return html`<div className="pod enter" id="pod">
+    <div className="pod-head"><button className="link-btn" onClick=${()=>{ stopSpeak(); onClose(); }}>← Назад</button><span className="muted">Подкаст дня · ${lvl}</span></div>
+    ${!ep?html`<div className="pod-load">${err?html`<p className="muted">${err}</p><button className="btn" onClick=${load}>Ещё раз</button>`:html`<p className="muted">🎙️ Ворди и Мия готовят выпуск…</p>`}</div>`
+    :html`<h3 className="pod-title">${ep.title}</h3>${ep.title_ru?html`<p className="muted pod-sub">${ep.title_ru}</p>`:null}
+      <div className="pod-player"><button className=${'pod-play'+(play?' on':'')} id="pod-play" aria-label=${play?'Стоп':'Слушать'} onClick=${start}>${play?'■':'▶'}</button>
+        <div className="pod-wave" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i=>html`<i key=${i} style=${{'--i':i}} className=${play?'on':''}/>`)}</div>
+        <div className="pod-who">${play&&line>=0?html`<b className=${ep.lines[line][0]==='Mia'?'mia':'wordy'}>${ep.lines[line][0]==='Mia'?'Мия':'Ворди'}</b>`:html`<small className="muted">${heard?'Можно послушать ещё раз':'≈ 1–2 минуты'}</small>`}</div></div>
+      <div className="pod-words">${ep.words.map(w=>html`<span key=${w} className="chip">${w}</span>`)}</div>
+      ${err?html`<p className="muted">${err}</p>`:null}
+      <details className="pod-text" open=${txt} onToggle=${e=>setTxt(e.target.open)}><summary>Текст выпуска</summary>${ep.lines.map((l,i)=>html`<p key=${i} className=${i===line?'cur':''}><b className=${l[0]==='Mia'?'mia':'wordy'}>${l[0]==='Mia'?'Мия':'Ворди'}:</b> ${l[1]}</p>`)}</details>
+      ${heard||all?html`<div className="pod-q"><h4>Проверь себя</h4>${ep.q.map((x,i)=>html`<div key=${i} className="pod-qi"><p>${i+1}. ${x.q}</p><div className="pod-opts">${x.o.map((o,k)=>{ const a=ans[i]; const cls=a==null?'':k===x.a?' ok':a===k?' bad':'';
+          return html`<button key=${k} className=${'chip pod-o'+cls} disabled=${a!=null} onClick=${()=>{ setAns(s=>({...s,[i]:k})); SFX(k===x.a?'correct':'wrong'); }}>${o}</button>`; })}</div></div>`)}
+        ${all?html`<p className="pod-res"><b>${nOk} из ${ep.q.length}</b> — ${nOk===ep.q.length?'отлично, ты всё понял!':nOk?'неплохо! Послушай ещё раз с текстом.':'попробуй ещё раз и открой текст.'}</p>`:null}</div>`
+      :html`<p className="hint-line">Дослушай выпуск до конца — потом будут 3 вопроса.</p>`}`}</div>`; }
+function ListenList({st,update,startListen,openMock}){
   return html`<div className="sec-h"><h2>Аудирование</h2><span className="muted">пройдено ${st.listens||0}</span></div>
+    ${update?html`<${PodcastCard} st=${st} update=${update}/>`:null}
     <button className="listen-card enter" id="listen-start" onClick=${startListen} disabled=${!canSpeak}>
       <span className="lc-ic">${I.speaker()}</span>
       <span className="lc-main"><b>Диктант с Ворди</b><small>${canSpeak?'Ворди читает предложение, а ты вписываешь пропущенное слово. 8 предложений уровня '+(st.level||'A1')+'.':'На этом устройстве нет озвучки текста. Попробуй другой браузер.'}</small></span>
       <span className="btn small" aria-hidden="true">Начать</span></button>
-    <p className="hint-line">Совет: сначала слушай на обычной скорости, а если не понял — нажми «Медленно».</p>`;
+    ${openMock?html`<div className="sec-h ls-h"><h2>IELTS Listening</h2><span className="muted">4 части · ~30 мин</span></div>
+      <div className="ls-grid">${IELTS_MOCKS.map((m,i)=>{ const r=((st.mocks||{})[m.id]||{}).L; return html`<button key=${m.id} className=${'ls-test enter'+(r?' done':'')} style=${{'--i':Math.min(i,8)}} id=${'ls-'+m.id} onClick=${()=>openMock({kind:'ielts',id:m.id,part:'L'})}>
+          <span className="ls-n">${i+1}</span><small>${r&&r.band!=null?'бэнд '+fmtB(r.band):'тест'}</small></button>`; })}</div>
+      <p className="hint-line">Как на экзамене: запись звучит один раз. Начни с теста 1 — он полегче.</p>`:html`<p className="hint-line">Совет: сначала слушай на обычной скорости, а если не понял — нажми «Медленно».</p>`}`;
 }
 function Listening({st,update,onExit}){
   const [items]=useState(()=>makeListening(st));
@@ -2792,7 +2881,7 @@ function Session({track,unit,update,onExit,active,mode,st}){
     setChk({ok,typo}); setResults(r=>[...r,ok]);
     const g=ansGrade(ok,q.type,Date.now()-qT.current,(q.w.en||'').length,typo);
     update(s=>{ const t=dayKey();
-      return {...memGrade(s,q.id,g,TASK_W[q.type]||1),coins:s.coins+(ok?5:0),xp:s.xp+(ok?10:0),today:t,todayCount:(s.today===t?s.todayCount:0)+1}; });
+      return {...memGrade(s,q.id,g,TASK_W[q.type]||1),coins:s.coins+(ok?5:0),xp:s.xp+(ok?10:0),...(()=>{ const ids=s.today===t&&Array.isArray(s.todayIds)?s.todayIds:[]; if(!ok||ids.includes(q.id)) return {today:t,todayIds:ids,todayCount:ids.length}; const n=[...ids,q.id]; return {today:t,todayIds:n,todayCount:n.length}; })()}; });
     /* a mistake comes back once at the end of the session, as an easier task */
     if(!ok&&!q.retry&&quiz.filter(x=>x.retry).length<6) setQuiz(Q=>[...Q,{...quizQ(q.w,q.type==='tr'?'tr':'ru',unit.words,mode==='review'||mode==='daily'),retry:true}]);
     if(ok) setEarned(e=>({...e,coins:e.coins+5,xp:e.xp+10}));
@@ -2883,6 +2972,8 @@ function Session({track,unit,update,onExit,active,mode,st}){
          :q.type==='listen'?html`<p className="qask">Послушай и напиши слово</p>
             <div className="listen-btns"><button className="btn" id="q-play" onClick=${()=>{ SFX('tap'); speak(q.w.en); }}>${I.speaker()} Слушать</button></div>
             ${inp('что ты услышал','Услышанное слово')}${checkBtn}`
+         :q.type==='irr'?html`<p className="qask">Напиши 2-ю и 3-ю формы</p><div className="word" lang="en">${q.w.en}</div><p className="qhint">${q.w.tr||''}</p>
+            ${inp('например: went gone','Вторая и третья формы через пробел')}${checkBtn}`
          :q.type==='fix'?html`<p className="qask">Исправь свою ошибку из разговора</p><div className="word fix-wrong"><s>${q.w.wrong}</s></div>${q.w.why?html`<p className="qhint">${q.w.why}</p>`:null}
             ${inp('как правильно','Правильный вариант')}${checkBtn}`
          :q.type==='gap'?html`<p className="qask">Вставь слово «${q.w.ru}»</p><p className="gsent">${q.before}${inp('','Пропущенное слово')}${q.after}</p>${checkBtn}`
@@ -2923,7 +3014,7 @@ function MemoryPanel({st}){
         <span><i className="mem-m"></i><b>${mid}</b> закрепляются<small>от 4 дней до 3 недель</small></span>
         <span><i className="mem-w"></i><b>${weak}</b> свежие<small>легко забыть, повторяем часто</small></span></div>
       <div className="mem-fc" role="img" aria-label=${'Повторений на неделю: '+fc.join(', ')}>${fc.map((v,k)=>html`<div key=${k}><b>${v||''}</b><span style=${{height:(v/mx*44+2)+'px'}}></span><small>${lab(k)}</small></div>`)}</div>
-      <p className="mem-note">Ворди показывает слово как раз тогда, когда ты начинаешь его забывать. Чем лучше ты помнишь слово, тем реже оно возвращается и тем сложнее задание: сначала выбор ответа, потом ввод с клавиатуры, потом на слух и в предложении.</p>
+      <details className="mem-how"><summary>Как это работает</summary><p className="mem-note">Ворди показывает слово как раз тогда, когда ты начинаешь его забывать. Чем лучше ты помнишь слово, тем реже оно возвращается и тем сложнее задание: сначала выбор ответа, потом ввод с клавиатуры, потом на слух и в предложении.</p></details>
     </div>`;
 }
 function Progress({st,practice,update,startMy,startHard}){
@@ -2931,7 +3022,8 @@ function Progress({st,practice,update,startMy,startHard}){
   const hard=hardWords(st);
   return html`
    <div className="page-h"><h1>Прогресс</h1></div>
-   ${st.level?html`<div className="ladder">${CEFR.map(L=>{ const p=levelProgress(st,L), cur=L===st.level, past=lvlIdx(L)<lvlIdx(st.level);
+   <div className="pg-cols"><div className="pg-col">
+   ${st.level?html`<div className="ladder">${lvlIdx(st.level)>0?html`<div className="rung past rung-sum"><span className="rung-code">✓</span><span className="rung-main"><b>${CEFR.filter(L=>lvlIdx(L)<lvlIdx(st.level)).join(', ')} пройдены</b></span></div>`:null}${CEFR.filter(L=>lvlIdx(L)>=lvlIdx(st.level)&&lvlIdx(L)<=lvlIdx(st.level)+1).map(L=>{ const p=levelProgress(st,L), cur=L===st.level, past=lvlIdx(L)<lvlIdx(st.level);
      return html`<div key=${L} className=${'rung'+(cur?' cur':'')+(past?' past':'')+(lvlIdx(L)>lvlIdx(st.level)?' fut':'')}>
        <span className="rung-code">${past?'✓':L}</span>
        <span className="rung-main"><b>${L} · ${LEVEL_NAMES[L]}</b><small>${past?'пройден':cur?'слова '+p.wd+'/'+p.needW+' · грамматика '+p.gd+'/'+p.needG+' (нужно 60%)':p.total+' '+plural(p.total,'шаг','шага','шагов')+' · закрыт'}</small>
@@ -2943,23 +3035,23 @@ function Progress({st,practice,update,startMy,startHard}){
      <div className="tile"><b>${st.coins}</b><span>монет</span></div>
      <div className="tile"><b>${st.xp}</b><span>XP</span></div>
    </div>
-   <${MemoryPanel} st=${st}/>
+   <${MemoryPanel} st=${st}/></div><div className="pg-col">
    <${Achievements} st=${st}/>
    ${Object.keys(st.qtypes||{}).length?html`<div className="sec-h"><h2>IELTS: типы вопросов</h2></div><div className="set-group qt-prog"><${QtBreak} o=${st.qtypes}/>
      ${weakTypes(st.qtypes).slice(0,2).map(w=>{ const k=Object.keys(QT_NAMES).find(x=>QT_NAMES[x]===w.name), d=k&&drillFor(k,st); return d?html`<div key=${k} className="set-row"><div><strong>Тренировка: ${w.name}</strong><p>${w.pct}% верно. Быстрая тренировка: 8 таких вопросов с разбором, ≈ 5 минут</p></div>
        <button className="btn small" id=${'drill-'+k} onClick=${()=>practice&&practice({kind:'drill',type:k})}>Начать</button></div>`:null; })}</div>`:null}
-   <${MyWords} st=${st} update=${update} startMy=${startMy}/>
-   <${EssayBank} st=${st}/>
+   ${hard.length?html`<div className="sec-h"><h2>Сложные слова</h2><span className="muted">${hard.length}</span></div>
+     <div className="hard">${hard.slice(0,12).map(w=>html`<div key=${w.id}><b>${w.en}</b><span className="muted">${w.ru}</span></div>`)}</div>
+     ${hard.length>12?html`<p className="hint-line">и ещё ${hard.length-12}</p>`:null}
+     <button className="btn wide" id="hard-review" onClick=${startHard}>Повторить сложные слова</button>`:null}
+   ${Object.keys(st.myWords||{}).length?html`<${MyWords} st=${st} update=${update} startMy=${startMy}/>`:null}
+   <${EssayBank} st=${st}/></div></div>
+   <details className="prog-more" id="prog-more"><summary><b>Подробнее</b><span className="muted">направления и все ${GL.length} тем грамматики · ★ ${gStarsTotal(st)} / ${GL.length*3}</span></summary>
    <div className="sec-h"><h2>Направления</h2></div>
    <div className="tracks">${TRACKS.map(t=>{ const words=t.units.flatMap(u=>u.words), l=learned(st,words);
      return html`<div className="trow" key=${t.id}><header><b>${t.name}</b><span className="muted">${l} / ${words.length}</span></header><div className="bar"><i style=${{width:(l/words.length*100)+'%'}}></i></div></div>`;})}</div>
-   <div className="sec-h"><h2>Сложные слова</h2><span className="muted">${hard.length}</span></div>
-   ${hard.length?html`<div className="hard">${hard.slice(0,60).map(w=>html`<div key=${w.id}><b>${w.en}</b><span className="muted">${w.ru}</span></div>`)}</div>
-     ${hard.length>60?html`<p className="hint-line">и ещё ${hard.length-60}</p>`:null}
-     <button className="btn wide" id="hard-review" onClick=${startHard}>Повторить сложные слова</button>`
-     :html`<p className="empty">Здесь появятся слова, на которых ты ошибся. Ворди вернёт их на повторение.</p>`}
    <div className="sec-h"><h2>Грамматика</h2><span className="muted">★ ${gStarsTotal(st)} / ${GL.length*3}</span></div>
-   <div className="path">${GL.map((l,i)=>{ const n=(st.gstars||{})[l.id]||0; return html`<div key=${l.id} className=${n?'done':''}><i></i><span>${i+1}. ${l.title}</span><${Stars} n=${n} size=${14}/></div>`;})}</div>`;
+   <div className="path">${GL.map((l,i)=>{ const n=(st.gstars||{})[l.id]||0; return html`<div key=${l.id} className=${n?'done':''}><i></i><span>${i+1}. ${l.title}</span><${Stars} n=${n} size=${14}/></div>`;})}</div></details>`;
 }
 
 /* ---------- teacher code: Интенсив и повышение уровня ---------- */
@@ -3314,12 +3406,11 @@ function Settings({st,update,reset,restore}){
        <div className="chips">${CEFR.map(l=>html`<button key=${l} className="chip" id=${'set-lvl-'+l} aria-pressed=${st.level===l} onClick=${()=>askLevel(l)}>${l}</button>`)}
          ${canLiveVoice()&&st.age!=='u13'?html`<button className="chip" id="set-lvl-voice" onClick=${()=>{ SFX('pop'); setLc(true); }}>🎙 Определить голосом</button>`:null}</div></div>
      ${lc?html`<${LevelCheck} st=${st} update=${update} onClose=${()=>setLc(false)} onPick=${l=>{ setLc(false); if(l===st.level){ W('say','Твой уровень и так '+l+' — всё верно!',0,true); } else setLvlAsk(l); }}/>`:null}
-     <div className="set-row wrap"><div><strong>Новых слов в день</strong><p>Сколько слов будет в подборке «Слова дня»</p></div>
-       <div className="chips">${[5,10,15,20].map(n=>html`<button key=${n} className="chip" id=${'set-dn-'+n} aria-pressed=${(st.dailyNew||10)===n} onClick=${()=>{ SFX('tap'); update(()=>({dailyNew:n})); W('react','nod'); }}>${n}</button>`)}</div></div>
+     <div className="set-row wrap"><div><strong>Темп на день</strong><p>Новые слова для «Слов дня» и общая цель на кольце «Сегодня» (новые + повторение)</p></div>
+       <div className="pace"><span className="pace-l">Новых слов</span><div className="chips">${[5,10,15,20].map(n=>html`<button key=${n} className="chip" id=${'set-dn-'+n} aria-pressed=${(st.dailyNew||10)===n} onClick=${()=>{ SFX('tap'); update(()=>({dailyNew:n})); W('react','nod'); }}>${n}</button>`)}</div>
+         <span className="pace-l">Цель за день</span><div className="chips">${[5,10,20,30].map(n=>html`<button key=${n} className="chip" id=${'goal-'+n} aria-pressed=${st.goal===n} onClick=${()=>{ update(()=>({goal:n})); W('react','nod'); }}>${n}</button>`)}</div></div></div>
      <div className="set-row wrap"><div><strong>Возраст</strong><p>${st.age==='u13'?'До 13 лет проверка с помощью ИИ выключена: тексты и голос не отправляются в ИИ.':'Нужен, чтобы включать функции, подходящие по возрасту'}</p></div>
-       <${AgeChips} v=${st.age} set=${a=>update(()=>({age:a}))} pre="set-age-"/></div>
-     <div className="set-row"><div><strong>Дневная цель</strong><p>Сколько слов проверять в день</p></div>
-     <div className="chips">${[5,10,20,30].map(n=>html`<button key=${n} className="chip" id=${'goal-'+n} aria-pressed=${st.goal===n} onClick=${()=>{ update(()=>({goal:n})); W('react','nod'); }}>${n}</button>`)}</div></div></div>
+       <${AgeChips} v=${st.age} set=${a=>update(()=>({age:a}))} pre="set-age-"/></div></div>
    <${PushBox} st=${st}/>
    <${AccSettings} st=${st}/>
    <div className="sec-h"><h2>Внешний вид</h2></div>
@@ -3352,133 +3443,133 @@ function Settings({st,update,reset,restore}){
 /* ================= MOCK TESTS: data (original items in exam format) ================= */
 const TFNG=['TRUE','FALSE','NOT GIVEN'], YNNG=['YES','NO','NOT GIVEN'];
 const IELTS_MOCKS=[{id:'ielts1',title:'IELTS Academic · Тест 1',
- listening:__WD[1122],
+ listening:__WD[1126],
  reading:[
-  {title:'The Wolves of Yellowstone',paras:__WD[1123],
+  {title:'The Wolves of Yellowstone',paras:__WD[1127],
    groups:[
-    {ins:'Вопросы 1–6. Соответствует ли утверждение тексту? TRUE — да, FALSE — противоречит, NOT GIVEN — в тексте нет информации.',opts:TFNG,qs:__WD[1124]},
-    __WD[1125],
-    __WD[1126]]},
-  {title:'Why We Forget',paras:__WD[1127],
-   groups:[
-    __WD[1128],
+    {ins:'Вопросы 1–6. Соответствует ли утверждение тексту? TRUE — да, FALSE — противоречит, NOT GIVEN — в тексте нет информации.',opts:TFNG,qs:__WD[1128]},
     __WD[1129],
+    __WD[1130]]},
+  {title:'Why We Forget',paras:__WD[1131],
+   groups:[
+    __WD[1132],
+    __WD[1133],
     {ins:'Вопросы 23–26. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['Ebbinghaus tested a large group of volunteers.',1],
      ['Proactive interference involves old information affecting new learning.',0],
      ['The divers in the experiment were professional athletes.',2],
      ['Rereading notes is more effective than self-testing.',1]]}]}],
- writing:__WD[1130],
- speaking:__WD[1131]
+ writing:__WD[1134],
+ speaking:__WD[1135]
 }];
 
 /* ---------- IELTS Academic tests 2–3 (original items) ---------- */
 IELTS_MOCKS.push(
 {id:'ielts2',title:'IELTS Academic · Тест 2',
- listening:__WD[1132],
+ listening:__WD[1136],
  reading:[
-  {title:'The Story of Paper Money',paras:__WD[1133],
+  {title:'The Story of Paper Money',paras:__WD[1137],
    groups:[
-    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1134]},
-    __WD[1135],
-    __WD[1136]]},
-  {title:'Microplastics: A Hidden Threat?',paras:__WD[1137],
+    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1138]},
+    __WD[1139],
+    __WD[1140]]},
+  {title:'Microplastics: A Hidden Threat?',paras:__WD[1141],
    groups:[
-    __WD[1138],
-    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES — да, NO — противоречит, NOT GIVEN — автор об этом не говорит.',opts:YNNG,qs:__WD[1139]},
-    __WD[1140]]}],
- writing:__WD[1141],
- speaking:__WD[1142]
+    __WD[1142],
+    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES — да, NO — противоречит, NOT GIVEN — автор об этом не говорит.',opts:YNNG,qs:__WD[1143]},
+    __WD[1144]]}],
+ writing:__WD[1145],
+ speaking:__WD[1146]
 },
 {id:'ielts3',title:'IELTS Academic · Тест 3',
- listening:__WD[1143],
+ listening:__WD[1147],
  reading:[
-  {title:'The Secret of Spider Silk',paras:__WD[1144],
+  {title:'The Secret of Spider Silk',paras:__WD[1148],
    groups:[
-    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1145]},
-    __WD[1146],
-    __WD[1147]]},
-  {title:'The Paradox of Choice',paras:__WD[1148],
+    {ins:'Вопросы 1–5. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1149]},
+    __WD[1150],
+    __WD[1151]]},
+  {title:'The Paradox of Choice',paras:__WD[1152],
    groups:[
     {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:[
      ['Choice is harmful in all situations.',1],['The way options are presented has a major influence on decisions.',0],
      ['Companies that reduced their range of products increased their profits.',2],['Deciding in advance what is "good enough" is a very useful skill.',0]]},
-    __WD[1149],
-    __WD[1150]]}],
- writing:__WD[1151],
- speaking:__WD[1152]
+    __WD[1153],
+    __WD[1154]]}],
+ writing:__WD[1155],
+ speaking:__WD[1156]
 });
 
 /* ---------- IELTS Academic tests 4–5 (original items) ---------- */
 IELTS_MOCKS.push(
 {id:'ielts4',title:'IELTS Academic · Тест 4',
- listening:__WD[1153],
+ listening:__WD[1157],
  reading:[
-  {title:'Coffee: From Legend to Global Commodity',paras:__WD[1154],
+  {title:'Coffee: From Legend to Global Commodity',paras:__WD[1158],
    groups:[
-    __WD[1155],
+    __WD[1159],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['The story of Kaldi was written down at the time coffee was discovered.',1],['Coffee plants still grow naturally in Ethiopia.',0],
      ['Attempts to close coffee houses in Istanbul usually succeeded in the long term.',1],['English coffee houses served food as well as drinks.',2]]},
-    __WD[1156]]},
-  {title:'Working From Anywhere',paras:__WD[1157],
+    __WD[1160]]},
+  {title:'Working From Anywhere',paras:__WD[1161],
    groups:[
-    {ins:'Вопросы 14–18. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1158]},
-    __WD[1159],
-    __WD[1160]]}],
- writing:__WD[1161],
- speaking:__WD[1162]
+    {ins:'Вопросы 14–18. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1162]},
+    __WD[1163],
+    __WD[1164]]}],
+ writing:__WD[1165],
+ speaking:__WD[1166]
 },
 {id:'ielts5',title:'IELTS Academic · Тест 5',
- listening:__WD[1163],
+ listening:__WD[1167],
  reading:[
-  {title:'Navigating by the Stars',paras:__WD[1164],
+  {title:'Navigating by the Stars',paras:__WD[1168],
    groups:[
-    __WD[1165],
+    __WD[1169],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['Polynesians reached Easter Island before New Zealand.',2],['Navigators could use ocean swells even when the sky was cloudy.',0],
      ['Hōkūle\'a used a compass to check its direction.',1],['Mau Piailug had sailed to Tahiti before 1976.',2]]},
-    __WD[1166]]},
-  {title:'Can Machines Be Creative?',paras:__WD[1167],
+    __WD[1170]]},
+  {title:'Can Machines Be Creative?',paras:__WD[1171],
    groups:[
-    {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1168]},
-    __WD[1169],
-    __WD[1170]]}],
- writing:__WD[1171],
- speaking:__WD[1172]
+    {ins:'Вопросы 14–17. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1172]},
+    __WD[1173],
+    __WD[1174]]}],
+ writing:__WD[1175],
+ speaking:__WD[1176]
 });
 
 /* ---------- full-format additions: Listening parts (original scripts) ---------- */
-const IELTS_EXTRA=__WD[1173];
+const IELTS_EXTRA=__WD[1177];
 
 /* ---------- full-format additions: Reading Passage 3 (original texts) ---------- */
-IELTS_EXTRA.ielts1.passage={title:'The Science of Laughter',paras:__WD[1174],
+IELTS_EXTRA.ielts1.passage={title:'The Science of Laughter',paras:__WD[1178],
  groups:[
-  __WD[1175],
-  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1176]},
-  __WD[1177]]};
+  __WD[1179],
+  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1180]},
+  __WD[1181]]};
 
-IELTS_EXTRA.ielts2.passage=__WD[1178];
+IELTS_EXTRA.ielts2.passage=__WD[1182];
 
-IELTS_EXTRA.ielts3.passage={title:'Mining the Deep Sea',paras:__WD[1179],
+IELTS_EXTRA.ielts3.passage={title:'Mining the Deep Sea',paras:__WD[1183],
  groups:[
-  {ins:'Вопросы 27–31. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1180]},
-  __WD[1181],
-  __WD[1182]]};
-
-IELTS_EXTRA.ielts4.passage={title:'Bilingualism and the Brain',paras:__WD[1183],
- groups:[
-  __WD[1184],
-  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1185]},
+  {ins:'Вопросы 27–31. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1184]},
+  __WD[1185],
   __WD[1186]]};
 
-IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1187],
+IELTS_EXTRA.ielts4.passage={title:'Bilingualism and the Brain',paras:__WD[1187],
  groups:[
   __WD[1188],
+  {ins:'Вопросы 32–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1189]},
+  __WD[1190]]};
+
+IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1191],
+ groups:[
+  __WD[1192],
   {ins:'Вопросы 33–36. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:[
    ['Most species of fungi have not yet been described by scientists.',0],['The idea of fungal networks between trees has been completely disproved.',1],
    ['Popular books about forests sell better than other science books.',2],['Research into fungi deserves more financial support.',0]]},
-  __WD[1189]]};
+  __WD[1193]]};
 
 /* merge: full format = 4 listening parts (40 q) + 3 passages (40 q); renumber old instructions; attach audio */
 (()=>{ const pn=p=>+(p.title.match(/Part (\d)/)||[0,0])[1];
@@ -3490,15 +3581,15 @@ IELTS_EXTRA.ielts5.passage={title:'The Hidden Kingdom of Fungi',paras:__WD[1187]
     m.reading.push(x.passage); }); })();
 
 /* ---------- full-length Listening scripts (exam length ~4–5 min per part); '--' marks the mid-part pause ---------- */
-const LS2=__WD[1190];
+const LS2=__WD[1194];
 
-Object.assign(LS2,__WD[1191]);
+Object.assign(LS2,__WD[1195]);
 
 /* apply full-length scripts */
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const o=LS2[m.id+'-'+p.n]; if(!o) return; p.script=o.script; p.desc=o.desc; p.kind=o.kind; if(o.split) p.split=o.split; if(o.qs) p.qs=o.qs; })); })();
 /* extra exam-length material: start = after the opening line, end1 = just before the mid-part pause, end = at the end */
-LS2['ielts5-4']=__WD[1192];
-const LS2X=__WD[1193];
+LS2['ielts5-4']=__WD[1196];
+const LS2X=__WD[1197];
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const o=LS2[m.id+'-'+p.n]; if(o&&!p.desc){ p.script=o.script; p.desc=o.desc; p.kind=o.kind; }
   const x=LS2X[m.id+'-'+p.n]; if(!x) return; let sc=p.script.slice(); if(x.voices) p.voices={...p.voices,...x.voices};
   if(x.start) sc.splice(1,0,...x.start);
@@ -3507,111 +3598,111 @@ const LS2X=__WD[1193];
   p.script=sc; })); })();
 
 /* full-length Speaking for tests 1–5 (Part 1 ≈ 9 questions on 3 topics, Part 2 with follow-up, Part 3 ≈ 6 questions) */
-const SP_FULL=__WD[1194];
+const SP_FULL=__WD[1198];
 (()=>{ IELTS_MOCKS.forEach(m=>{ const s=SP_FULL[m.id]; if(s) m.speaking=s; }); })();
 /*MORE_TESTS*/
 /* ---------- IELTS Academic · Test 6 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts6',title:'IELTS Academic · Тест 6',
- listening:__WD[1195],
+ listening:__WD[1199],
  reading:[
-  {title:'The Story of Glass',paras:__WD[1196],
+  {title:'The Story of Glass',paras:__WD[1200],
    groups:[
-    __WD[1197],
+    __WD[1201],
     {ins:'Вопросы 6–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:[
      ['The first glass objects made in Mesopotamia were clear.',1],['The Romans used glass in windows.',0],
      ['Venetian glassmakers were allowed to work in other countries.',1],['George Ravenscroft became very rich from his invention.',2]]},
-    __WD[1198]]},
-  {title:'Music Lessons and the Mind',paras:__WD[1199],
-   groups:[
-    __WD[1200],
-    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1201]},
     __WD[1202]]},
-  {title:'The Puzzle of the Placebo',paras:__WD[1203],
+  {title:'Music Lessons and the Mind',paras:__WD[1203],
    groups:[
     __WD[1204],
-    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1205]},
-    __WD[1206]]}],
- writing:__WD[1207],
- speaking:__WD[1208]
+    {ins:'Вопросы 19–22. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1205]},
+    __WD[1206]]},
+  {title:'The Puzzle of the Placebo',paras:__WD[1207],
+   groups:[
+    __WD[1208],
+    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1209]},
+    __WD[1210]]}],
+ writing:__WD[1211],
+ speaking:__WD[1212]
 });
 /*END_T6*/
 /* ---------- IELTS Academic · Test 7 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts7',title:'IELTS Academic · Тест 7',
- listening:__WD[1209],
+ listening:__WD[1213],
  reading:[
-  {title:'Measuring the Year',paras:__WD[1210],
+  {title:'Measuring the Year',paras:__WD[1214],
    groups:[
-    {ins:'Вопросы 1–6. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1211]},
-    __WD[1212]]},
-  __WD[1213],
-  {title:'Can Money Buy Happiness?',paras:__WD[1214],
+    {ins:'Вопросы 1–6. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1215]},
+    __WD[1216]]},
+  __WD[1217],
+  {title:'Can Money Buy Happiness?',paras:__WD[1218],
    groups:[
-    __WD[1215],
-    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1216]},
-    __WD[1217]]}],
- writing:__WD[1218],
- speaking:__WD[1219]
+    __WD[1219],
+    {ins:'Вопросы 32–36. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1220]},
+    __WD[1221]]}],
+ writing:__WD[1222],
+ speaking:__WD[1223]
 });
 /*END_T7*/
 /* ---------- IELTS Academic · Test 8 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts8',title:'IELTS Academic · Тест 8',
- listening:__WD[1220],
+ listening:__WD[1224],
  reading:[
-  __WD[1221],
-  {title:'The Value of City Trees',paras:__WD[1222],
+  __WD[1225],
+  {title:'The Value of City Trees',paras:__WD[1226],
    groups:[
-    {ins:'Вопросы 14–19. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1223]},
-    __WD[1224]]},
-  __WD[1225]],
- writing:__WD[1226],
- speaking:__WD[1227]
+    {ins:'Вопросы 14–19. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1227]},
+    __WD[1228]]},
+  __WD[1229]],
+ writing:__WD[1230],
+ speaking:__WD[1231]
 });
 /*END_T8*/
 /* ---------- IELTS Academic · Test 9 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts9',title:'IELTS Academic · Тест 9',
- listening:__WD[1228],
+ listening:__WD[1232],
  reading:[
-  {title:'How the Dutch Took to Their Bikes',paras:__WD[1229],
+  {title:'How the Dutch Took to Their Bikes',paras:__WD[1233],
    groups:[
-    {ins:'Вопросы 1–7. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1230]},
-    __WD[1231]]},
-  {title:'The Mind of the Octopus',paras:__WD[1232],
+    {ins:'Вопросы 1–7. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1234]},
+    __WD[1235]]},
+  {title:'The Mind of the Octopus',paras:__WD[1236],
    groups:[
-    __WD[1233],
-    __WD[1234],
-    {ins:'Вопросы 23–26. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1235]}]},
-  __WD[1236]],
- writing:__WD[1237],
- speaking:__WD[1238]
+    __WD[1237],
+    __WD[1238],
+    {ins:'Вопросы 23–26. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1239]}]},
+  __WD[1240]],
+ writing:__WD[1241],
+ speaking:__WD[1242]
 });
 /*END_T9*/
 /* ---------- IELTS Academic · Test 10 (original items) ---------- */
 IELTS_MOCKS.push({id:'ielts10',title:'IELTS Academic · Тест 10',
- listening:__WD[1239],
+ listening:__WD[1243],
  reading:[
-  {title:'The Printing Revolution',paras:__WD[1240],
-   groups:[
-    __WD[1241],
-    {ins:'Вопросы 5–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1242]},
-    __WD[1243]]},
-  {title:'Saving the World\'s Coral Reefs',paras:__WD[1244],
+  {title:'The Printing Revolution',paras:__WD[1244],
    groups:[
     __WD[1245],
-    {ins:'Вопросы 20–23. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1246]},
+    {ins:'Вопросы 5–9. TRUE, FALSE или NOT GIVEN?',opts:TFNG,qs:__WD[1246]},
     __WD[1247]]},
-  __WD[1248]],
- writing:__WD[1249],
- speaking:__WD[1250]
+  {title:'Saving the World\'s Coral Reefs',paras:__WD[1248],
+   groups:[
+    __WD[1249],
+    {ins:'Вопросы 20–23. Совпадает ли утверждение с мнением автора? YES, NO или NOT GIVEN?',opts:YNNG,qs:__WD[1250]},
+    __WD[1251]]},
+  __WD[1252]],
+ writing:__WD[1253],
+ speaking:__WD[1254]
 });
 /*END_T10*/
 /* extra exam-length material for all tests: e1 before the mid-part pause, e2 before the last k lines */
-const LS3X=__WD[1251];
+const LS3X=__WD[1255];
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach(p=>{ const x=LS3X[m.id+'-'+p.n]; if(!x) return; const sc=p.script.slice();
   if(x.e1){ const k=sc.findIndex(l=>l[0]==='--'); if(k>=0) sc.splice(k,0,...x.e1); }
   if(x.e2) sc.splice(sc.length-(x.k||0),0,...x.e2); p.script=sc; })); })();
 (()=>{ IELTS_MOCKS.forEach(m=>m.listening.forEach((p,i)=>{ if(!p.n) p.n=+(((p.title||'').match(/Part (\d)/)||[0,i+1])[1]); if(!p.audio) p.audio='audio/'+m.id+'-p'+p.n+'.mp3'; })); })();
-const IELTS_AUDIO=__WD[1252]; /*AUDIO_TIMES*/
-const SP_AUDIO=__WD[1253]; /*SP_AUDIO*/
+const IELTS_AUDIO=__WD[1256]; /*AUDIO_TIMES*/
+const SP_AUDIO=__WD[1257]; /*SP_AUDIO*/
 /* SAT: q = {t:type, p:passage, q:question, o:options, a:index | g:[accepted numeric answers], e:explanation} */
 const SQ_WIC='Which choice completes the text with the most logical and precise word or phrase?';
 const SQ_SEC='Which choice completes the text so that it conforms to the conventions of Standard English?';
@@ -3621,43 +3712,43 @@ const SAT_MOCKS=[{id:'sat1',title:'Digital SAT · Тест 1',
   m1:[
    {t:'Words in Context',p:'Marine biologists have found that coral reefs near volcanic vents in the Pacific are surprisingly ______: despite water acidity that would kill most corals, these reefs continue to grow.',q:SQ_WIC,o:['fragile','resilient','ancient','colorful'],a:1,e:'«Несмотря на кислотность… продолжают расти» — значит, рифы устойчивые. Resilient = устойчивый, способный восстанавливаться.'},
    {t:'Words in Context',p:"The novelist's early works were largely ______ by critics, who found them too experimental; only decades later were they recognized as masterpieces.",q:SQ_WIC,o:['celebrated','overlooked','translated','imitated'],a:1,e:'«Только спустя десятилетия признали шедеврами» — значит, сначала их не заметили / проигнорировали (overlooked).'},
-   __WD[1254],
-   __WD[1255],
-   __WD[1256],
-   __WD[1257],
    __WD[1258],
+   __WD[1259],
+   __WD[1260],
+   __WD[1261],
+   __WD[1262],
    {t:'Boundaries',p:'The Atacama Desert in Chile is one of the driest places on ______ some weather stations there have never recorded rain.',q:SQ_SEC,o:['Earth,','Earth;','Earth','Earth, which'],a:1,e:'Два независимых предложения соединяет точка с запятой. Запятая одна — ошибка comma splice.'},
    {t:'Form, Structure, and Sense',p:'The collection of letters written by the explorer during her travels ______ now on display at the national museum.',q:SQ_SEC,o:['are','were','is','have been'],a:2,e:'Подлежащее — collection (единственное число), letters — внутри of-фразы. Нужно is.'},
    {t:'Boundaries',p:'Architect Zaha Hadid, known for her flowing ______ designed the aquatic center for the 2012 London Olympics.',q:SQ_SEC,o:['curves,','curves;','curves','curves—'],a:0,e:'Вставка «known for her flowing curves» выделяется запятыми с обеих сторон.'},
    {t:'Transitions',p:'Early electric cars of the 1900s were popular in cities because they were quiet and easy to drive. ______ the mass production of cheaper gasoline-powered cars soon pushed them off the market.',q:SQ_TR,o:['Similarly,','However,','For example,','Therefore,'],a:1,e:'Сначала популярность, потом вытеснение — противопоставление: However.'},
-   __WD[1259]],
+   __WD[1263]],
   hard:[
    {t:'Words in Context',p:"Although the committee's report was meant to resolve the dispute, its ______ language allowed both sides to claim victory.",q:SQ_WIC,o:['ambiguous','concise','hostile','technical'],a:0,e:'Обе стороны смогли заявить о победе — значит, формулировки двусмысленные (ambiguous).'},
    {t:'Words in Context',p:"The historian's account is notable for its ______: rather than relying on a single archive, she consulted letters, tax records, and oral histories from dozens of communities.",q:SQ_WIC,o:['brevity','thoroughness','partiality','whimsy'],a:1,e:'Десятки сообществ и разные источники — это основательность (thoroughness).'},
    {t:'Words in Context',p:"Far from being ______, the scientist's conclusion was the product of years of painstaking measurements.",q:SQ_WIC,o:['hasty','rigorous','controversial','obscure'],a:0,e:'«Far from being X» — противоположность «годам кропотливых измерений», то есть поспешный (hasty).'},
-   __WD[1260],
-   __WD[1261],
-   __WD[1262],
-   __WD[1263],
    __WD[1264],
+   __WD[1265],
+   __WD[1266],
+   __WD[1267],
+   __WD[1268],
    {t:'Form, Structure, and Sense',p:'Neither the lead researcher nor her assistants ______ aware that the samples had been mislabeled.',q:SQ_SEC,o:['was','were','is','has been'],a:1,e:'При neither…nor глагол согласуется с ближайшим подлежащим: assistants → were. Прошедшее время — по смыслу (had been).'},
    {t:'Boundaries',p:"The museum's newest exhibit features three ______ a 2,000-year-old bronze mirror, a medieval astrolabe, and a nineteenth-century telegraph key.",q:SQ_SEC,o:['artifacts:','artifacts,','artifacts;','artifacts'],a:0,e:'Двоеточие вводит список после полного предложения.'},
    {t:'Transitions',p:'Most plants obtain nitrogen from the soil through their roots. The Venus flytrap, ______ grows in nitrogen-poor bogs and supplements its diet by trapping insects.',q:SQ_TR,o:['by contrast,','for instance,','in addition,','as a result,'],a:0,e:'Мухоловка поступает иначе, чем большинство растений — противопоставление: by contrast.'},
-   __WD[1265]],
+   __WD[1269]],
   easy:[
    {t:'Words in Context',p:'After hours of hiking in the heat, the team was ______ and needed to rest.',q:SQ_WIC,o:['exhausted','curious','delighted','generous'],a:0,e:'Часы похода по жаре и нужен отдых — exhausted (измотанный).'},
    {t:'Words in Context',p:'The new library is very ______ for students: it has quiet study rooms, a café, and free computers.',q:SQ_WIC,o:['narrow','useful','silent','empty'],a:1,e:'Перечислены удобства — значит, библиотека полезная (useful).'},
    {t:'Words in Context',p:'Scientists hope to ______ the cause of the disease so that they can develop a cure.',q:SQ_WIC,o:['ignore','identify','celebrate','borrow'],a:1,e:'Чтобы создать лекарство, причину нужно установить — identify.'},
-   __WD[1266],
-   __WD[1267],
-   __WD[1268],
-   __WD[1269],
+   __WD[1270],
+   __WD[1271],
+   __WD[1272],
+   __WD[1273],
    {t:'Form, Structure, and Sense',p:'Every morning, my grandmother ______ a short walk around the park.',q:SQ_SEC,o:['take','takes','taking','have taken'],a:1,e:'Present Simple, he/she → takes.'},
    {t:'Boundaries',p:'Maya packed everything she needed for the ______ a tent, a sleeping bag, and a flashlight.',q:SQ_SEC,o:['trip:','trip,','trip','trip;'],a:0,e:'Двоеточие вводит список.'},
    {t:'Form, Structure, and Sense',p:'The students proudly presented ______ science project to the whole school.',q:SQ_SEC,o:['its','their','there','they\'re'],a:1,e:'Students — множественное число, притяжательное their. There — «там», they\'re = they are.'},
    {t:'Transitions',p:'The final exam was very difficult. ______ most students passed it.',q:SQ_TR,o:['Therefore,','Nevertheless,','For example,','Similarly,'],a:1,e:'Трудный экзамен, но сдали — уступка: Nevertheless.'},
-   __WD[1270]]},
- math:__WD[1271]
+   __WD[1274]]},
+ math:__WD[1275]
 }];
 
 /* ================= MOCK TESTS: engine & UI ================= */
@@ -3695,8 +3786,8 @@ const Timer=({left,label})=>html`<span className=${'mk-timer'+(left<=300?' warn'
 /* two-step exit so a mis-tap does not throw away an exam */
 function ExitBtn({onExit,id}){ const [arm,setArm]=useState(false);
   useEffect(()=>{ if(!arm) return; const t=setTimeout(()=>setArm(false),2600); return ()=>clearTimeout(t); },[arm]);
-  return html`<button className=${'icon-btn'+(arm?' mk-arm':'')} id=${id||'mk-close'} onClick=${()=>{ SFX('tap'); if(arm){ stopSpeak(); onExit(); } else setArm(true); }} aria-label=${arm?'Нажми ещё раз, чтобы выйти':'Выйти из теста'}>${I.close()}</button>
-    ${arm?html`<span className="mk-armtxt" role="status">Нажми ещё раз — выйти без сохранения</span>`:null}`; }
+  return html`<span className="mk-exit"><button className=${'icon-btn'+(arm?' mk-arm':'')} id=${id||'mk-close'} onClick=${()=>{ SFX('tap'); if(arm){ stopSpeak(); onExit(); } else setArm(true); }} aria-label=${arm?'Нажми ещё раз, чтобы выйти':'Выйти из теста'}>${I.close()}</button>
+    ${arm?html`<span className="mk-armtxt" role="status">Нажми ещё раз, чтобы выйти</span>`:null}</span>`; }
 
 /* ---------- voices for dialogues ---------- */
 let _voices=null;
@@ -3734,7 +3825,7 @@ function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODE
       get2:ai2?(m=>AI.getGenerativeModel(ai2,{model:m,generationConfig:cfg},{timeout:20000})):null,
       plain:m=>AI.getGenerativeModel(ai,{model:m},{timeout:30000}), plain2:ai2?(m=>AI.getGenerativeModel(ai2,{model:m},{timeout:30000})):null,
       voice:(m,v)=>AI.getGenerativeModel(ai,{model:m,generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:v}}}}},{timeout:12000})};
-  })().catch(e=>{ mp=null; console.warn('Gemini SDK',e); throw {code:'load_failed'}; }));
+  })().catch(e=>{ mp=null; console.warn('Gemini SDK',e); errLog('ai','load_failed',e&&e.message); throw {code:'load_failed'}; }));
   const parse=t=>{ try{ return JSON.parse(t); }catch(e){} const m=String(t||'').match(/\{[\s\S]*\}/); if(m){ try{ return JSON.parse(m[0]); }catch(e){} } throw {code:'invalid_json'}; };
   const code=e=>{ const x=String((e&&e.code)||'')+' '+String((e&&e.message)||e||'');
     return /api-not-enabled|app-check|appcheck|API key|PERMISSION_DENIED|403|401/i.test(x)?'not_configured':/429|quota|RESOURCE_EXHAUSTED|rate.?limit/i.test(x)?'rate_limited'
@@ -3769,14 +3860,14 @@ function geminiAI(){ const C=window.WORDY_AI, MODELS=(C&&C.models)||[]; if(!MODE
       try{ const M=await load(), m=C.fast||MODELS[0], ek=prompt.slice(0,40), t0=Date.now();
         const raw=await streamRaw(M,m,prompt,r=>{ const j=jsonPeek(r); if(j&&onPart) onPart(j); },Math.max(2500,Math.min(8000,(ema[ek]||1500)*2.2)));
         ema[ek]=(ema[ek]||1500)*.7+Math.min(20000,Date.now()-t0)*.3; const j=parse(raw); if(key) remember(key,j); return j; }
-      catch(e){ console.warn('Gemini stream',e); return api.json(prompt,null,{fast:true,fresh}); } },
+      catch(e){ console.warn('Gemini stream',e); errLog('stream',code(e),e&&e.message); return api.json(prompt,null,{fast:true,fresh}); } },
     json:async(prompt,media,opt)=>{ const M=await load(), parts=[{text:prompt}], au=!!(media&&media.length), fast=!!(opt&&opt.fast);
     const key=fast&&!au&&!(opt&&opt.fresh)?hkey(prompt):null; if(key&&cache[key]) return cache[key][1]; const ek=prompt.slice(0,40);
     if(au) media.forEach(x=>parts.push({inlineData:{mimeType:x.mime,data:x.data}}));
     let last=null;
     for(let k=0;k<MODELS.length;k++){ const i=((fast?Math.max(0,MODELS.indexOf(C.fast)):first)+k)%MODELS.length; let r;
       const t0=Date.now();
-      try{ r=fast?await hedged(M,MODELS[i],parts,au,k===MODELS.length-1,Math.max(2500,Math.min(10000,(ema[ek]||1800)*2.2))):await M.get(MODELS[i],au,k===MODELS.length-1).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); last=e; if(busy(e)) continue; throw {code:code(e)}; }
+      try{ r=fast?await hedged(M,MODELS[i],parts,au,k===MODELS.length-1,Math.max(2500,Math.min(10000,(ema[ek]||1800)*2.2))):await M.get(MODELS[i],au,k===MODELS.length-1).generateContent(parts); }catch(e){ console.warn('Gemini '+MODELS[i],e); errLog('ai',code(e)+'-'+String(MODELS[i]).replace('gemini-',''),e&&e.message); last=e; if(busy(e)) continue; throw {code:code(e)}; }
       if(fast) ema[ek]=(ema[ek]||1800)*.7+Math.min(20000,Date.now()-t0)*.3;
       if(!fast) first=i; let t=''; try{ t=r.response.text(); }catch(e){ throw {code:'refused'}; } const j=parse(t); if(key) remember(key,j); return j; }
     throw {code:busy(last)?'busy':code(last)}; },
@@ -3800,7 +3891,7 @@ let _samplePromise=null;
 setTimeout(()=>{ if(!window.__wordyKid) getSample().then(x=>x&&x.warm&&x.warm()).catch(()=>{}); },2500);
 const getSample=()=>_samplePromise||(_samplePromise=((window.claude&&typeof window.claude.use==='function')?window.claude.use('sample').catch(()=>null):Promise.resolve(null)).then(x=>x||geminiAI()));
 function useSample(){ const [s,setS]=useState(undefined); useEffect(()=>{ let on=true; getSample().then(x=>{ if(on) setS(()=>(window.__wordyKid?null:x)||null); }); /* sample is a function: wrap so React does not call it as an updater */ return ()=>{ on=false; }; },[]); return s; }
-const AI_ERR=__WD[1272];
+const AI_ERR=__WD[1276];
 const aiOffText=()=>window.__wordyKid?'Функции с ИИ доступны с 13 лет.':'Проверка ИИ сейчас недоступна. Попробуй позже.';
 const aiErr=e=>AI_ERR[e&&e.code]||'Проверка временно недоступна. Попробуй ещё раз.';
 const clampB=x=>{ x=Math.round(Number(x)*2)/2; return isNaN(x)?null:Math.max(0,Math.min(9,x)); };
@@ -3821,7 +3912,7 @@ function speakingPrompt(m,ans,fs){ const lines=[];
   return 'You are a strict, experienced IELTS Speaking examiner. Below is a transcript of a candidate\'s practice test (speech recognition or typed, so ignore punctuation and spelling). Assess Fluency and Coherence, Lexical Resource and Grammatical Range and Accuracy from the transcript. Pronunciation cannot be judged from text: do not score it. Short, memorised or missing answers lower the bands.'+IELTS_CAL+' Be realistic.\n\n'+lines.join('\n\n').slice(0,9000)
    +(fs?'\n\nMEASURED BY THE APP from the live recording (use it for Fluency): speech rate '+fs.wpm+' words per minute; '+fs.ppm+' pauses longer than 1.5 seconds per minute (longest '+fs.longest+' s); filler words: '+(fs.filN?Object.entries(fs.fil).map(([n,c])=>n+' x'+c).join(', '):'none detected')+(fs.p2!=null?'; Part 2 long turn lasted '+fs.p2+' seconds':'')+'. Mention speed, pauses and fillers in "improve" if they are a problem.':'')+'\n\nWrite every explanation in Russian; quote the candidate\'s English exactly in "from".\nReply with ONLY a JSON object: {"band":6,"crit":{"fc":6,"lr":6,"gra":5.5},"summary":"2-3 предложения","strengths":["..."],"improve":["..."],"fixes":[{"from":"...","to":"...","why":"..."}]}. At most 3 strengths, 4 improve items, 6 fixes.'; }
 /* AI examiners tend to over-score: anchor them */
-const IELTS_CAL=__WD[1273];
+const IELTS_CAL=__WD[1277];
 const pronAdd=(secs,what)=>'\n\nAUDIO ATTACHED: a '+secs+'-second recording of the candidate\'s own voice ('+what+'). Listen to it and assess Pronunciation as crit "pr" using the IELTS pronunciation descriptors: individual sounds, word stress, sentence stress and intonation, connected speech, and how much effort the listener needs. The candidate is a Russian or Kyrgyz speaker: listen for th, w/v, h, final voiced consonants, short and long vowels, -ed endings and word stress. Judge pronunciation from the recording, not from the transcript (speech recognition hides errors). Add to the JSON "pr" inside "crit" and "pron":[{"word":"the English word or phrase","heard":"how it sounded (IPA or simple Russian letters)","tip":"как исправить, по-русски"}] with at most 6 real problems (empty array if none). The overall "band" must include pr (average of the four criteria).';
 const CRIT_N={ta:'Task Response',cc:'Coherence & Cohesion',lr:'Lexical Resource',gra:'Grammar',fc:'Fluency & Coherence',pr:'Pronunciation'};
 function Feedback({fb,keys}){ return html`<div className="mk-fb enter">
@@ -3992,7 +4083,7 @@ function flatReading(m){ const out=[]; m.reading.forEach((ps,pi)=>ps.groups.forE
 function rdOk(it,v){ const {g,q}=it; return g.gap?gapOk(v||'',q[1]):v===(g.opts||g.box||g.pm?q[1]:q[2]); }
 const pmOpts=P=>P.paras.map((_,k)=>'Paragraph '+String.fromCharCode(65+k));
 /* ---------- answer evidence: where in the text / recording the answer is ---------- */
-const EV_STOP=new Set(__WD[1274].split(' '));
+const EV_STOP=new Set(__WD[1278].split(' '));
 const evStem=w=>w.length>4?w.replace(/(ies)$/,'y').replace(/(ing|ed|es|e|s|ly)$/,''):w;
 const evToks=s=>String(s||'').toLowerCase().replace(/[^a-z0-9\s-]/g,' ').split(/\s+/).filter(w=>w&&!EV_STOP.has(w)).map(evStem).filter(w=>w.length>1);
 const evSplit=p=>{ const s=String(p).replace(/(\d)\.(\d)/g,'$1\u2024$2').replace(/\b(Dr|Mr|Mrs|Ms|St)\./g,'$1\u2024'); return (s.match(/[^.!?]+[.!?]+["')”]*\s*|[^.!?]+$/g)||[s]).map(x=>x.replace(/\u2024/g,'.').trim()).filter(Boolean); };
@@ -4021,7 +4112,7 @@ function listeningEvidence(m){ const out=[]; m.listening.forEach((p,k)=>{ const 
     if(best&&!Array.isArray(q)&&multi){ const w=lines.slice(best.i,best.i+3); span=w.length; text=w.map(x=>x.sp+': '+x.text).join('\n'); }
     else if(best&&/\?\s*$/.test(best.text)&&lines[best.i+1]){ const nx=lines[best.i+1]; span=2; text=best.text+'\n'+nx.text; }
     out.push(best?{part:k,line,span,sp,text,approx:!Array.isArray(q)}:null); }); }); return out; }
-const W2N=__WD[1275];
+const W2N=__WD[1279];
 /* AI: why is this the answer */
 const whyPrompt=(ctx,qtext,opts,correct,mine)=>'You are an IELTS teacher. A Russian-speaking student reviews one question. Explain in RUSSIAN, 2-4 short sentences: why the correct answer is right, pointing to the exact words in the text, and if the student answered differently, why their answer is wrong (for NOT GIVEN, say what information is missing). Do not repeat the whole text.\n\nTEXT:\n'+ctx+'\n\nQUESTION: '+qtext+(opts?'\nOPTIONS: '+opts:'')+'\nCORRECT ANSWER: '+correct+'\nSTUDENT ANSWER: '+(mine==null||mine===''?'(no answer)':mine)+'\n\nReturn JSON: {"why": "..."}';
 /* Google Play rule for apps with generative AI: learners can flag a bad AI answer without leaving the app. Goes to Firestore «feedback» (kind 'ai'). */
@@ -4408,7 +4499,7 @@ async function clipsToWav(blobs,maxSec){ if(!blobs||!blobs.length) return null; 
    - Browser recognition gives live text and pause timing. Chrome often stops it on its own after a silence, so it is restarted until the learner presses «Стоп».
    - The voice is recorded at the same time. If recognition gave no text (unsupported browser, blocked service, busy microphone),
      Gemini transcribes the recording instead, keeping the learner's own mistakes. */
-const TRANSCRIBE=__WD[1276];
+const TRANSCRIBE=__WD[1280];
 function useDictation(onText,onMetrics,onAudio,ai){
   const canAI=!!(CAN_REC&&ai&&ai.gemini);
   const rec=useRef(null), [on,setOn]=useState(false), [srFail,setSrFail]=useState(!SR); const cb=useRef(onText); cb.current=onText; const mcb=useRef(onMetrics); mcb.current=onMetrics;
@@ -4551,7 +4642,7 @@ function IeltsSpeaking({m,st,update,onExit,onNext,nextName}){
 }
 
 /* ---------- pronunciation trainer: read a sentence aloud, the recogniser shows which words it understood ---------- */
-const PRON=__WD[1277];
+const PRON=__WD[1281];
 const PRON_GROUPS=[['all','Все'],['th','TH'],['w','W / V'],['vowel','Гласные'],['final','Конечные звуки'],['ed','-ed'],['stress','Ударение'],['ielts','Фразы IELTS']];
 const prNorm=s=>String(s).toLowerCase().replace(/[^a-z0-9'\s]/g,' ').split(/\s+/).filter(Boolean);
 function prAlign(target,heard){ const a=prNorm(target), b=prNorm(heard), n=a.length, m=b.length, L=[...Array(n+1)].map(()=>Array(m+1).fill(0));
@@ -4602,7 +4693,7 @@ function PronDrill({update,onExit,st}){ const [grp,setGrp]=useState('all'), [k,s
     <p className="mk-note">Как это работает: распознавание речи записывает то, что услышало. Красные слова оно не узнало — скорее всего, их стоит произнести чётче. «Разбор от ИИ» слушает саму запись голоса и подсказывает, какие звуки поправить. Это тренировка, а не оценка экзаменатора.</p>
   </section>`; }
 /* ---------- Speaking Part 2 bank: popular cue cards with Band 7+ sample answers and a timed practice ---------- */
-const P2_BANK=__WD[1278];
+const P2_BANK=__WD[1282];
 function P2Bank({st,update,onExit}){ const ai=useSample(); const [k,setK]=useState(null), [ph,setPh]=useState('card'), [ans,setAns]=useState(''), [met,setMet]=useState(null), [fb,setFb]=useState(null), [busy,setBusy]=useState(false), [err,setErr]=useState(null), [showS,setShowS]=useState(false), [rec,setRec]=useState(false), [clips,setClips]=useState([]);
   const c=P2_BANK.find(x=>x.id===k), done=st.p2done||{};
   const tl=useCountdown(ph==='prep'?60:ph==='talk'?120:0,()=>{ if(ph==='prep'){ SFX('pop'); setPh('talk'); W('say','Время! Говори 1–2 минуты.',0,true); } else if(ph==='talk'){ SFX('pop'); setPh('done'); W('say','Две минуты прошли.',0,true); } },ph==='prep'||ph==='talk',k+ph);
@@ -4698,7 +4789,7 @@ function SatResult({m,res,log,secs,onExit}){
 /* rotate SAT options so the key is spread across A–D (explanations never refer to letters) */
 SAT_MOCKS.forEach(m=>['rw','math'].forEach(sec=>['m1','hard','easy'].forEach((k,ki)=>m[sec][k].forEach((q,qi)=>{ if(!q.o) return;
   const r=(qi*3+ki*2+(sec==='math'?1:0)+(qi%3===0?2:0))%q.o.length, c=q.o[q.a]; q.o=q.o.slice(r).concat(q.o.slice(0,r)); q.a=q.o.indexOf(c); }))));
-const IELTS_SEC=__WD[1279];
+const IELTS_SEC=__WD[1283];
 function IeltsFull({m,st,update,onExit}){
   const order=['L','R','W','S'], [i,setI]=useState(0), [go,setGo]=useState(false);
   if(i>=order.length){ const r=(st.mocks||{})[m.id]||{}, ov=ieltsOverall(r);
@@ -4715,18 +4806,16 @@ function IeltsFull({m,st,update,onExit}){
 }
 /* ---------- practice with the AI: a story from your own words, and a conversation with Wordy ---------- */
 /* words to practise: due ones first (most forgotten first), then the weakest learned ones, then new words of the level */
-function practiceWords(st,n){ const seen=new Set(), out=[]; const add=w=>{ if(w&&!seen.has(w.en.toLowerCase())&&out.length<n&&w.track!=='idioms'){ seen.add(w.en.toLowerCase()); out.push(w); } };
+function practiceWords(st,n){ const seen=new Set(), out=[]; const add=w=>{ if(w&&!w.kind&&!/[.!?]$/.test(w.en)&&w.en.split(/\s+/).length<=3&&!seen.has(w.en.toLowerCase())&&out.length<n&&w.track!=='idioms'){ seen.add(w.en.toLowerCase()); out.push(w); } };
   dueWords(st).forEach(add);
   if(out.length<n) ALL.filter(w=>st.boxes[w.id]!=null).map(w=>[w,memRet(st,w.id)]).sort((a,b)=>a[1]-b[1]).forEach(x=>add(x[0]));
   if(out.length<n){ const L=st.level||'A1'; shuffle(ALL.filter(w=>w.track==='basic'&&w.cefr===L)).forEach(add); }
   return out; }
 function PracticeRow({openMock}){ const ai=useSample(); if(!ai) return null;
-  return html`<div className="prac-row enter" style=${{'--i':2}}>
-    <button className="prac-card" id="open-story" onClick=${()=>openMock({kind:'story'})}><span className="prac-ic" aria-hidden="true">📖</span><span><b>История из твоих слов</b><small>Ворди сочинит рассказ из слов, которые пора повторить</small></span></button>
-    <button className="prac-card" id="open-call" onClick=${()=>openMock({kind:'call'})}><span className="prac-ic" aria-hidden="true">📞</span><span><b>Видеозвонок с Ворди</b><small>Говори голосом — Ворди отвечает живым голосом и эмоциями</small></span></button>
-    <button className="prac-card" id="open-talk" onClick=${()=>openMock({kind:'talk'})}><span className="prac-ic" aria-hidden="true">💬</span><span><b>Чат с Ворди</b><small>Та же сценка, но можно писать и думать дольше</small></span></button>
-  </div>`; }
-const STORY_TOPICS=[['any','Любая'],['school','Школа'],['adventure','Приключение'],['mystery','Детектив'],['space','Космос'],['sport','Спорт'],['city','Город'],['nature','Природа']];
+  return html`<div className="prac-wrap enter" style=${{'--i':2}}><div className="sec-h prac-h"><h2>Практика с Ворди</h2></div><div className="prac-row">
+    ${[['open-story','story','📖','История','из твоих слов'],['open-call','call','📞','Звонок','голосом'],['open-talk','talk','💬','Чат','текстом']].map(([id,k,ic,t,sub])=>html`<button key=${id} className="prac-card" id=${id} onClick=${()=>openMock({kind:k})}><span className="prac-ic" aria-hidden="true">${ic}</span><b>${t}</b><small>${sub}</small></button>`)}
+  </div></div>`; }
+const STORY_TOPICS=[['any','Любая','🎲'],['school','Школа','🏫'],['adventure','Квест','🗺️'],['mystery','Детектив','🔍'],['space','Космос','🚀'],['sport','Спорт','⚽'],['city','Город','🏙️'],['nature','Природа','🌿']];
 const storyPrompt=(lvl,words,topic)=>'Write a short, engaging story in English for a learner at CEFR '+lvl+' level'+(topic&&topic!=='any'?' on the topic "'+topic+'"':'')+'. '
   +'Use ALL of these words naturally (you may change their grammatical form): '+words.join(', ')+'. Wrap every use of these words in double asterisks, like **word**. '
   +'Length 140-200 words in 3-5 short paragraphs. Other vocabulary and grammar must be at or below the level. Keep it kind and suitable for teenagers. '
@@ -4761,11 +4850,13 @@ function StoryScreen({st,update,onExit}){ const ai=useSample();
     <div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>История из твоих слов</b><span className="muted">${st.level||'A2'}</span></div></div>
     ${!story&&busy&&draft?html`<article className="reader story-text st-draft" aria-busy="true"><h2>${draft.title||'…'}</h2>
         ${draft.paras.map((p,i)=>html`<p key=${i} className="rpara">${p.replace(/\*\*/g,'')}</p>`)}<p className="muted"><span className="mk-spin" aria-hidden="true"></span> Ворди дописывает историю и вопросы…</p></article>`
-    :!story?html`<div className="mk-res enter">
-        <h3>Рассказ из слов, которые пора повторить</h3>
-        <p className="muted">Ворди возьмёт 7 слов из твоего повторения и сочинит короткую историю на твоём уровне. Встретить слово в живом тексте — один из лучших способов его запомнить.</p>
-        <div className="chips" role="group" aria-label="Тема">${STORY_TOPICS.map(([k,l])=>html`<button key=${k} className="chip" aria-pressed=${topic===k} onClick=${()=>setTopic(k)}>${l}</button>`)}</div>
-        <p className="wrel-l">Слова: ${pick.map(w=>w.en).join(', ')}</p>
+    :!story?html`<div className="story-start enter">
+        <div className="ss-hero" aria-hidden="true"><span className="ss-book">📖</span><span className="ss-sp s1">✨</span><span className="ss-sp s2">✨</span></div>
+        <h3>Сказка из твоих слов</h3>
+        <p className="muted">Ворди сочинит короткую историю на уровне ${st.level||'A2'} с этими словами — так они запоминаются лучше.</p>
+        <div className="ss-words">${pick.map((w,i)=>html`<span key=${w.id} className="ss-w" style=${{'--i':i}}>${w.en}</span>`)}</div>
+        <p className="ss-l">О чём будет история?</p>
+        <div className="ss-topics" role="group" aria-label="Тема">${STORY_TOPICS.map(([k,l,e])=>html`<button key=${k} className="ss-t" aria-pressed=${topic===k} onClick=${()=>{ SFX('tap'); setTopic(k); }}><span aria-hidden="true">${e}</span>${l}</button>`)}</div>
         ${err?html`<p className="mk-err">${err}</p>`:null}
         <button className="btn wide" id="story-make" disabled=${busy} onClick=${make}>${busy?'Ворди сочиняет…':'Сочинить историю'}</button></div>`
     :html`<article className="reader story-text enter" data-perch="read">
@@ -4782,7 +4873,7 @@ function StoryScreen({st,update,onExit}){ const ai=useSample();
     ${word?html`<${WordSheet} w=${word} st=${st} update=${update} open=${true} onClose=${()=>setWord(null)}/>`:null}
   </section>`; }
 
-const TALK_SC=__WD[1280];
+const TALK_SC=__WD[1284];
 const talkPrompt=(sc,lvl,targets,hist,said)=>'You are '+sc[2]+'. You are talking with an English learner (CEFR '+lvl+', native language Russian). Stay in the role and keep the conversation natural and kind. '
   +'Speak at the learner\'s level: 1-2 short sentences, then a question so they can answer. Try to create chances for the learner to use these words: '+targets.join(', ')+'. '
   +'Conversation so far:\n'+hist.map(m=>(m.who==='ai'?'You: ':'Learner: ')+m.text).join('\n')+'\nLearner: '+said+'\n'
@@ -4811,8 +4902,8 @@ function TalkScreen({st,update,onExit}){ const ai=useSample();
   const finish=()=>{ if(end) return; setEnd(true); stopSpeak(); addFixCards(update,msgs.filter(m=>m.fix).map(m=>m.fix)); const mineN=msgs.filter(m=>m.who==='me').length; SFX('fanfare'); W('react','cheer'); W('say','Хороший разговор! Ты употребил '+used.length+' из '+targets.length+' слов.');
     update(s=>{ let p={}; targets.filter(w=>used.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*4+used.length*10,coins:s.coins+used.length*5}; }); };
   if(liveSc) return html`<${LiveCall} typed=${true} st=${st} update=${update} onExit=${onExit} sc=${liveSc} onFallback=${()=>{ const x=liveSc; setLiveSc(null); setNoLive(true); begin(x,true); }}/>`;
-  if(!sc) return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Разговор с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
-    <div className="mk-res enter"><h3>Выбери сценку</h3><p className="muted">Ворди сыграет роль и будет говорить на твоём уровне. Отвечай голосом или текстом. В разговоре Ворди даст повод употребить 5 слов из твоего повторения и мягко поправит ошибки.</p>
+  if(!sc) return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Чат с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
+    <div className="mk-res enter"><h3>Выбери сценку</h3><p className="muted">Пиши по-английски — Ворди сыграет роль и ответит голосом. Поможет употребить слова из повторения.</p>
       <div className="talk-sc">${TALK_SC.map(x=>html`<button key=${x[0]} className="prac-card" id=${'talk-'+x[0]} onClick=${()=>begin(x)}><span><b>${x[1]}</b><small>${x[3]}</small></span></button>`)}</div></div></section>`;
   const mineN=msgs.filter(m=>m.who==='me').length;
   return html`<section className="mk-sec talk"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${mineN} ${plural(mineN,'реплика','реплики','реплик')}</span></div>
@@ -4862,7 +4953,7 @@ const EMO_STYLE={happy:'Say cheerfully',laugh:'Say with a happy laugh',surprised
 /* ---------- Live call: Gemini Live (real-time voice both ways, can be interrupted) ----------
    Runs on a separate Firebase project without App Check (browsers cannot send App Check over WebSocket).
    Wordy's feelings and the learner's progress come from tool calls the model makes while it talks. */
-const LIVE_TOOLS=__WD[1281];
+const LIVE_TOOLS=__WD[1285];
 const liveSys=(sc,lvl,targets,name,typed,extra)=>'You are '+sc[2]+'. You are on a live '+(typed?'chat: the learner types and you answer with your voice':'video call')+' with an English learner (CEFR '+lvl+', native language Russian). '
   +'You are always Wordy: a small, cheerful, slightly mischievous orange creature. If the scene gives you a role, you are Wordy playing it, and your name is Wordy. '
   +(name?'The learner\'s name is '+name+'. ':'You do not know the learner\'s name: never invent one; you may ask for it once. ')
@@ -4873,7 +4964,7 @@ const liveSys=(sc,lvl,targets,name,typed,extra)=>'You are '+sc[2]+'. You are on 
   +'If the learner speaks Russian, answer in simple English and encourage them to try in English. '+(extra||'')+'Start by greeting them with: "'+sc[3]+'"';
 function b64pcm(f32){ const n=f32.length, b=new ArrayBuffer(n*2), v=new DataView(b); for(let i=0;i<n;i++){ const x=Math.max(-1,Math.min(1,f32[i])); v.setInt16(i*2,x<0?x*0x8000:x*0x7FFF,true); } const u=new Uint8Array(b); let s=''; for(let i=0;i<u.length;i+=0x8000) s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return btoa(s); }
 const ASSESS_TOOLS=[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],
-  __WD[1282]]}];
+  __WD[1286]]}];
 const assessSys=g=>'You are Wordy, a friendly, cheerful orange creature, doing a quick spoken English level check (about 3 minutes) with a new learner whose native language is Russian. '
   +'Start in very simple, slow English: greet them, say this is a short chat to find their level, and ask their name. Then ask about six short questions that get gradually harder: '
   +'A1 (name, age, city, family) → A2 (daily routine, last weekend) → B1 (plans, experiences, an opinion with reasons) → B2 (a hypothetical situation, pros and cons) → C1 (a nuanced, abstract question). '
@@ -4892,39 +4983,50 @@ function LevelCheck({st,update,onPick,onClose}){ const [res,setRes]=useState(nul
     :html`<${LiveCall} key=${run} st=${st} update=${update} sc=${['assess','Проверка уровня','','']} assess=${{sys:assessSys(genderLine(st.gender)),onResult:a=>{ const lv=['A1','A2','B1','B2','C1'].includes(a&&a.level)?a.level:'A2'; SFX('fanfare'); W('react','cheer'); setRes({...a,level:lv}); }}}
         onExit=${onClose} onFallback=${onClose}/>`}</div>`;
   return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
-const BOARD_TOOL=__WD[1283];
+const BOARD_TOOL=__WD[1287];
 /* the lesson board: formula chips, examples with the key part highlighted, the current task with its type, progress dots, the last correction */
 const TASK_T={translate:['🔁','Переведи'],transform:['✏️','Измени'],answer:['💬','Ответь'],create:['🌟','Придумай своё'],repeat:['🔂','Повтори правильно']};
 const starMark=t=>String(t).split(/(\*\*[^*]+\*\*)/).map((p,i)=>{ const m=p.match(/^\*\*([^*]+)\*\*$/); return m?html`<mark key=${i}>${m[1]}</mark>`:p.replace(/\*/g,''); });
-function LessonBoard({b}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
+function LessonBoard({b,said,onMisheard}){ const [hint,setHint]=useState(false); useEffect(()=>setHint(false),[b&&b.n]);
   if(!b) return html`<div className="lboard empty"><p className="muted">Здесь Ворди будет писать правило, примеры и задания.</p></div>`;
+  const ruleBody=html`<${LessonBoardRule} b=${b}/>`;
   const tt=TASK_T[b.type]||TASK_T.translate, key=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
   return html`<div className="lboard" aria-live="polite">
     <div className="lb-head">${b.emoji?html`<span className="lb-emoji" aria-hidden="true">${b.emoji}</span>`:null}<b className="lb-title">${b.title||'Урок'}</b>
       ${b.n?html`<span className="lb-dots" aria-label=${'Задание '+b.n}>${Array.from({length:Math.max(b.n,5)},(_,i)=>html`<i key=${i} className=${b.marks[i]==='ok'?'ok':b.marks[i]==='bad'?'bad':i===b.n-1?'cur':''}></i>`)}</span>`:null}</div>
     ${b.task?html`<div className="lb-task" key=${b.n}><div className="lb-tt"><span aria-hidden="true">${tt[0]}</span>${tt[1]}<small>задание ${b.n}</small></div><p>${b.task}</p>
-        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b></div>`:null}
-        ${b.hint?(hint?html`<p className="lb-hint">💡 ${b.hint}</p>`:html`<button className="link-btn lb-hbtn" onClick=${()=>{ SFX('tap'); setHint(true); }}>💡 Подсказка</button>`):null}</div>`:null}
+        ${said?html`<p className="lb-said"><span>Твой ответ:</span> «${said}»</p>`:null}
+        ${b.fix?html`<div className="lb-fix"><s>${b.fix.wrong}</s><span aria-hidden="true">→</span><b>${b.fix.right}</b>${onMisheard?html`<button className="link-btn lb-mis" id="lb-misheard" onClick=${onMisheard}>Меня не так расслышали</button>`:null}</div>`:null}
+        ${b.hint&&b.hintOn?html`<p className="lb-hint">💡 ${b.hint}</p>`:null}</div>`:null}
+    ${b.summary?html`<div className="lb-sum">🏁 <b>${b.summary.good}</b>${b.summary.review?html`<span>Повторить: ${b.summary.review}</span>`:null}</div>`:null}
+    ${b.n?html`<details className="lb-rulebox"><summary>📌 Правило${b.title?' · '+b.title:''}</summary>${ruleBody}</details>`:ruleBody}
+  </div>`; }
+const lbKey=x=>/V[123]|-ing|-ed|\bto\b|will|would|have|has|had|been|being|\bam\b|\bis\b|\bare\b|was|were|Past|Present|Simple|Perfect|Continuous/i.test(x);
+function LessonBoardRule({b}){ const key=lbKey; return html`<div className="lb-rulebody">
     ${b.formula.length?html`<div className="lb-formula">${b.formula.map((x,i)=>html`${i?html`<span className="lb-plus" aria-hidden="true">+</span>`:null}<span key=${i} className=${'lb-chip'+(key(x)?' key':'')}>${x}</span>`)}</div>`:null}
     ${b.rule?html`<p className="lb-rule">${b.rule}</p>`:null}
     ${b.examples.length?html`<ul className="lb-ex">${b.examples.map((e,i)=>html`<li key=${i}>${canSpeak?html`<button className="ex-say" aria-label=${'Послушать: '+e.en.replace(/\*/g,'')} onClick=${()=>speak(e.en.replace(/\*/g,''))}>${I.speaker()}</button>`:null}<div><b lang="en">${starMark(e.en)}</b>${e.ru?html`<span>${e.ru}</span>`:null}</div></li>`)}</ul>`:null}
   </div>`; }
-const lessonSys=(lvl,ctx,extra)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
+const SUMMARY_TOOL=__WD[1288];
+const lessonSys=(lvl,ctx,extra,weak)=>'Ты Ворди — весёлое оранжевое существо и учитель английского. Проведи короткий живой урок голосом (около 5 минут) для русскоязычного ученика (уровень CEFR '+lvl+') по теме урока, который сейчас у него на экране:\n«'+ctx+'»\n(конец экрана). '
   +'Темп: говори медленно, спокойно и чётко, с паузами между предложениями — особенно в начале; ученику нужно успевать понять. '
   +'У ученика на экране есть доска: всё важное пиши на неё инструментом show_board, а голосом говори коротко. '
   +'План. 1) Поздоровайся одной фразой. Вызови show_board с title, emoji, formula (схема по частям), rule (когда употребляем, одна строка) и examples (2–3 примера с переводом, главную часть выдели **звёздочками**). Голосом коротко, в 2–3 предложениях по-русски, объясни правило и прочитай один пример. Спроси: «Понятно? Начинаем?» — и дождись ответа ученика. '
   +'2) Дай 5–6 коротких устных заданий по очереди, от простого к сложному; перед каждым заданием вызывай show_board с task (текст задания), task_type и, если полезно, hint — и затем прочитай задание голосом: перевести короткую фразу с русского, превратить предложение в отрицание или вопрос, ответить на вопрос с этой конструкцией, придумать своё предложение. Давай по одному заданию и жди ответа. '
   +'3) Если ответ верный — коротко похвали и дай следующее задание. Если есть ошибка — вызови correction (wrong — фрагмент ученика, right — правильный вариант, why — очень коротко по-русски), мягко скажи правильный вариант и попроси повторить. Вызывай correction только для настоящих ошибок и только для одной фразы ученика за раз. Если ученик ответил грамматически верно, но другой конструкцией (например, Past Simple с yesterday вместо Present Perfect), — засчитай, похвали и коротко объясни разницу, без correction. '
-  +'4) После заданий подведи итог в 2 предложениях по-русски: что получилось и на что обратить внимание — и тепло попрощайся. '
+  +'4) После заданий вызови lesson_summary (что получилось и что повторить), подведи итог голосом в 2 предложениях по-русски и тепло попрощайся. '
+  +'Если ученик просит повторить, говорить медленнее, объяснить иначе или дать подсказку (такие просьбы приходят в скобках) — сделай это сразу и коротко. Если ученик говорит, что его неправильно расслышали, — извинись, не засчитывай это ошибкой и попроси сказать ещё раз. '
+  +(weak&&weak.length?'В прошлый раз по этой теме ученик ошибался так: '+weak.map(f=>'«'+f.wrong+'» → «'+f.right+'»').join('; ')+'. Включи в задания 1–2 таких места, чтобы закрепить. ':'')
   +'Говори живо и коротко, на «ты», как друг-репетитор. Английские фразы произноси чётко, с английским произношением. Не читай весь экран вслух. Показывай эмоции через show_emotion. '+(extra||'');
 /* 🎙 voice mini-lesson on the grammar topic on screen */
-function VoiceLesson({st,update,onClose}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+function VoiceLesson({st,update,onClose,topic}){ const [ctx]=useState(()=>{ const el=document.querySelector('.bk-wrap,.gtheory'); return el?el.innerText.replace(/\s+/g,' ').trim().slice(0,3000):''; });
+  const tid=(topic&&topic.id)||'x', prev=((st.vlesson||{})[tid])||{};
   const ui=html`<div className="lc-wrap" role="dialog" aria-modal="true" aria-label="Урок с Ворди голосом"><${LiveCall} st=${st} update=${update} sc=${['lesson','Урок с Ворди','','']}
-      lesson=${{sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st))}} onExit=${onClose} onFallback=${onClose}/></div>`;
+      lesson=${{id:tid,title:(topic&&topic.title)||'',sys:lessonSys(st.level||'A2',ctx,genderLine(st.gender)+memLine(st),prev.weak||[]),best:prev.stars||0}} onExit=${onClose} onFallback=${onClose}/></div>`;
   return (window.ReactDOM&&ReactDOM.createPortal)?ReactDOM.createPortal(ui,document.body):ui; }
 const canLiveVoice=()=>!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey&&window.AudioWorkletNode&&navigator.mediaDevices);
 const tutor0=p=>p==='tutor'?.82:.5;
-const MIC_WORKLET=__WD[1284];
+const MIC_WORKLET=__WD[1289];
 /* Wordy remembers: short notes about the learner + the end of the last conversation, and how to address them in Russian */
 const genderLine=g=>g==='f'?'Ученик — девушка: по-русски обращайся к ней в женском роде (ты сделала, ты готова, молодец сама). The learner is female. '
   :g==='m'?'Ученик — парень: по-русски обращайся к нему в мужском роде (ты сделал, ты готов). The learner is male. '
@@ -4960,7 +5062,8 @@ const tutorSys=(lvl,ctx,sel,extra)=>'Ты Ворди — весёлое, нем�
 /* 💡 «Спросить Ворди»: on lesson and exercise screens, a live voice tutor that already sees the screen */
 function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setOpen]=useState(null), [mini,setMini]=useState(false), [run,setRun]=useState(0); const selRef=useRef(''), logRef=useRef([]);
   const ok=!!(window.WORDY_LIVE&&window.WORDY_LIVE.config&&window.WORDY_LIVE.config.apiKey)&&st.age!=='u13'&&!!(window.AudioContext||window.webkitAudioContext);
-  useEffect(()=>{ if(!ok) return; const chk=()=>{ const v=!!document.querySelector('[data-perch="card"]:not(button)')&&!document.querySelector('.mk-qnav')&&!document.documentElement.classList.contains('in-call'); setShow(x=>x===v?x:v); };
+  useEffect(()=>{ if(!ok) return; const chk=()=>{ const onLearn=!!document.querySelector('#tab-learn[aria-current="page"]'), study=document.querySelector('.bk-wrap,.gtheory,.gpractice,.bk-ex,.reader,.refbook,.story-text,.mk-sec:not(.call):not(.talk)');
+    const v=onLearn&&!!study&&!document.querySelector('.mk-qnav,.qcard')&&!document.documentElement.classList.contains('in-call'); setShow(x=>x===v?x:v); };
     chk(); const t=setInterval(chk,700); return ()=>clearInterval(t); },[ok]);
   const screen=()=>{ const card=document.querySelector('[data-perch="card"]:not(button)'); const sec=card&&(card.closest('section')||card); return sec?sec.innerText.replace(/\s+/g,' ').trim().slice(0,2500):''; };
   const extra=()=>genderLine(st.gender)+memLine(st);
@@ -4974,8 +5077,34 @@ function TutorFab({st,update}){ const [show,setShow]=useState(false), [open,setO
     ${mini&&!inCall?html`<button className="tutor-fab mini" id="tutor-restore" onClick=${restore} aria-label="Вернуться к разговору с Ворди"><span aria-hidden="true">💬</span><b>Ворди</b></button>`:null}
     ${open&&!mini?html`<${LiveCall} key=${run} st=${st} update=${update} typed=${true} tutor=${open} hist=${logRef.current} onMsgs=${m=>{ logRef.current=m; }} sc=${['tutor','Спросить Ворди','','']}
         onMini=${()=>{ SFX('tap'); setMini(true); }} onExit=${()=>{ setOpen(null); setMini(false); logRef.current=[]; }} onFallback=${()=>{ setOpen(null); setMini(false); }}/>`:null}`; }
+/* Pronunciation review: the learner's own voice from the call (16 kHz PCM) + what they said → up to 5 words to work on. */
+function pcmWav(chunks){ const n=chunks.reduce((a,c)=>a+c.length,0); if(n<16000*3) return null; let peak=0; chunks.forEach(c=>{ for(let i=0;i<c.length;i+=31) peak=Math.max(peak,Math.abs(c[i])); });
+  const g=Math.min(4,.9/Math.max(peak,.01)), buf=new ArrayBuffer(44+n*2), v=new DataView(buf), w=(o,t)=>{ for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,16000,true); v.setUint32(28,32000,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+  let o=44; chunks.forEach(c=>{ for(let i=0;i<c.length;i++,o+=2){ const x=Math.max(-1,Math.min(1,c[i]*g)); v.setInt16(o,x<0?x*0x8000:x*0x7FFF,true); } });
+  const u=new Uint8Array(buf); let bin=''; for(let i=0;i<u.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000)); return {mime:'audio/wav',data:btoa(bin),secs:Math.round(n/16000)}; }
+const PRON_PROMPT=said=>`You are a friendly English pronunciation coach for a Russian-speaking learner. The attached recording is the learner's own voice from a conversation (pauses removed). What they said, roughly:
+"""${said.slice(0,1500)}"""
+Listen carefully and pick up to 5 English words the learner clearly mispronounced (wrong vowel, th → s/z/f, w → v, missing final consonant, wrong stress, Russian-style r, etc.). Only include real, audible problems in words that appear in the recording; ignore accent features that do not hurt understanding. If the pronunciation was fine, return an empty list.
+For each word give: "word" (lowercase), "ipa" (correct US IPA), "heard" (how it sounded, in simple Latin letters or IPA), "tip_ru" (one short practical tip in Russian, max 120 chars, e.g. where to put the tongue), "ru" (Russian translation of the word).
+Also "good_ru": one short sentence in Russian about what already sounds good.
+Reply with ONLY JSON {"words":[{"word":"","ipa":"","heard":"","tip_ru":"","ru":""}],"good_ru":""}`;
+function addPronWord(update,x){ const w=wordByEn(x.word); update(s=>{ const due={...(s.due||{})}, boxes={...s.boxes}, my={...(s.myWords||{})}; let id;
+  if(w){ id=w.id; } else { id='pr-'+String(x.word).toLowerCase().replace(/[^a-z]+/g,'-').slice(0,30); if(!my[id]) my[id]={id,en:String(x.word).slice(0,40),ru:String(x.ru||'').slice(0,60)||'🔊',ipa:String(x.ipa||'').slice(0,40),def:'',ex:'',track:'my',added:dayKey()}; }
+  boxes[id]=0; due[id]=dayKey(); return {due,boxes,myWords:my}; }); }
+function PronReview({r,said,update}){ const [st,setSt]=useState('wait'), [res,setRes]=useState(null), [added,setAdded]=useState({});
+  useEffect(()=>{ let on=true; const wav=r.rec&&pcmWav(r.rec); if(!wav||!said.trim()){ setSt('none'); return; } r.rec=null;
+    getSample().then(ai=>{ if(!ai||!ai.gemini||window.__wordyKid) throw {code:'no_ai'}; return ai.json(PRON_PROMPT(said),[wav],{fast:true}); }).then(j=>{ if(!on) return; const ws=((j&&j.words)||[]).filter(x=>x&&x.word&&/^[a-z' -]{2,30}$/i.test(x.word)).slice(0,5); setRes({ws,good:String((j&&j.good_ru)||'').slice(0,160)}); setSt('ok'); })
+      .catch(e=>{ if(on){ if(!e||e.code!=='no_ai') errLog('ai','pron',e&&e.message); setSt('none'); } }); return ()=>{ on=false; }; },[]);
+  if(st==='none') return null;
+  return html`<div className="pron-rev" id="pron-rev"><h4>🔊 Произношение</h4>${st==='wait'?html`<p className="muted pron-wait">⏳ Ворди переслушивает твой голос…</p>`
+    :!res.ws.length?html`<p className="muted">${res.good||'Произношение понятное — Ворди не нашёл слов, которые стоит поправить.'}</p>`
+    :html`${res.good?html`<p className="muted">👍 ${res.good}</p>`:null}<div className="pron-list">${res.ws.map((x,i)=>html`<div key=${i} className="pron-item">
+        <button className="pron-say" aria-label=${'Послушать '+x.word} onClick=${()=>speak(x.word)}>🔊</button>
+        <div className="pron-txt"><b>${x.word}</b> <span className="pron-ipa">${x.ipa}</span>${x.heard?html`<small>звучало как «${x.heard}»</small>`:null}<p>${x.tip_ru}</p>
+        <button className=${'chip pron-add'+(added[i]?' on':'')} disabled=${added[i]} onClick=${()=>{ addPronWord(update,x); setAdded(a=>({...a,[i]:1})); SFX('pop'); }}>${added[i]?'✓ В повторении':'+ Повторять'}</button></div></div>`)}</div>`}</div>`; }
 function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini,assess,lesson}){
-  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(true), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
+  const [phase,setPhase]=useState('connecting'), [msgs,setMsgs]=useState(hist||[]), [aiLine,setAiLine]=useState(''), [meLine,setMeLine]=useState(''), [used,setUsed]=useState([]), [err,setErr]=useState(null), [end,setEnd]=useState(false), [subs,setSubs]=useState(!lesson), [menu,setMenu]=useState(false), [kb,setKb]=useState(false), [muted,setMuted]=useState(false), [headset,setHeadset]=useState(false), [txt,setTxt]=useState(''), [voiceOff,setVoiceOff]=useState(false), [micOn,setMicOn]=useState(false), [board,setBoard]=useState(null);
   const targets=useMemo(()=>practiceWords(st,5),[]); const R=useRef({}); const box=useRef(null); const usedRef=useRef([]); usedRef.current=used;
   useCallStage(!end,tutor?1.1:lesson?(innerWidth<520?1.3:1.6):typed?(innerWidth<520?1.45:1.7):0,tutor?'tutor':'call');
   useEffect(()=>{ if(box.current) box.current.scrollTop=box.current.scrollHeight; },[msgs.length,aiLine]);
@@ -4989,7 +5118,7 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       const [A,AI]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js')]);
       const app=A.getApps().find(a=>a.name==='wordy-live')||A.initializeApp(C.config,'wordy-live');
       const ai=AI.getAI(app,{backend:new AI.GoogleAIBackend()});
-      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
+      const mkModel=m=>AI.getLiveGenerativeModel(ai,{model:m,systemInstruction:{parts:[{text:lesson?lesson.sys:assess?assess.sys:tutor?tutor.sys:liveSys(sc,st.level||'A2',targets.map(w=>w.en),String(st.sname||'').trim().split(/\s+/)[0]||'',!!typed,genderLine(st.gender)+memLine(st))}]},tools:lesson?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0],LIVE_TOOLS[0].functionDeclarations[2],BOARD_TOOL,SUMMARY_TOOL]}]:assess?ASSESS_TOOLS:tutor?[{functionDeclarations:[LIVE_TOOLS[0].functionDeclarations[0]]}]:LIVE_TOOLS,
         generationConfig:{responseModalities:[AI.ResponseModality.AUDIO],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:C.voice||'Puck'}}},inputAudioTranscription:{},outputAudioTranscription:{}}});
       const mlist=[C.model].concat(C.alt||[]).filter((m,i,a)=>m&&a.indexOf(m)===i);
       const out=new (window.AudioContext||window.webkitAudioContext)(); r.out=out; if(out.state==='suspended') await out.resume();
@@ -5009,6 +5138,8 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         if(!r.headset){ const talking=r.next>out.currentTime-.35; let q=0; for(let i=0;i<f.length;i++) q+=f[i]*f[i]; const rms=Math.sqrt(q/f.length);
           if(!talking){ r.floor=r.floor==null?rms:r.floor*.95+rms*.05; r.loud=0; r.barge=false; }
           else if(!r.barge){ const echo=Math.min(.12,Math.max(.035,r.outLvl*.6)); r.loud=rms>echo&&rms>(r.floor||0)*3?(r.loud||0)+1:0; if(r.loud>=3) r.barge=true; else f=new Float32Array(f.length); } }
+        /* keep up to 60 s of the learner's voiced speech for the pronunciation review after the call */
+        if((r.recN||0)<960000){ let q2=0; for(let i=0;i<f.length;i+=4) q2+=f[i]*f[i]; if(Math.sqrt(q2/(f.length/4))>.012){ (r.rec||(r.rec=[])).push(new Float32Array(f)); r.recN=(r.recN||0)+f.length; } }
         try{ r.session.sendAudioRealtime({mimeType:'audio/pcm;rate=16000',data:b64pcm(f)}); }catch(x){} }; };
       if(!typed) await r.startMic();
       /* lip sync from the output level */
@@ -5037,7 +5168,8 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
             if(fc.name==='show_board'){ const ex=Array.isArray(a.examples)?a.examples.filter(x=>x&&x.en).slice(0,3).map(x=>({en:String(x.en),ru:String(x.ru||'')})):null, fo=Array.isArray(a.formula)?a.formula.map(String).filter(Boolean).slice(0,6):null, isTask=!!a.task, newRule=!!(a.rule||ex||fo);
               setBoard(b0=>{ const b=b0||{n:0,marks:[]}, marks=b.marks.slice(); if(isTask&&b.n&&marks[b.n-1]==null) marks[b.n-1]='ok';
                 return {title:a.title?String(a.title):b.title||'',emoji:a.emoji?String(a.emoji).slice(0,4):b.emoji||'',formula:fo&&fo.length?fo:b.formula||[],rule:a.rule?String(a.rule):b.rule||'',examples:ex&&ex.length?ex:b.examples||[],
-                  task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+                  at:isTask?msgsRef.current.length:b.at||0,task:isTask?String(a.task):(newRule?'':b.task||''),type:isTask?String(a.task_type||'translate'):b.type,hint:isTask?String(a.hint||''):b.hint,n:isTask?b.n+1:b.n,marks,fix:isTask?null:b.fix}; }); SFX('pop'); }
+            if(fc.name==='lesson_summary'&&lesson){ r.summary={good:String(a.good_ru||''),review:String(a.review_ru||'')}; setBoard(b=>b?{...b,summary:r.summary}:b); }
             if(fc.name==='correction'&&a.wrong&&a.right&&lesson) setBoard(b=>b&&b.n?{...b,fix:{wrong:String(a.wrong),right:String(a.right)},marks:Object.assign(b.marks.slice(),{[b.n-1]:'bad'})}:b);
             if(fc.name==='finish_assessment'&&assess&&!r.result){ r.result=a; r.resT=setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },9000); }
             if(fc.name==='word_used'){ const w=String(a.word||'').toLowerCase(); if(targets.some(t=>t.en.toLowerCase()===w)&&!usedRef.current.includes(w)){ setUsed(o=>[...o,w]); SFX('correct'); } }
@@ -5047,25 +5179,35 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
         } else if(m.type==='sessionResumptionUpdate'){ if(m.newHandle&&m.resumable!==false) r.handle=m.newHandle; }
         else if(m.type==='goingAwayNotice'){ r.goAway=true; if(!(r.next>out.currentTime)) r.reconnect(); }
         if(r.goAway&&m.type==='serverContent'&&m.turnComplete) r.reconnect();
+        if(lesson&&r.summary&&!r.sumDone&&m.type==='serverContent'&&m.turnComplete){ r.sumDone=1; setTimeout(()=>{ if(r.alive) r.finishNow&&r.finishNow(); },Math.max(1200,(r.next-out.currentTime)*1000+1200)); }
         if(r.result&&m.type==='serverContent'&&m.turnComplete){ clearTimeout(r.resT); setTimeout(()=>{ if(r.alive){ hangup(); assess.onResult(r.result); } },Math.max(300,(r.next-out.currentTime)*1000+300)); }
       }
       if(!alive||!r.alive) break;
-      if(r.resuming){ try{ await r.resuming; }catch(e){ console.warn('Live resume',e); break; } r.resuming=null; continue; }
+      if(r.resuming){ try{ await r.resuming; }catch(e){ console.warn('Live resume',e); errLog('live','resume',e&&e.message); break; } r.resuming=null; continue; }
       if(r.handle&&resumes<6){ resumes++; try{ await session.resumeSession({handle:r.handle}); continue; }catch(e){ console.warn('Live resume',e); } }
       break; }
       if(alive&&r.alive) { setPhase('ended'); }
-    }catch(e){ console.warn('Live',e); if(alive) { setErr(String((e&&e.message)||e)); setPhase('failed'); } } })();
+    }catch(e){ console.warn('Live',e); errLog('live',/handshake/i.test(String(e&&e.message))?'handshake':/Permission|NotAllowed/i.test(String(e&&e.message||e))?'mic':'fail',e&&e.message); if(alive) { setErr(String((e&&e.message)||e)); setPhase('failed'); } } })();
     return ()=>{ alive=false; hangup(); }; },[]);
   const hangup=()=>{ const r=R.current; r.alive=false; cancelAnimationFrame(r.raf); try{ r.session&&r.session.close(); }catch(e){} r.session=null;
     try{ r.mic&&r.mic.getTracks().forEach(t=>t.stop()); }catch(e){} try{ r.node&&r.node.disconnect(); }catch(e){} try{ r.inC&&r.inC.close(); }catch(e){} try{ r.out&&r.out.close(); }catch(e){} W('lip',0); };
+  const lessonRes=()=>{ if(!board||!board.n) return null; const marks=board.marks.slice(); if(marks[board.n-1]==null) marks[board.n-1]='ok';
+    const total=board.n, ok=marks.filter(x=>x==='ok').length, stars=total<3?1:ok/total>=.8?3:ok/total>=.5?2:1; return {total,ok,stars}; };
   const finish=()=>{ if(end) return; hangup(); setEnd(true); saveFixes(); SFX('fanfare'); W('react','cheer');
+    if(lesson){ const res=lessonRes(), weak=msgs.filter(m=>m.fix).map(m=>m.fix).filter((f,i,a)=>a.findIndex(x=>x.wrong===f.wrong&&x.right===f.right)===i).slice(-5); R.current.res=res;
+      update(s=>{ const v={...(s.vlesson||{})}, o=v[lesson.id]||{}; v[lesson.id]={stars:Math.max(o.stars||0,res?res.stars:0),last:dayKey(),n:(o.n||0)+1,weak:weak.length?weak:(res&&res.ok===res.total?[]:o.weak||[])}; return {vlesson:v}; }); }
     const mineN=msgs.filter(m=>m.who==='me').length;
     update(s=>{ let p={}; targets.filter(w=>usedRef.current.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*5+usedRef.current.length*10,coins:s.coins+usedRef.current.length*5}; }); };
-  const mineN=msgs.filter(m=>m.who==='me').length, fixes=msgs.filter(m=>m.fix);
+  R.current.finishNow=finish;
+  const mineN=msgs.filter(m=>m.who==='me').length, fixes=msgs.filter(m=>m.fix).filter((m,k,a)=>a.findIndex(x=>x.fix.wrong===m.fix.wrong&&x.fix.right===m.fix.right)===k);
   if(phase==='failed'&&!tutor) return html`<section className="mk-sec call"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>${sc[1]}</b></div></div>
     <div className="mk-res enter"><h3>${typed?'Живой чат не подключился':'Live-звонок не подключился'}</h3><p className="muted">${/Permission|NotAllowed|getUserMedia/i.test(err||'')?'Разреши доступ к микрофону в настройках браузера и попробуй снова.':/Audio|Worklet/i.test(err||'')?'Этот браузер не поддерживает живой звонок. Попробуй Chrome.':'Линия сейчас занята или закончился бесплатный лимит на сегодня.'}</p>
       <div className="actions"><button className="btn ghost" onClick=${onExit}>Назад</button><button className="btn" id="live-fallback" onClick=${onFallback}>${typed?'Обычный чат':'Обычный звонок'}</button></div></div></section>`;
   const sendTxt=()=>{ const t=txt.trim(), r=R.current; if(!t||!r.session) return; setTxt(''); r.flushAi&&r.flushAi(); log('me',t); try{ r.session.send(t); }catch(e){ setErr('Связь прервалась. Выйди и начни заново.'); } };
+  const ask=m=>{ const r=R.current; if(!r.session) return; SFX('tap'); (r.srcs||[]).forEach(x=>{ try{ x.stop(); }catch(e){} }); r.srcs=[]; r.next=0; try{ r.session.send(m); }catch(e){} };
+  /* "I was misheard": drop the last correction (it will not become a review card) and let the learner try again */
+  const misheard=()=>{ SFX('tap'); setMsgs(ms=>{ const i=ms.map(m=>!!m.fix).lastIndexOf(true); return i<0?ms:ms.slice(0,i).concat(ms.slice(i+1)); });
+    setBoard(b=>b?{...b,fix:null,marks:Object.assign(b.marks.slice(),{[b.n-1]:undefined})}:b); ask('(Меня неправильно расслышали — это ошибка распознавания, не моя. Не засчитывай её, я скажу ещё раз.)'); };
   const flip=()=>{ const r=R.current, v=!voiceOff; r.voiceOff=v; setVoiceOff(v); if(v){ (r.srcs||[]).forEach(s=>{ try{ s.stop(); }catch(e){} }); r.srcs=[]; } };
   const micBtn=async()=>{ const r=R.current; if(!r.mic){ try{ await r.startMic(); setMicOn(true); r.muted=false; setMuted(false); }catch(e){ setErr('Разреши доступ к микрофону в настройках браузера.'); } } else { r.muted=!muted; setMuted(!muted); } };
   if(tutor) return html`<div className="sheet-wrap tutor-wrap" onClick=${()=>{ onMini&&onMini(); }}><div className="sheet tutor enter" role="dialog" aria-modal="true" aria-label="Спросить Ворди" onClick=${e=>e.stopPropagation()}>
@@ -5097,26 +5239,37 @@ function LiveCall({st,update,onExit,sc,onFallback,typed,tutor,hist,onMsgs,onMini
       ${mineN>=2?html`<button className="link-btn" id="talk-end" onClick=${finish}>Завершить разговор</button>`:null}</div>
   </section>`;
   return html`<section className="mk-sec call live">
-    <div className="sess-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b><span className="muted">${phase==='connecting'?'соединяю…':end?'звонок завершён':(R.current.backup?'Live 2 · ':'Live · ')+mineN+' '+plural(mineN,'реплика','реплики','реплик')}</span></div>
-      <button className="chip" id="live-headset" aria-pressed=${headset} title="Я в наушниках: можно перебивать Ворди тихим голосом" aria-label="Наушники" onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}>🎧</button><button className="chip" aria-pressed=${subs} onClick=${()=>setSubs(v=>!v)}>Субтитры</button></div>
+    <div className="sess-top live-top"><${ExitBtn} onExit=${()=>{ hangup(); onExit(); }}/><div className="gm-h"><b>${sc[1]}</b>${phase==='connecting'?html`<span className="muted">соединяю…</span>`:null}</div>
+      ${!end?html`<div className="live-menu"><button className="icon-btn" id="live-more" aria-label="Настройки звонка" aria-expanded=${menu} onClick=${()=>{ SFX('tap'); setMenu(v=>!v); }}>⋯</button>
+        ${menu?html`<div className="live-pop" role="menu">
+          <button role="menuitemcheckbox" id="live-headset" aria-checked=${headset} onClick=${()=>{ R.current.headset=!headset; setHeadset(!headset); }}><span>🎧 Я в наушниках</span><i>${headset?'вкл':'выкл'}</i></button>
+          <button role="menuitemcheckbox" id="live-subs" aria-checked=${subs} onClick=${()=>setSubs(v=>!v)}><span>💬 Субтитры</span><i>${subs?'вкл':'выкл'}</i></button>
+          <p className="muted">${R.current.backup?'Запасная линия':'Основная линия'} · ${mineN} ${plural(mineN,'реплика','реплики','реплик')}. Перебить Ворди можно, сказав громче; в наушниках — и тихо.</p></div>`:null}</div>`:null}</div>
     ${assess?html`<p className="muted lc-note">Отвечай голосом, как получится — ошибки нормальны. Ворди начнёт с простого и постепенно усложнит.</p>`
       :lesson&&phase==='connecting'?html`<p className="muted lc-note">Ворди коротко объяснит правило и даст задания — отвечай голосом. Ошибки попадут в повторение.</p>`:null}
     <div className="talk-goal" hidden=${!!(assess||lesson)}><span className="wrel-l">Употреби:</span>${targets.map(w=>html`<span key=${w.id} className=${'talk-t'+(used.includes(w.en.toLowerCase())?' ok':'')} title=${w.ru}>${used.includes(w.en.toLowerCase())?'✓ ':''}${w.en}</span>`)}</div>
     <div className=${'call-stage ph-'+(phase==='connecting'?'thinking':'listening')+(lesson?' with-board':'')}><div className="call-seat"><div className="call-bench" data-perch="call"></div></div>
-      ${lesson&&!end?html`<${LessonBoard} b=${board}/>`:null}
+      ${lesson&&!end?html`<${LessonBoard} b=${board} said=${meLine||((msgs.slice((board&&board.at)||0).filter(m=>m.who==='me').pop())||{}).text||''} onMisheard=${misheard}/>`:null}
+      ${lesson&&!end&&phase==='live'?html`<div className="lb-quick" role="group" aria-label="Попросить Ворди">${[['🔁','Повтори','(Повтори, пожалуйста, последнее ещё раз — медленно и чётко.)'],['🤔','Не понял','(Я не понял. Объясни иначе: проще, по-русски, на другом примере.)'],['💡','Подсказка','(Дай подсказку к заданию, но не говори ответ.)']].map(([e,l,m])=>html`<button key=${l} className="lq" id=${'lq-'+l} onClick=${()=>{ if(l==='Подсказка'&&board&&board.hint&&!board.hintOn){ SFX('pop'); setBoard(b=>({...b,hintOn:true})); } else ask(m); }}><span aria-hidden="true">${e}</span><small>${l}</small></button>`)}
+          <button className="lq" id="lq-kb" aria-pressed=${kb} onClick=${()=>{ SFX('tap'); setKb(v=>!v); }}><span aria-hidden="true">⌨️</span><small>Написать</small></button></div>
+        ${kb?html`<div className="talk-row lb-type"><input className="set-in" id="lesson-text" autoFocus value=${txt} placeholder="Напиши ответ…" onChange=${e=>setTxt(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter'){ e.preventDefault(); sendTxt(); } }} aria-label="Ответ текстом"/><button className="btn" id="lesson-send" disabled=${!txt.trim()} onClick=${sendTxt}>→</button></div>`:null}`:null}
       ${subs&&!end?html`<p className="call-sub" aria-live="polite">${aiLine||([...msgs].reverse().find(m=>m.who==='ai')||{}).text||(phase==='connecting'?'Звоню Ворди…':'')}</p>`:null}
-      ${!end?html`<p className="call-live">${meLine||(muted?'Микрофон выключен':phase==='live'?'Говори — Ворди слушает':'')}</p>`:null}
+      ${!end&&!lesson&&meLine?html`<p className="call-live">${meLine}</p>`:null}
       ${fixes.length&&!end?html`<div className="t-fix live-fix"><s>${fixes[fixes.length-1].fix.wrong}</s> → <b>${fixes[fixes.length-1].fix.right}</b></div>`:null}</div>
     ${err&&!end?html`<p className="muted call-err">${err}</p>`:null}
-    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3><p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
+    ${end?html`<div className="mk-res enter"><h3>${lesson?'Урок окончен':typed?'Разговор окончен':'Звонок завершён'}</h3>
+        ${lesson&&R.current.res?html`<div className="vl-stars" aria-label=${R.current.res.stars+' из 3 звёзд'}>${[1,2,3].map(i=>html`<span key=${i} className=${i<=R.current.res.stars?'on':''}>★</span>`)}</div>
+          <p className="vl-score">Без ошибок: <b>${R.current.res.ok}</b> из ${R.current.res.total} заданий</p>`:null}
+        ${lesson&&R.current.summary?html`<div className="lb-sum">🏁 <b>${R.current.summary.good}</b>${R.current.summary.review?html`<span>Повторить: ${R.current.summary.review}</span>`:null}</div>`:null}<p>${mineN} ${plural(mineN,'реплика','реплики','реплик')}${lesson?'':' · слов из повторения: '+used.length+' из '+targets.length}</p>
         ${fixes.length?html`<h4>Что поправить</h4><p className="muted fix-note">✎ Эти ошибки добавлены в твоё повторение — Ворди спросит их в ближайшие дни.</p><div className="mk-fixes">${fixes.map((m,i)=>html`<div key=${i} className="mk-fix"><s>${m.fix.wrong}</s><b>${m.fix.right}</b><small>${m.fix.why}</small></div>`)}</div>`:html`<p className="muted">Ошибок Ворди не заметил — так держать!</p>`}
+        ${!typed?html`<${PronReview} r=${R.current} update=${update} said=${msgs.filter(m=>m.who==='me').map(m=>m.text).join(' / ')}/>`:null}
         <details className="call-log"><summary>Весь разговор</summary>${msgs.filter(m=>m.who!=='fix').map((m,i)=>html`<p key=${i}><b>${m.who==='ai'?'Ворди':'Ты'}:</b> ${m.text}</p>`)}</details>
         <${AiReport} what="live-звонок" text=${msgs.filter(m=>m.who!=='fix').map(m=>(m.who==='ai'?'AI: ':'Me: ')+m.text).join('\n')}/>
-        <div className="actions"><button className="btn" onClick=${onExit}>Готово</button></div></div>`
-    :html`<div className="call-ctrl"><button className="btn ghost" id="live-mute" aria-pressed=${muted} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'Включить микрофон':'Выключить микрофон'}</button>
+        <div className="actions">${lesson&&fixes.length?html`<button className="btn ghost" id="vl-review" onClick=${()=>{ const ids=fixes.map(m=>'fx-'+String(m.fix.right).trim().slice(0,80).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)); onExit(); setTimeout(()=>window.dispatchEvent(new CustomEvent('wordy:fixreview',{detail:{ids}})),400); }}>Закрепить ошибки</button>`:null}<button className="btn" onClick=${onExit}>Готово</button></div></div>`
+    :html`<div className="call-ctrl"><button className=${'mic-round'+(muted?' off':phase==='live'?' on':'')} id="live-mute" aria-pressed=${muted} aria-label=${muted?'Включить микрофон':'Выключить микрофон'} title=${muted?'Микрофон выключен':'Ворди слушает'} onClick=${()=>{ R.current.muted=!muted; setMuted(!muted); }}>${muted?'🔇':'🎙'}</button>
         ${assess?html`<button className="btn" id="lc-finish" disabled=${phase!=='live'||mineN<3} onClick=${()=>{ try{ R.current.session.send('(Please finish the level check now: call finish_assessment, then say a short goodbye.)'); }catch(e){} }}>${mineN<3?'Поговори ещё немного…':'Узнать уровень'}</button>`
           :html`<button className="btn call-hang" id="call-hang" disabled=${phase==='connecting'} onClick=${finish}>${lesson?'Завершить урок':'Завершить звонок'}</button>`}</div>
-      <p className="hint-line">Говори как с человеком. Чтобы перебить Ворди, скажи громче. В наушниках нажми 🎧 — тогда можно перебивать и тихо.</p>`}
+`}
   </section>`; }
 function CallScreen({st,update,onExit}){ const ai=useSample();
   const [liveSc,setLiveSc]=useState(null), [noLive,setNoLive]=useState(false);
@@ -5172,7 +5325,7 @@ function CallScreen({st,update,onExit}){ const ai=useSample();
     update(s=>{ let p={}; targets.filter(w=>used.includes(w.en.toLowerCase())).forEach(w=>{ const cur={...s,...p}; p={...p,...memGrade(cur,w.id,3,.8)}; }); return {...p,xp:s.xp+mineN*5+used.length*10,coins:s.coins+used.length*5}; }); };
   if(liveSc) return html`<${LiveCall} st=${st} update=${update} onExit=${onExit} sc=${liveSc} onFallback=${()=>{ const x=liveSc; setLiveSc(null); setNoLive(true); begin(x); }}/>`;
   if(!sc) return html`<section className="mk-sec call"><div className="sess-top"><${ExitBtn} onExit=${onExit}/><div className="gm-h"><b>Видеозвонок с Ворди</b><span className="muted">${st.level||'A2'}</span></div></div>
-    <div className="mk-res enter call-pick"><h3>Кому звоним?</h3><p className="muted">Говори вслух, как по телефону: замолчал — Ворди сам услышит, что ты закончил, и ответит голосом. Включи звук и разреши микрофон.</p>
+    <div className="mk-res enter call-pick"><h3>Кому звоним?</h3><p className="muted">Говори вслух, как по телефону. Включи звук и разреши микрофон.</p>
       <div className="talk-sc">${TALK_SC.map(x=>html`<button key=${x[0]} className="prac-card" id=${'call-'+x[0]} onClick=${()=>canLive?(SFX('pop'),setLiveSc(x)):begin(x)}><span><b>${x[1]}</b><small>${x[3]}</small></span></button>`)}</div></div></section>`;
   const last=[...msgs].reverse().find(m=>m.who==='ai'), mineN=msgs.filter(m=>m.who==='me').length;
   const status={listening:'Слушаю тебя…',recording:'Говори, потом нажми «Я закончил»',thinking:'Ворди думает…',speaking:'Ворди говорит',idle:''}[phase];
@@ -5225,7 +5378,7 @@ function accCertCode(){ let s=''; const a=new Uint32Array(8); try{ crypto.getRan
 const ACC_PROVIDERS={google:{name:'Google',id:'google.com'},microsoft:{name:'Microsoft',id:'microsoft.com'}};
 const accProviders=()=>(window.WORDY_AUTH||[]).filter(k=>ACC_PROVIDERS[k]);
 const ACC_AVATARS=['navy','orange','green','plum','teal','rose','sand','slate'];
-const ACC_ERR=__WD[1285];
+const ACC_ERR=__WD[1290];
 const accErrText=e=>{ const k=(e&&e.code)||e; if(ACC_ERR[k]==='') return ''; return ACC_ERR[k]||((e&&e.message)?String(e.message).slice(0,140):'Что-то пошло не так. Попробуй ещё раз.'); };
 const accE=code=>{ const e=new Error(ACC_ERR[code]||code); e.code=code; return e; };
 
@@ -6160,7 +6313,7 @@ function certHtml(c){ const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,ch=>({
 function CertsSection({st}){ const {be,user}=useAcc(); const certs=useLive(cb=>be&&user?be.myCerts(cb):(cb([]),()=>{}),[be,user&&user.uid])||[]; const [busy,setBusy]=useState(''), [msg,setMsg]=useState(''), [err,setErr]=useState(null);
   useEffect(()=>{ setMsg(''); setErr(null); },[user&&user.uid]);
   const lv=CEFR.map(L=>({L,p:levelProgress(st,L)})); const done=lv.filter(x=>x.p.complete); const next=lv.find(x=>!x.p.complete&&lvlIdx(x.L)>=lvlIdx(st.level||'A1'));
-  const byL=Object.fromEntries(certs.map(c=>[c.level,c]));
+  const byL=Object.fromEntries(certs.map(c=>[c.level,c])); if(!done.length) return null; /* nothing earned yet: the level ladder above already shows what is needed */
   const get=async x=>{ setErr(null); setMsg(''); setBusy(x.L); try{ const c=byL[x.L]||await be.issueCert({level:x.L,words:x.p.wd,gram:x.p.gd});
       const res=await saveFile('wordy-sertifikat-'+x.L+'-'+String(c.name||'').replace(/\s+/g,'-').slice(0,30)+'.html',certHtml({...c,code:c.code}));
       SFX('fanfare'); W('react','cheer'); setMsg(res==='saved'||res==='link'?'Сертификат '+x.L+' сохранён. Открой файл в браузере, чтобы распечатать или сохранить в PDF. Код: '+c.code:'Сертификат выдан (код '+c.code+'), но файл не сохранился.'); }catch(e){ setErr(e); } setBusy(''); };
@@ -6228,7 +6381,7 @@ function useBack(active,fn){ const ref=useRef(fn); ref.current=fn; const [n,setN
     return ()=>{ const i=BACK_STACK.indexOf(h); if(i>=0) BACK_STACK.splice(i,1); if(!h.done){ backSkip++; try{ history.back(); }catch(e){ backSkip--; } } }; },[!!active,n]); }
 
 /* ================= FIRST-RUN TOUR: highlights the real interface, one idea per step ================= */
-const TOUR_STEPS=__WD[1286];
+const TOUR_STEPS=__WD[1291];
 function Tour({onDone}){ const [i,setI]=useState(0), [box,setBox]=useState(null); const cardRef=useRef(null);
   const steps=useMemo(()=>TOUR_STEPS.filter(s=>!s.sel||document.querySelector(s.sel)),[]); const s=steps[Math.min(i,steps.length-1)];
   useEffect(()=>{ const r=document.documentElement; r.classList.add('in-game','in-tour'); return ()=>r.classList.remove('in-game','in-tour'); },[]);
@@ -6428,53 +6581,48 @@ const CW_TOPICS=[
  {id:'colours',cefr:'A1',name:'Цвета',task:'Лови цвета',good:'red blue green yellow black white pink purple orange brown grey gold'.split(' '),bad:'big small tall happy cold fast slow old new long short hot'.split(' '),note:'прилагательное, но не цвет'},
  {id:'clothes',cefr:'A1',name:'Одежда',task:'Лови одежду',good:'shirt jacket dress skirt coat jeans socks scarf hat boots sweater shorts gloves trousers'.split(' '),bad:'bed sofa carpet pillow curtain mirror lamp shelf cup phone clock towel'.split(' '),note:'не одежда'},
  {id:'jobs',cefr:'A1',name:'Профессии',task:'Лови профессии',good:'doctor teacher driver nurse pilot farmer cook dentist lawyer engineer waiter artist singer builder'.split(' '),bad:'hospital school bus kitchen office farm plane court restaurant song brick paint'.split(' '),note:'место или вещь, а не профессия'},
- __WD[1287],
- __WD[1288],
- __WD[1289],
+ __WD[1292],
+ __WD[1293],
+ __WD[1294],
  {id:'plural',cefr:'A2',name:'Множественное число',task:'Лови правильное множественное число',good:'children men women mice teeth feet boxes buses cities babies knives leaves potatoes people sheep'.split(' '),
   bad:[["childs","children"],["mans","men"],["womans","women"],["mouses","mice"],["tooths","teeth"],["foots","feet"],["boxs","boxes"],["citys","cities"],["babys","babies"],["knifes","knives"],["leafs","leaves"],["peoples","people"],["sheeps","sheep"]]},
  {id:'past_irr',cefr:'A2',name:'Past Simple: неправильные глаголы',task:'Лови правильный Past Simple',good:'went saw took gave ate drank wrote bought thought brought taught caught flew swam began spoke knew left felt found made came ran sat'.split(' '),
-  bad:__WD[1290]},
+  bad:__WD[1295]},
  {id:'past_reg',cefr:'A2',name:'Окончание -ed',task:'Лови правильное написание с -ed',good:'stopped studied planned played tried cried danced hoped carried enjoyed shopped lived cooked worked'.split(' '),
   bad:[["stoped","stopped"],["studyed","studied"],["planed","planned"],["plaied","played"],["tryed","tried"],["cryed","cried"],["danceed","danced"],["hopeed","hoped"],["carryed","carried"],["shoped","shopped"],["liveed","lived"],["enjoied","enjoyed"]]},
- __WD[1291],
- __WD[1292],
- __WD[1293],
+ __WD[1296],
+ __WD[1297],
+ __WD[1298],
  {id:'uncount',cefr:'A2',name:'Неисчисляемые',task:'Лови неисчисляемые существительные',good:'water advice information furniture news money luggage homework rice music weather knowledge traffic bread milk research'.split(' '),bad:'apple chair idea car coin egg suggestion suitcase song cup fact problem'.split(' '),note:'исчисляемое: можно сказать two …s'},
  {id:'adverbs',cefr:'A2',name:'Наречия',task:'Лови наречия (как? каким образом?)',good:'quickly well hard fast carefully slowly happily badly easily loudly quietly early late beautifully'.split(' '),
-  bad:__WD[1294]},
- __WD[1295],
- __WD[1296],
- {id:'syn_big',cefr:'A2',name:'Синонимы big',task:'Лови синонимы слова big',good:'large huge enormous giant vast massive immense gigantic'.split(' '),bad:'tiny small little narrow slim minor short thin'.split(' '),note:'это противоположное: «маленький»'},
- {id:'syn_happy',cefr:'A2',name:'Синонимы happy',task:'Лови синонимы слова happy',good:'glad cheerful delighted joyful pleased content thrilled overjoyed'.split(' '),bad:'sad upset gloomy miserable angry worried bored lonely'.split(' '),note:'это не «счастливый»'},
- __WD[1297],
- {id:'v3',cefr:'B1',name:'Третья форма глагола',task:'Лови третью форму (V3)',good:'gone seen taken given eaten written been done broken chosen forgotten spoken known flown swum begun'.split(' '),
-  bad:__WD[1298]},
- __WD[1299],
+  bad:__WD[1299]},
  __WD[1300],
  __WD[1301],
+ {id:'syn_big',cefr:'A2',name:'Синонимы big',task:'Лови синонимы слова big',good:'large huge enormous giant vast massive immense gigantic'.split(' '),bad:'tiny small little narrow slim minor short thin'.split(' '),note:'это противоположное: «маленький»'},
+ {id:'syn_happy',cefr:'A2',name:'Синонимы happy',task:'Лови синонимы слова happy',good:'glad cheerful delighted joyful pleased content thrilled overjoyed'.split(' '),bad:'sad upset gloomy miserable angry worried bored lonely'.split(' '),note:'это не «счастливый»'},
  __WD[1302],
- {id:'spelling',cefr:'B1',name:'Правописание',task:'Лови слова без ошибок',good:'necessary beautiful because friend which believe separate tomorrow different really until address receive government'.split(' '),
+ {id:'v3',cefr:'B1',name:'Третья форма глагола',task:'Лови третью форму (V3)',good:'gone seen taken given eaten written been done broken chosen forgotten spoken known flown swum begun'.split(' '),
   bad:__WD[1303]},
- {id:'formal',cefr:'B2',name:'Формальные слова (IELTS)',task:'Лови формальные слова для эссе',good:'obtain purchase assist commence require sufficient numerous approximately demonstrate significant inquire reside consequently furthermore'.split(' '),
-  bad:__WD[1304]},
+ __WD[1304],
  __WD[1305],
  __WD[1306],
  __WD[1307],
+ {id:'spelling',cefr:'B1',name:'Правописание',task:'Лови слова без ошибок',good:'necessary beautiful because friend which believe separate tomorrow different really until address receive government'.split(' '),
+  bad:__WD[1308]},
+ {id:'formal',cefr:'B2',name:'Формальные слова (IELTS)',task:'Лови формальные слова для эссе',good:'obtain purchase assist commence require sufficient numerous approximately demonstrate significant inquire reside consequently furthermore'.split(' '),
+  bad:__WD[1309]},
+ __WD[1310],
+ __WD[1311],
+ __WD[1312],
 ];
 CW_TOPICS.push(
  {id:'numbers',cefr:'A1',name:'Числа',task:'Лови числа',good:'one two three four five six seven eight nine ten eleven twelve'.split(' '),bad:'red cat book sun milk chair hand blue tree fish bag pen'.split(' '),note:'не число'},
  {id:'family',cefr:'A1',name:'Семья',task:'Лови членов семьи',good:'mother father sister brother aunt uncle cousin grandma grandpa daughter son wife husband'.split(' '),bad:'teacher doctor friend neighbour driver pilot farmer nurse boss classmate'.split(' '),note:'не родственник'},
- __WD[1308],
- __WD[1309],
- __WD[1310],
- __WD[1311],
- {id:'weather',cefr:'A2',name:'Погода',task:'Лови слова о погоде',good:'sunny rainy windy cloudy snowy foggy stormy hot cold warm freezing'.split(' '),bad:'happy hungry tired angry busy sleepy lazy proud'.split(' '),note:'это про людей, не про погоду'},
- __WD[1312],
  __WD[1313],
  __WD[1314],
  __WD[1315],
  __WD[1316],
+ {id:'weather',cefr:'A2',name:'Погода',task:'Лови слова о погоде',good:'sunny rainy windy cloudy snowy foggy stormy hot cold warm freezing'.split(' '),bad:'happy hungry tired angry busy sleepy lazy proud'.split(' '),note:'это про людей, не про погоду'},
  __WD[1317],
  __WD[1318],
  __WD[1319],
@@ -6484,7 +6632,12 @@ CW_TOPICS.push(
  __WD[1323],
  __WD[1324],
  __WD[1325],
- __WD[1326]
+ __WD[1326],
+ __WD[1327],
+ __WD[1328],
+ __WD[1329],
+ __WD[1330],
+ __WD[1331]
 );
 
 const CW_LV=['A1','A2','B1','B2','C1','IELTS','SAT'];
@@ -6914,7 +7067,7 @@ const ESC_ROOMS=[
    {id:'desk',name:'desk',art:EA.desk({x:104,w:92}),act:{type:'look',text:"You open the [drawer|ящик]. There are pencils and an old [comic|комикс]. Nothing useful."}},
    {id:'bed',name:'bed',art:EA.bed({x:196}),act:{type:'look',text:"The bed is not made. Under the [blanket|одеяло] there is only one sock."}},
    {id:'teddy',name:'teddy bear',art:EA.teddy({x:300,y:216}),act:{type:'look',text:"A [teddy bear|плюшевый мишка] holds a card: «The code is 999». Hmm… teddy bears always [lie|врут]!"}},
-   {id:'pillow',name:'pillow',art:EA.pillow({x:240,y:226}),act:__WD[1327]},
+   {id:'pillow',name:'pillow',art:EA.pillow({x:240,y:226}),act:__WD[1332]},
    {id:'plant',name:'plant',art:EA.plant({x:84,y:300}),act:{type:'look',text:"A green plant in a pot. It needs some water."}},
    {id:'rug',name:'rug',art:EA.rug({x:230,y:372}),act:{type:'look',text:"A soft red [rug|коврик]. You look under it — nothing, only dust."}},
    {id:'box',name:'box',art:EA.box({x:120,y:330}),act:{type:'lock',kind:'digits',len:3,answer:'472',prompt:'The box has a lock with three numbers.',open:{give:'key',text:"Click! Inside the box there is a small golden [key|ключ]."}}}],
@@ -6949,11 +7102,11 @@ const ESC_ROOMS=[
  {id:'r4',cefr:'B1',title:'The Old Library',ru:'Старая библиотека',intro:'Профессор Грей спрятал выход из своей библиотеки за загадками. Читай внимательно: важна каждая деталь.',
   bg:{wall:'#5E7A6B',pat:'panels',floor:'wood',fc:'#8A5A36'},
   objs:[
-   {id:'shelf',name:'bookshelf',art:EA.shelf(__WD[1328]),act:{type:'look',text:"Four bright books stand on the middle shelf. Each has a number on its [spine|корешок]: red — 3, green — 1, yellow — 6, blue — 8."}},
+   {id:'shelf',name:'bookshelf',art:EA.shelf(__WD[1333]),act:{type:'look',text:"Four bright books stand on the middle shelf. Each has a number on its [spine|корешок]: red — 3, green — 1, yellow — 6, blue — 8."}},
    {id:'painting',name:'painting',art:EA.frame({x:166,y:60,w:100,h:70,kind:'ship'}),act:{type:'need',item:'uv',locked:"An old painting of a ship at sea. Nothing special… or is there?",text:"Under the UV light, [hidden|скрытые] words appear on the painting: «The exit word is the past form of the verb GO.»"}},
    {id:'door',name:'door',art:EA.door({x:284,c:'#6D4C41'}),act:{type:'lock',kind:'word',answer:'went',prompt:'A lock with letters. Enter the exit word.',exit:true}},
    {id:'table',name:'table',art:EA.table({x:150,w:116}),act:{type:'look',text:"An old wooden table. It smells of [dust|пыль] and coffee."}},
-   {id:'letter',name:'letter',art:EA.paper({x:176,y:236,r:-6,w:30,h:20}),act:__WD[1329]},
+   {id:'letter',name:'letter',art:EA.paper({x:176,y:236,r:-6,w:30,h:20}),act:__WD[1334]},
    {id:'candle',name:'candle',art:EA.candle({x:246,y:232}),act:{type:'look',text:"A candle and a pen. The pen has [run out of|закончились] ink."}},
    {id:'safe',name:'safe',art:EA.safe({x:176,y:306}),act:{type:'lock',kind:'digits',len:4,answer:'6831',prompt:'The safe has a lock with four numbers.',open:{give:'uv',text:"The safe opens! Inside there is a [UV lamp|ультрафиолетовая лампа] and a note: «Some secrets are [invisible|невидимые].»"}}},
    {id:'globe',name:'globe',art:EA.globe({x:66,y:322}),act:{type:'look',text:"An old globe. Someone has [circled|обвёл] London in red. A clue? No — it's just the professor's [hometown|родной город]."}}],
@@ -7003,14 +7156,14 @@ const ESC_ROOMS=[
  {id:'r8',cefr:'B1',title:"The Detective's Office",ru:'Кабинет детектива',intro:'Из музея украли Золотой кубок. Ты заперт в кабинете детектива, пока не найдёшь лжеца.',
   bg:{wall:'#E4DCCB',pat:'panels',floor:'wood'},
   objs:[
-   {id:'board',name:'board',art:EA.board({x:104,y:44,w:140,h:96}),act:__WD[1330]},
+   {id:'board',name:'board',art:EA.board({x:104,y:44,w:140,h:96}),act:__WD[1335]},
    {id:'poster',name:'poster',art:EA.frame({x:262,y:52,w:80,h:76,kind:'poster',text:'CITY|MUSEUM|since 1987'}),act:{type:'look',text:"CITY MUSEUM — open since 1987. Come and see the Golden Cup!"}},
    {id:'door',name:'door',art:EA.door({x:16}),act:{type:'lock',kind:'digits',len:4,answer:'1987',prompt:'The door has a lock with four numbers.',exit:true}},
    {id:'desk',name:'desk',art:EA.desk({x:100,w:168,c:'#6B4A2E'}),act:{type:'look',text:"The detective's desk. A cup of cold coffee and many papers."}},
    {id:'case',name:'case file',art:EA.paper({x:108,y:214,r:-3,w:34,h:22,c:'#F5D38A'}),act:{type:'note',title:'CASE: The Golden Cup',text:"The Golden Cup was [stolen|украден] from the City Museum last Sunday at 9 p.m. There are three [suspects|подозреваемые]. Their [statements|показания] are on the board. One of them is [lying|лжёт]. Find the liar — the name opens the [cabinet|шкаф]."}},
    {id:'paper',name:'newspaper',art:EA.paper({x:200,y:214,r:5,w:38,h:22,c:'#EDEDE4'}),act:{type:'note',title:'City News — Monday',text:"«Luigi's restaurant is [closed|закрыт] on Sundays and Mondays,» says the [owner|владелец]. «We are open from Tuesday to Saturday.»\nAlso in the news: the new film «Night Train» is two and a half hours long."}},
    {id:'phone',name:'phone',art:EA.phone({x:166,y:218}),act:{type:'note',title:'A voice message',text:"«Hello, Mr White. This is your doctor. Please take your [medicine|лекарство] three times a day and stay in bed until Monday.»"}},
-   {id:'filecab',name:'cabinet',art:EA.filecab({x:288,y:206}),act:__WD[1331]}],
+   {id:'filecab',name:'cabinet',art:EA.filecab({x:288,y:206}),act:__WD[1336]}],
   items:{ticket:{em:'🎟️',name:'ticket',ru:'билет'}},
   chain:[['case','Начни с папки с делом на столе.'],['board','Показания подозреваемых — на доске.'],['paper','Сравни показания с газетой.'],['filecab','Ресторан Luigi\'s по воскресеньям закрыт — лжёт Mr Brown.'],['poster','Год открытия музея — на постере.'],['door','Код двери — 1987.']]},
  {id:'r9',cefr:'B2',title:'The Museum Hall',ru:'Зал музея',intro:'Музей закрылся, а ты остался в зале. Выход открывается кодом — разберись в табличках экспонатов.',
@@ -7030,7 +7183,7 @@ const ESC_ROOMS=[
   bg:{wall:'#E3EEF2',pat:'tiles',floor:'tile',fc:'#B9C4CC'},
   objs:[
    {id:'lights',name:'lights',art:EA.lights({x:88,y:54,on:'green'}),act:{type:'look',text:"A panel with two lights. The red light is [off|выключен]. The green light is on."}},
-   {id:'rules',name:'lab rules',art:EA.frame({x:174,y:40,w:100,h:76,kind:'poster',text:'LAB RULES|Read carefully!'}),act:__WD[1332]},
+   {id:'rules',name:'lab rules',art:EA.frame({x:174,y:40,w:100,h:76,kind:'poster',text:'LAB RULES|Read carefully!'}),act:__WD[1337]},
    {id:'thermo',name:'thermometer',art:EA.thermo({x:110,y:110,t:18}),act:{type:'look',text:"The [thermometer|термометр] shows 18 °C."}},
    {id:'door',name:'door',art:EA.door({x:302,w:54,c:'#9AA5B1'}),act:{type:'look',text:"The door is locked [electronically|электронно]. It is [controlled|управляется] by the computer."}},
    {id:'bottles',name:'bottles',art:EA.bottles({x:178,y:140,list:['#3E7CB1','#4E9A55','#4E9A55','#3E7CB1','#4E9A55','#4E9A55','#3E7CB1','#4E9A55']}),act:{type:'look',text:"A shelf with bottles: three blue ones and five green ones."}},
@@ -7180,7 +7333,7 @@ ESC_ROOMS.push(
    {id:'map',name:'map',art:EA.frame({x:86,y:54,w:110,h:72,kind:'map'}),act:{type:'look',text:"A treasure map. A red X marks a spot on the island. Very old, very [mysterious|загадочно]."}},
    {id:'door',name:'door',art:EA.door({x:14,c:'#5E3A22'}),act:{type:'need',item:'key',locked:"A heavy wooden door with an iron lock.",exit:true}},
    {id:'table',name:'table',art:EA.table({x:110,y:254,w:140,c:'#6B4A2E'}),act:{type:'look',text:"The captain's table. It is covered with wax and [scratches|царапины]."}},
-   {id:'log',name:'logbook',art:EA.paper({x:150,y:238,r:-3,w:34,h:22,c:'#E8D9A8'}),act:__WD[1333]},
+   {id:'log',name:'logbook',art:EA.paper({x:150,y:238,r:-3,w:34,h:22,c:'#E8D9A8'}),act:__WD[1338]},
    {id:'candle',name:'candle',art:EA.candle({x:226,y:236}),act:{type:'look',text:"A candle in a [brass|латунный] holder. It's almost [burnt out|догорела]."}},
    {id:'barrel',name:'barrel',art:EA.barrel({x:290,y:292}),act:{type:'look',text:"A barrel of water. Someone scratched «77» on it. Pirates love lies."}},
    {id:'chest',name:'chest',art:EA.chest({x:60,y:330}),act:{type:'lock',kind:'digits',len:2,answer:'22',prompt:'The chest has a lock with two numbers.',open:{give:'key',text:"The chest opens! Gold coins… and a big iron key."}}}],
@@ -7474,7 +7627,7 @@ const DR_SCENE=({l,r,state,pick,lv,ls,rs})=>{ const pal=[['#E9DCC8','#D8C8AE','#
     ${door('l',l)}${door('r',r)}
     <rect x="0" y="0" width="360" height="420" fill="url(#drv)" opacity="0"/>
   </svg>`; };
-const DR_DIFF=__WD[1334];
+const DR_DIFF=__WD[1339];
 function DoorsGame({st,update,onExit,active}){
   const rd=(k,v)=>{ try{ return localStorage.getItem(k)||v; }catch(e){ return v; } };
   const [phase,setPhase]=useState('menu'); const [lv,setLv]=useState(()=>rd('wordy.drlv',st.level&&CW_LV.includes(st.level)?st.level:'A2'));
@@ -7672,17 +7825,18 @@ function makePlan(s){ const items=[], due=dueWords(s).length, d=s.daily;
   const atLv=i=>!gKnown(s,i)&&gOpen(s,i);
   let li=-1; for(let i=0;i<GL.length;i++){ const sN=(s.gstars||{})[GL[i].id]||0; if(sN===1&&atLv(i)){ li=i; break; } }
   if(li<0) for(let i=0;i<GL.length;i++){ if(!((s.gstars||{})[GL[i].id])&&atLv(i)){ li=i; break; } }
-  if(li>=0) items.push({id:'lesson',i:li,weak:((s.gstars||{})[GL[li].id]||0)===1});
+  if(li>=0) items.push({id:'lesson',i:li,weak:((s.gstars||{})[GL[li].id]||0)===1,s0:(s.gstars||{})[GL[li].id]||0});
   const dn=new Date(), gi=(dn.getFullYear()*372+dn.getMonth()*31+dn.getDate())%PLAN_GAMES.length; items.push({id:'game',g:PLAN_GAMES[gi][0],name:PLAN_GAMES[gi][1]});
   return {day:dayKey(),items:items.slice(0,4),base:{reviews:s.reviews||0,stars:gStarsTotal(s),games:gamesPlayed(s)},rewarded:false}; }
 function planDone(s,p,it){ if(it.id==='review') return (s.reviews||0)>p.base.reviews||dueWords(s).length===0;
-  if(it.id==='daily') return !!(s.daily&&s.daily.done); if(it.id==='lesson') return gStarsTotal(s)>p.base.stars||((s.gstars||{})[GL[it.i].id]||0)>=2&&!it.weak||((s.gstars||{})[GL[it.i].id]||0)>=(it.weak?2:1);
+  if(it.id==='daily') return !!(s.daily&&s.daily.done&&s.daily.day===p.day); if(it.id==='lesson'){ const n=(s.gstars||{})[GL[it.i].id]||0; return n>(it.s0!=null?it.s0:it.weak?1:0); }
   if(it.id==='game') return gamesPlayed(s)>p.base.games; return false; }
 function planLine(s,p){ const names=p.items.map(it=>it.id==='review'?'повторить '+it.n+' '+plural(it.n,'слово','слова','слов'):it.id==='daily'?'выучить слова дня':it.id==='lesson'?(it.weak?'подтянуть урок «'+GL[it.i].title+'»':'урок «'+GL[it.i].title+'»'):'сыграть в «'+it.name+'»');
   return names.length?'План на сегодня: '+names.join(', ')+'. Поехали?':'Сегодня можно просто поиграть!'; }
-function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
+function PlanCard({st,update,startReview,startDaily,openLevel,openGame,embed}){
   const p=st.plan&&st.plan.day===dayKey()?st.plan:null;
-  useEffect(()=>{ if(!st.level) return; const bad=p&&p.items.some(it=>it.id==='lesson'&&gKnown(st,it.i)); if(!p||bad||(p&&p.lvl&&p.lvl!==st.level)) update(s=>({plan:{...makePlan(s),lvl:s.level}})); },[st.level,p&&p.day]);
+  useEffect(()=>{ if(!st.level) return; const dl=st.daily, noDaily=p&&dl&&dl.day===dayKey()&&!dl.done&&dl.ids&&dl.ids.length&&!p.items.some(it=>it.id==='daily')&&!p.items.some(it=>planDone(st,p,it));
+    const bad=p&&(noDaily||p.items.some(it=>it.id==='lesson'&&gKnown(st,it.i))); if(!p||bad||(p&&p.lvl&&p.lvl!==st.level)) update(s=>({plan:{...makePlan(s),lvl:s.level}})); },[st.level,p&&p.day,st.daily&&st.daily.day]);
   const done=p?p.items.map(it=>planDone(st,p,it)):[], all=p&&p.items.length&&done.every(Boolean), n=done.filter(Boolean).length;
   useEffect(()=>{ if(!p||!all||p.rewarded) return; update(s=>({coins:s.coins+30,plan:{...s.plan,rewarded:true}})); setTimeout(()=>{ SFX('fanfare'); FX('rain',90); W('react','dance'); W('say','План на сегодня выполнен! +30 монет. Горжусь тобой!',0,true); },600); },[all,p&&p.rewarded]);
   // morning greeting once a day
@@ -7696,6 +7850,8 @@ function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
   const row=(it,k)=>{ const d=done[k], title=it.id==='review'?'Повтори '+it.n+' '+plural(it.n,'слово','слова','слов'):it.id==='daily'?'Слова дня':it.id==='lesson'?(it.weak?'Подтяни урок':'Урок грамматики'):'Игра дня',
       sub=it.id==='review'?'Они как раз начали забываться':it.id==='daily'?it.n+' '+plural(it.n,'новое слово','новых слова','новых слов'):it.id==='lesson'?'«'+GL[it.i].title+'»'+(it.weak?' — сейчас 1 звезда':''):'«'+it.name+'»';
     return html`<li key=${it.id} className=${d?'done':''}><span className="pl-chk" aria-hidden="true">${d?'✓':k+1}</span><span className="pl-main"><b>${title}</b><small>${sub}</small></span>${d?html`<span className="pl-ok">Готово</span>`:html`<button className="btn small" id=${'plan-'+it.id} onClick=${()=>go(it)}>${it.id==='game'?'Играть':'Начать'}</button>`}</li>`; };
+  if(embed) return html`<div className=${'plan-card pl-embed'+(all?' all':'')}><ul className="pl-list">${p.items.map(row)}</ul>
+    <p className="pl-reward">${all?'✓ План выполнен — можно отдыхать или играть':html`${I.coin()} +30 монет за весь план`}</p></div>`;
   return html`<section className=${'plan-card enter'+(all?' all':'')} aria-label="План на сегодня">
     <div className="pl-h"><span className="pl-face" aria-hidden="true"><i></i><i></i></span><div><b>${all?'План выполнен!':'План от Wordy на сегодня'}</b><small>${all?'Ты сделал всё, что я задумал. Можно отдыхать или играть.':'Я собрал его по твоему прогрессу'}</small></div><span className="pl-n">${n}/${p.items.length}</span></div>
     <div className="pl-bar"><i style=${{width:(n/p.items.length*100)+'%'}}></i></div>
@@ -7705,8 +7861,8 @@ function PlanCard({st,update,startReview,startDaily,openLevel,openGame}){
 }
 
 /* ---- Wordy's House: rooms to upgrade and decorate, plus the wardrobe ---- */
-const HS_WALLS=__WD[1335];
-const HS_FLOORS=__WD[1336];
+const HS_WALLS=__WD[1340];
+const HS_FLOORS=__WD[1341];
 const C=(name,price,c)=>({name,price,c});
 const HS_ROOMS=[
  {id:'living',name:'Гостиная',houseLv:1,wall:'cream',floor:'wood',light:{light:'window',lx:200,ly:80},
@@ -7780,6 +7936,12 @@ function HouseArt({lv}){ const w=[150,190,230,270][lv-1], x=180-w/2, h=[90,110,1
     <rect x="150" y="250" width="60" height="50" fill="#D9C2A0"/>
   </svg>`; }
 const HS_EM={sofa:'🛋️',rug:'🟫',plant:'🌿',picture:'🖼️',lamp:'💡',shelf:'📚',tv:'📺',clock:'🕰️',bed:'🛏️',nightstand:'🕯️',teddy:'🧸',wardrobe:'🚪',fridge:'🧊',counter:'🗄️',stove:'🍳',wallcab:'🗃️',table:'🍽️',cake:'🎂',desk:'🪑',computer:'💻',globe:'🌍',board:'📌'};
+const FREEZE_PRICE=150, FREEZE_MAX=2;
+function FreezeCard({st,update}){ const n=st.freezes|0, full=n>=FREEZE_MAX, poor=st.coins<FREEZE_PRICE;
+  const buy=e=>{ if(full) return; if(poor){ SFX('err'); W('say','Не хватает монет — ещё '+(FREEZE_PRICE-st.coins)+'!'); return; } SFX('coin'); FX('burst',30,e.currentTarget); update(s=>({coins:s.coins-FREEZE_PRICE,freezes:(s.freezes|0)+1})); W('react','happy'); W('say','Серия под защитой! Если пропустишь день — я её заморожу.'); };
+  return html`<div className="fz-card"><span className="fz-ic" aria-hidden="true">❄️</span><span className="fz-main"><b>Заморозка серии</b><small>Пропустишь день — серия не сгорит. У тебя ${n} из ${FREEZE_MAX}.</small>
+      <span className="fz-dots" aria-hidden="true">${Array.from({length:FREEZE_MAX},(_,i)=>html`<i key=${i} className=${i<n?'on':''}>❄</i>`)}</span></span>
+    <button className=${'btn small'+(poor&&!full?' poor':'')} id="buy-freeze" disabled=${full} onClick=${buy}>${full?'Максимум':html`${I.coin()} ${FREEZE_PRICE}`}</button></div>`; }
 function House({st,update,preview,setPreview}){
   const [view,setView]=useState('home'); const [rid,setRid]=useState(null); const [grp,setGrp]=useState('furn'); const [tab,setTab]=useState(null); const [prev,setPrev]=useState(null);
   const h=hsState(st), room=HS_ROOMS.find(r=>r.id===rid), rs=room?hsRoom(h,room):null;
@@ -7824,6 +7986,7 @@ function House({st,update,preview,setPreview}){
   const eq=st.equip||{}, worn=SLOT_ORDER.map(sl=>WORDY_ITEMS.find(i=>i.id===eq[sl])).filter(Boolean);
   return html`<section className="hs hs2">
     <div className="page-h"><div><h1>Домик</h1></div></div>
+    <${FreezeCard} st=${st} update=${update}/>
     <button className="hs-wcard" id="hs-r-wardrobe" onClick=${()=>{ SFX('pop'); setView('wardrobe'); W('react','happy'); W('say','Что сегодня наденем?'); }}>
       <span className="hs-wc-art" aria-hidden="true"><span className="wr-rack">${['#E74C3C','#3E7CB1','#F1C40F','#27AE60','#8E44AD'].map((c,i)=>html`<i key=${i} style=${{background:c}}></i>`)}</span></span>
       <span className="hs-wc-main"><b>Гардероб</b><small>${worn.length?'Сейчас: '+worn.map(i=>i.name.toLowerCase()).join(', '):'Наряди Wordy: шапки, очки, костюмы'}</small></span>
@@ -7867,7 +8030,17 @@ function trkFlush(){ if(!TRK.on) return; const fb=window.firebase; if(!fb||!fb.f
   TRK.sess=0; TRK.xp=0; TRK.v={}; TRK.ms-=min*60000;
   try{ fb.firestore().doc('act/'+day+'_'+TRK.aid).set(d,{merge:true}).catch(()=>{ TRK.sess+=snap.sess; TRK.xp+=snap.xp; TRK.ms+=min*60000; vk.forEach(k=>{ TRK.v[k]=(TRK.v[k]||0)+snap.v[k]; }); }); }catch(e){} }
 
-const ST_NAMES=__WD[1337];
+/* silent error report: counts of AI / live failures per device per day (no personal data), visible to the owner */
+const ERRS={e:{},last:'',n:0,t:null};
+function errLog(kind,code,msg){ try{ const k=(String(kind)+':'+String(code||'x')).toLowerCase().replace(/[^a-z0-9:_-]/g,'').slice(0,40);
+  if(!(k in ERRS.e)&&Object.keys(ERRS.e).length>=25) return; ERRS.e[k]=(ERRS.e[k]||0)+1; ERRS.last=(k+' '+String(msg||'')).replace(/AIza[0-9A-Za-z_-]{20,}/g,'…').slice(0,280); ERRS.n++;
+  clearTimeout(ERRS.t); ERRS.t=setTimeout(errFlush,15000); }catch(e){} }
+function errFlush(){ if(!TRK.on||!ERRS.n) return; const fb=window.firebase; if(!fb||!fb.firestore||!fb.apps||!fb.apps.length) return;
+  const day=dayKey(), FV=fb.firestore.FieldValue, snap={...ERRS.e}, ks=Object.keys(snap);
+  const d={aid:TRK.aid,day,ua:navigator.userAgent.slice(0,120),last:ERRS.last,e:Object.fromEntries(ks.map(k=>[k,FV.increment(snap[k])]))}; ERRS.e={}; ERRS.n=0;
+  try{ fb.firestore().doc('errs/'+day+'_'+TRK.aid).set(d,{merge:true}).catch(()=>{ ks.forEach(k=>{ ERRS.e[k]=(ERRS.e[k]||0)+snap[k]; ERRS.n++; }); }); }catch(e){} }
+window.addEventListener('pagehide',()=>errFlush());
+const ST_NAMES=__WD[1342];
 const stName=k=>ST_NAMES[k]||(k.startsWith('game:')?'Игра: '+({word:'Угадай слово',cross:'Слова из букв',space:'Космический тир',doors:'Двери',tetris:'Словопад',escape:'Побег из комнаты',catch:'Спаси Wordy'}[k.slice(5)]||k.slice(5)):k.startsWith('gram:')?'Грамматика':k);
 function stCompute(docs,today){ const days=[]; for(let i=13;i>=0;i--){ const d=new Date(today+'T12:00:00'); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
   const shift=(day,n)=>{ const d=new Date(day+'T12:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
@@ -7887,9 +8060,11 @@ function stCompute(docs,today){ const days=[]; for(let i=13;i>=0;i--){ const d=n
     d1:d1base.length?[d1,d1base.length]:null,d7:d7base.length?[d7,d7base.length]:null,
     funnel:[coh.length,learned,back],views:Object.entries(views).sort((a,b)=>b[1]-a[1]).slice(0,8),lvl:Object.entries(lv).sort((a,b)=>b[1]-a[1])}; }
 const pct=(a)=>a?Math.round(100*a[0]/a[1])+'%':'—';
-function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(false), [data,setData]=useState(null), [err,setErr]=useState(null);
+function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(false), [data,setData]=useState(null), [err,setErr]=useState(null), [errs,setErrs]=useState(null);
   const owner=window.__WORDY_TEST_OWNER||(be&&be.mode==='firebase'&&user&&user.email&&window.WORDY_OWNER&&user.email.toLowerCase()===String(window.WORDY_OWNER).toLowerCase());
   const load=()=>{ setErr(null); setData(null); const from=dayKey(-45);
+    window.firebase.firestore().collection('errs').where('day','>=',dayKey(-6)).get().then(s=>{ const tot={}, dev=new Set(), last=[]; s.docs.forEach(d=>{ const x=d.data(); dev.add(x.aid); Object.entries(x.e||{}).forEach(([k,n])=>{ tot[k]=(tot[k]||0)+(n|0); }); if(x.last) last.push([x.day,x.last]); });
+      setErrs({top:Object.entries(tot).sort((a,b)=>b[1]-a[1]).slice(0,8),dev:dev.size,sum:Object.values(tot).reduce((a,b)=>a+b,0),last:last.sort((a,b)=>b[0].localeCompare(a[0])).slice(0,3)}); }).catch(()=>setErrs({top:[],dev:0,sum:0,last:[],denied:true}));
     window.firebase.firestore().collection('act').where('day','>=',from).get().then(s=>setData(stCompute(s.docs.map(d=>d.data()),dayKey()))).catch(e=>setErr(e&&e.code==='permission-denied'?'Нет доступа: обнови правила Firestore (firebase deploy) и войди под '+window.WORDY_OWNER+'.':'Не удалось загрузить: '+(e&&e.message||e))); };
   if(!owner) return null;
   if(!open) return html`<div className="set-group"><div className="set-row"><div><strong>Статистика Wordy</strong><p>Видишь только ты: сколько людей заходит, возвращается и что открывает</p></div><button className="btn small" id="st-open" onClick=${()=>{ setOpen(true); load(); }}>Открыть</button></div></div>`;
@@ -7906,7 +8081,12 @@ function OwnerStats(){ const {be,user}=useAcc(); const [open,setOpen]=useState(f
           <ol className="st-fun">${[['Открыли Wordy',data.funnel[0]],['Сделали хоть одно задание',data.funnel[1]],['Вернулись в другой день',data.funnel[2]]].map(([t,n],i)=>html`<li key=${i}><span>${t}</span><b>${n}</b><div><i style=${{width:(data.funnel[0]?100*n/data.funnel[0]:0)+'%'}}></i></div></li>`)}</ol></div>
         <div><h4>Что открывают, 7 дней</h4><ol className="st-top">${data.views.length?data.views.map(([k,n])=>html`<li key=${k}><span>${stName(k)}</span><b>${n}</b></li>`):html`<li><span>Пока пусто</span></li>`}</ol>
           ${data.lvl.length?html`<h4>Уровни</h4><p className="st-lv">${data.lvl.map(([l,n])=>l+' · '+n).join('   ')}</p>`:null}</div></div>
+      ${errs?html`<div className="st-errs"><h4>Сбои ИИ и живых функций, 7 дней</h4>${errs.denied?html`<p className="muted">Нет доступа: задеплой новые правила Firestore (firebase deploy --only firestore).</p>`
+        :!errs.sum?html`<p className="muted">Сбоев не было 🎉</p>`:html`<p><b>${errs.sum}</b> ${plural(errs.sum,'сбой','сбоя','сбоев')} у <b>${errs.dev}</b> ${plural(errs.dev,'устройства','устройств','устройств')}</p>
+        <ol className="st-top">${errs.top.map(([k,n])=>html`<li key=${k}><span>${ERR_NAMES(k)}</span><b>${n}</b></li>`)}</ol>
+        ${errs.last.length?html`<details><summary>Последние сообщения</summary>${errs.last.map(([d,t],i)=>html`<p key=${i} className="st-errmsg"><small>${d}</small> ${t}</p>`)}</details>`:null}`}</div>`:null}
       <p className="st-note">Отзывы и сообщения об ошибках лежат в консоли Firebase → Firestore → feedback.</p></div>`}</div>`; }
+const ERR_NAMES=k=>{ const [a,b]=k.split(':'); const A={ai:'ИИ (текст)',stream:'ИИ (поток)',live:'Живой Ворди'}[a]||a, B={busy:'перегружен',rate_limited:'лимит',offline:'нет сети',load_failed:'не загрузился',handshake:'не подключился',mic:'нет доступа к микрофону',resume:'не переподключился',fail:'ошибка'}; return A+' · '+(B[(b||'').split('-')[0]]||b); };
 
 /* ================= «Ошибка в задании?» — report straight from an exercise ================= */
 const bkReport=(ctx,body)=>{ SFX('tap'); window.dispatchEvent(new CustomEvent('wordy-report',{detail:{ctx:String(ctx||''),body:String(body||'')}})); };
@@ -8099,37 +8279,40 @@ function App(){
     if(u.to) setTimeout(()=>{ W('react','happy'); W('say','Уровень '+u.to+' открыт. Начнём с новых слов!',0,true); },600); };
   const startDaily=()=>{ const d=st.daily; if(!d||d.done||!d.ids.length) return; SFX('pop'); setSession({mode:'daily',ids:d.ids,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say','Слова дня! Сначала карточки.'); };
   const openText=id=>{ SFX('pop'); setReading(id); window.scrollTo({top:0}); W('react','happy'); const t=TEXTS.find(x=>x.id===id)||{}; W('say',t.poem?'Стихи! Попробуй прочитать вслух.':t.cat==='lit'?'Классика! Устраивайся поудобнее.':t.cat==='sci'?'Наука — моё любимое!':t.cat==='facts'?'Сейчас удивимся!':'Читаем! Не знаешь слово — нажми на него.'); };
-  const openMock=o=>{ SFX('pop'); setMk({...o,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say',o.kind==='p2'?'Выбирай карточку — потренируем монолог!':o.kind==='drill'?'Короткая тренировка — поехали!':o.kind==='pron'?'Читай фразу вслух — я слушаю!':o.kind==='sat'?'Пробный SAT! Сосредоточься, я рядом.':'Пробный IELTS! Удачи!',0,true); };
+  const openMock=o=>{ SFX('pop'); setMk({...o,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say',o.kind==='p2'?'Выбирай карточку — потренируем монолог!':o.kind==='drill'?'Короткая тренировка — поехали!':o.kind==='pron'?'Читай фразу вслух — я слушаю!':o.kind==='sat'?'Пробный SAT! Сосредоточься, я рядом.':o.kind==='story'?'Сочиним историю из твоих слов!':o.kind==='call'?'Позвонишь мне? Я жду!':o.kind==='talk'?'Пиши — я отвечу голосом!':'Пробный IELTS! Удачи!',0,true); };
   useEffect(()=>{ const f=e=>{ const h=e.detail, ws=(h.words||[]).map(w=>({id:myId(w.en),en:w.en,ru:w.ru||'—',def:w.def||'',ipa:w.ipa||'',ex:'',src:'Учитель',track:'my',added:dayKey()}));
     if(ws.length<1) return; setSt(s=>{ const m={...(s.myWords||{})}; ws.forEach(w=>{ if(!m[w.id]) m[w.id]=w; }); return {...s,myWords:m}; });
     SFX('pop'); setTab('learn'); setSession({mode:'my',ids:ws.map(w=>w.id),key:Date.now(),extra:ws}); window.scrollTo({top:0}); W('react','happy'); W('say','Слова от учителя! Сначала карточки.'); };
     window.addEventListener('wordy:hwwords',f); return ()=>window.removeEventListener('wordy:hwwords',f); },[]);
   useEffect(()=>{ const f=e=>{ setTab('learn'); setGame(null); openMock(e.detail); }; window.addEventListener('wordy:open',f); return ()=>window.removeEventListener('wordy:open',f); },[]);
   const startListen=()=>{ SFX('pop'); setListen(Date.now()); window.scrollTo({top:0}); W('react','wave'); W('say','Слушай внимательно!'); };
+  useEffect(()=>{ const f=st.frozeNote; if(!f||f.seen||f.day!==dayKey()) return; const t=setTimeout(()=>{ SFX('pop'); W('react','happy'); W('say','❄️ Серия спасена! Потратил '+f.n+' '+plural(f.n,'заморозку','заморозки','заморозок')+'. Серия: '+st.streak+'.',0,true); update(s=>({frozeNote:{...s.frozeNote,seen:true}})); },4500); return ()=>clearTimeout(t); },[]);
+  useEffect(()=>{ const h=e=>{ const ids=((e.detail&&e.detail.ids)||[]).filter(id=>(st.myWords||{})[id]); if(!ids.length) return; SFX('pop'); setTab('learn'); setSession({mode:'my',ids,key:Date.now(),title:'Ошибки из урока'}); window.scrollTo({top:0}); W('say','Закрепим твои ошибки из урока!'); };
+    window.addEventListener('wordy:fixreview',h); return ()=>window.removeEventListener('wordy:fixreview',h); },[st.myWords]);
   const startMy=()=>{ const today=dayKey(), list=Object.values(st.myWords||{}); if(list.length<4) return;
     const ids=list.slice().sort((a,b)=>((st.due||{})[a.id]||'0').localeCompare((st.due||{})[b.id]||'0')||((st.boxes[a.id]||0)-(st.boxes[b.id]||0))).slice(0,12).map(w=>w.id);
     SFX('pop'); setTab('learn'); setSession({mode:'my',ids,key:Date.now()}); window.scrollTo({top:0}); W('react','happy'); W('say','Твои слова из тестов! Сначала карточки.'); };
   const isRev=session&&(session.mode==='review'||session.mode==='daily');
   const tr=session&&(session.mode==='my'?{id:'my',name:'Мои слова'}:isRev?{name:session.mode==='daily'?'Слова дня':'Повторение'}:TRACKS.find(t=>t.id===session.tid));
-  const unRef=useRef({key:null,un:null}); if(!session) unRef.current={key:null,un:null}; else if(unRef.current.key!==session.key||!unRef.current.un) unRef.current={key:session.key,un:(session&&(session.mode==='my'?{id:'my',title:'Слова из тестов',words:session.ids.map(id=>(st.myWords||{})[id]||(session.extra||[]).find(w=>w.id===id)).filter(Boolean)}:isRev?{id:session.mode,title:session.mode==='daily'?'Подборка на сегодня':'Слова на сегодня',words:session.ids.map(id=>ALL.find(w=>w.id===id)||(st.myWords||{})[id]).filter(Boolean)}:tr&&tr.units.find(u=>u.id===session.uid)))||null};
+  const unRef=useRef({key:null,un:null}); if(!session) unRef.current={key:null,un:null}; else if(unRef.current.key!==session.key||!unRef.current.un) unRef.current={key:session.key,un:(session&&(session.mode==='my'?{id:'my',title:session.title||'Слова из тестов',words:session.ids.map(id=>(st.myWords||{})[id]||(session.extra||[]).find(w=>w.id===id)).filter(Boolean)}:isRev?{id:session.mode,title:session.mode==='daily'?'Подборка на сегодня':'Слова на сегодня',words:session.ids.map(id=>ALL.find(w=>w.id===id)||(st.myWords||{})[id]).filter(Boolean)}:tr&&tr.units.find(u=>u.id===session.uid)))||null};
   const un=session&&unRef.current.un;
   const NavBtn=(id,label,icon,extra)=>html`<button id=${'tab-'+id} aria-current=${tab===id?'page':undefined} onClick=${()=>go(id)} ...${extra||{}}><span className="nav-ic" key=${tab===id?'on':'off'}>${icon}</span><span>${label}</span></button>`;
   return html`<div className="app">
      <${TopBar} st=${st}/>
      <main>
-       <div hidden=${tab!=='learn'}>${mk?html`<${MockScreen} key=${mk.key} mk=${mk} st=${st} update=${update} onExit=${()=>{ setMk(null); window.scrollTo({top:0}); }}/>`
+       <div className=${'tab-learn'+(!mk&&!reading&&!listen&&!(session&&un)&&!gram?' is-home':'')} hidden=${tab!=='learn'}>${mk?html`<${MockScreen} key=${mk.key} mk=${mk} st=${st} update=${update} onExit=${()=>{ setMk(null); window.scrollTo({top:0}); }}/>`
          :reading?html`<${Reader} key=${reading} x=${TEXTS.find(x=>x.id===reading)} st=${st} update=${update} onExit=${()=>{ setReading(null); window.scrollTo({top:0}); }}/>`
          :listen?html`<${Listening} key=${listen} st=${st} update=${update} onExit=${()=>{ setListen(null); window.scrollTo({top:0}); }}/>`
          :session&&un?html`<${Session} key=${session.key} track=${tr} unit=${un} mode=${session.mode||'learn'} st=${st} update=${update} onExit=${exit} active=${tab==='learn'}/>`
          :gram&&gram.view==='lesson'?html`<${GrammarLesson} key=${gram.key} st=${st} lv=${GL[gram.i]} idx=${gram.i} prevStars=${(st.gstars||{})[GL[gram.i].id]||0} update=${update} saved=${(st.gbook||{})[GL[gram.i].id]} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }} onNext=${()=>openLevel(gram.i+1)}/>`
-         :gram&&gram.view==='ref'?html`<${RefBook} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
+         :gram&&gram.view==='ref'?html`<${RefBook} st=${st} update=${update} onBack=${()=>{ setGram({view:'map'}); window.scrollTo({top:0}); }}/>`
          :gram?html`<${GrammarMap} st=${st} onBack=${()=>{ setGram(null); window.scrollTo({top:0}); }} open=${openLevel} openRef=${()=>{ setGram({view:'ref'}); window.scrollTo({top:0}); }}/>`
          :html`<${Learn} st=${st} update=${update} openText=${openText} startListen=${startListen} tsub=${tsub} setTsub=${setTsub} openMock=${openMock} track=${track} setTrack=${setTrack} sub=${sub} setSub=${setSub} openLevel=${openLevel} startUnit=${startUnit} openGrammar=${openGrammar} startReview=${startReview} startDaily=${startDaily} openGame=${id=>{ SFX('pop'); setTab('games'); setGame(id); window.scrollTo({top:0}); }} showLevel=${()=>go('progress')}/>`}</div>
-       ${acc.be?html`<div hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
-       <div hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>
-       <div hidden=${tab!=='shop'}><${House} st=${st} update=${update} preview=${preview} setPreview=${setPreview}/></div>
-       <div hidden=${tab!=='progress'}><${Progress} st=${st} update=${update} startMy=${startMy} startHard=${startHard} practice=${o=>{ setTab('learn'); openMock(o); }}/></div>
-       <div hidden=${tab!=='settings'}><${Settings} st=${st} update=${update} reset=${reset} restore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }}/></div>
+       ${acc.be?html`<div className="tab-class" hidden=${tab!=='class'}><${ClassTab} st=${st}/></div>`:null}
+       <div className=${'tab-games'+(game?' playing':'')} hidden=${tab!=='games'}><${GamesScreen} game=${game} setGame=${setGame} st=${st} update=${update} active=${tab==='games'}/></div>
+       <div className="tab-shop" hidden=${tab!=='shop'}><${House} st=${st} update=${update} preview=${preview} setPreview=${setPreview}/></div>
+       <div className="tab-progress" hidden=${tab!=='progress'}><${Progress} st=${st} update=${update} startMy=${startMy} startHard=${startHard} practice=${o=>{ setTab('learn'); openMock(o); }}/></div>
+       <div className="tab-settings" hidden=${tab!=='settings'}><${Settings} st=${st} update=${update} reset=${reset} restore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }}/></div>
      </main>
      ${st.level&&!st.age?html`<${AgeAsk} onPick=${a=>{ SFX('pop'); update(()=>({age:a})); }}/>`:null}
      ${!st.level?html`<${Onboarding} st=${st} update=${update} onRestore=${s=>{ setSt(normalize({...s})); SFX('fanfare'); W('react','cheer'); W('say','Прогресс восстановлен! С возвращением.',0,true); }} onDone=${(l,n,a)=>{ update(()=>({level:l,dailyNew:n,newbie:dayKey(),age:a})); SFX('fanfare'); FX('rain',110); W('react','cheer'); W('say','Отлично! Уровень '+l+'. Поехали учиться!',0,true); window.scrollTo({top:0}); }}/>`:null}
@@ -8140,9 +8323,9 @@ function App(){
      ${!lvlUp&&!tourOn&&!tourAsk?html`<${PushAsk} st=${st} update=${update}/>`:null}
      ${toasts.length&&!lvlUp?html`<${AchToast} key=${toasts[0].id} a=${toasts[0]} onDone=${()=>setToasts(q=>q.slice(1))}/>`:null}
      <${TutorFab} st=${st} update=${update}/>
-     <nav className="nav" aria-label="Разделы"><div className="nav-inner" data-perch="home" style=${{'--x':Math.max(0,TABS.indexOf(tab)),'--n':TABS.length}}><span className="nav-ind" aria-hidden="true"></span>
+     <nav className="nav" aria-label="Разделы"><div className="nav-brand" aria-hidden="true"><${Face}/>wordy</div><div className="nav-inner" data-perch="home" style=${{'--x':Math.max(0,TABS.indexOf(tab)),'--n':TABS.length}}><span className="nav-ind" aria-hidden="true"></span>
        ${NavBtn('learn','Учить',I.learn())}${NavBtn('games','Игры',gamesIcon())}${acc.be?NavBtn('class','Класс',accIcon(),acc.ready&&!acc.user?{'data-dot':'1','aria-label':'Класс: войди или зарегистрируйся'}:{}):null}${NavBtn('shop','Домик',I.home())}${NavBtn('progress','Прогресс',I.progress())}${NavBtn('settings','Настройки',I.settings(),{'data-home-anchor':''})}
-     </div></nav></div>`;
+     </div>${(()=>{ const g=st.goal||10, c=Math.min(st.today===dayKey()?st.todayCount:0,g); return html`<div className="nav-ledge" data-perch="home"><span className="nl-h">Сегодня</span><b>${c} / ${g} ${plural(g,'слово','слова','слов')}</b><span className="nl-bar"><i style=${{width:(c/g*100)+'%'}}></i></span><span className="nl-s">${I.flame()} ${st.streak} ${plural(st.streak,'день','дня','дней')} подряд</span></div>`; })()}</nav></div>`;
 }
 class Boundary extends React.Component{ constructor(p){ super(p); this.state={e:null}; }
   static getDerivedStateFromError(e){ return {e}; }
