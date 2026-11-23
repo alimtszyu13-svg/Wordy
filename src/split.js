@@ -1,5 +1,9 @@
-// usage: node split.js in.js out-core.js out-data.js
-const fs=require('fs'); const acorn=require('/opt/npm-tools/node_modules/acorn'); const walk=require('/opt/npm-tools/node_modules/acorn-walk');
+// Called by build.py: node split.js in.js out-core.js out-data.js
+// Moves big literal data (word lists, grammar texts) out of the code into wordy-data.js, so the code file stays small.
+const fs=require('fs');
+// acorn reads JavaScript into a tree; install it once with "npm install" in this folder
+const need=m=>{ try{ return require(m); }catch(e){ return require('/opt/npm-tools/node_modules/'+m); } };
+const acorn=need('acorn');
 const [,,inp,outCore,outData]=process.argv; const src=fs.readFileSync(inp,'utf8');
 const ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script',allowReturnOutsideFunction:true});
 const MIN=+(process.env.MIN||300);

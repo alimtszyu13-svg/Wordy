@@ -18,7 +18,7 @@ Vocabulary, 107 grammar lessons, IELTS and SAT prep, games and an AI tutor.
 ![Firebase](https://img.shields.io/badge/Firebase-hosting%20%2B%20auth-FFCA28?logo=firebase&logoColor=black)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-[Features](#features) · [Screenshots](#screenshots) · [Tech](#tech) · [Run locally](#run-locally) · [Русская версия](#русская-версия)
+[Features](#features) · [Screenshots](#screenshots) · [Tech](#tech) · [Run locally](#run-locally) · [Docs](#documentation) · [Русская версия](#русская-версия)
 
 </div>
 
@@ -44,14 +44,14 @@ Wordy puts a full grammar course, a real memorisation system and exam prep in on
 
 ## Features
 
-| | |
+| Feature | What you get |
 |---|---|
 | 📚 **Vocabulary** | 5,000+ words with IPA, audio, examples and idioms, organised level → theme → small blocks |
 | 🧠 **Memory system** | Spaced repetition. Reviews get harder as a word settles: choice → recall → typing → listening |
 | 📖 **Grammar** | 107 lessons from A1 to C1. Theory first, then typed and multiple-choice practice, up to 3 stars |
 | 🎯 **Exam prep** | IELTS Academic and SAT mock tests, listening and speaking practice |
 | 🤖 **AI tutor** | Ask about any word or rule. A short spoken conversation estimates your CEFR level |
-| 🎮 **Games** | Space typing shooter, English escape room, runner, letter-tetris, word game, crossword |
+| 🎮 **Games** | Space typing shooter, escape room, runner, falling-letters game, guess the word, words from letters, doors, save Wordy |
 | 👩‍🏫 **For teachers** | Groups, homework with attachments, feedback, daily student codes |
 | 🏆 **Progress** | Streaks, XP, coins, achievements, level-up celebrations |
 | 🌗 **Comfort** | English and Russian interface, light and dark themes, works offline, reduced-motion support |
@@ -63,10 +63,10 @@ Wordy is not an animated picture, it is a character that lives inside the interf
 ## Tech
 
 - **Front end:** HTML, CSS, JavaScript and React, built into a few static files
-- **Back end:** Firebase Hosting, Authentication (Google, Microsoft, email), Firestore, Cloud Functions
+- **Back end:** Firebase Hosting, Authentication (Google, email), Firestore
 - **AI:** Gemini through Firebase AI Logic for the tutor and the voice level test
 - **PWA:** service worker and web manifest. Google Play listing assets are in `play-store/`
-- **Mascot:** custom SVG renderer with a small physics engine: surfaces, jumps, squash and stretch, inverse-kinematics legs
+- **Mascot:** custom SVG renderer with a small physics engine: walking on interface surfaces, planted feet, jumps and falls with gravity, squash and stretch
 
 ## Run locally
 
@@ -76,7 +76,23 @@ cd Wordy
 ```
 
 Open `index.html` with any static server (for example the VS Code **Live Server** extension) and go to `/app.html`.
+
+The app is edited in `src/app.full.html` and built into `app.html` and `js/`:
+
+```bash
+cd src && npm install && cd ..   # once
+python src/build.py
+```
+
 Deploying to Firebase Hosting is described in [`docs/DEPLOY.md`](docs/DEPLOY.md).
+
+## Documentation
+
+A guide to how Wordy works, in Russian:
+
+- [`docs/GUIDE.md`](docs/GUIDE.md) — how the project is organised and how to make changes
+- [`docs/CODE-MAP.md`](docs/CODE-MAP.md) — map of the main source file
+- [`docs/FIREBASE.md`](docs/FIREBASE.md) — server side: sign-in, database, AI, security
 
 ## Status
 
@@ -84,7 +100,7 @@ Closed beta, free for users. Feedback goes through **Settings → Feedback** in 
 
 ## Author
 
-Built by **Alim Tszyu**, Bishkek, Kyrgyzstan, with Claude as a coding partner.
+Built by **Alim Tszyu**, Bishkek, Kyrgyzstan.
 
 ## License
 
@@ -104,3 +120,5 @@ MIT, see [`LICENSE`](LICENSE).
 - Русский и английский интерфейс, светлая и тёмная темы, работает как приложение на телефоне
 
 **Открыть:** https://wordy-b5142.web.app/app.html
+
+**Как устроен проект:** [docs/GUIDE.md](docs/GUIDE.md) — путеводитель по коду и инструкция, как вносить изменения.

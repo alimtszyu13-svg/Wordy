@@ -1,0 +1,8 @@
+{
+  "name": "wordy-build",
+  "private": true,
+  "description": "Tools to build Wordy: run \"npm install\" here once, then \"python src/build.py\" from the Wordy folder",
+  "dependencies": {
+    "acorn": "^8.12.0"
+  }
+}
