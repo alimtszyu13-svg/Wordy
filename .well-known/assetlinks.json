@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.alimtszyu.wordy",
+        "sha256_cert_fingerprints": ["A8:33:E9:59:0D:9D:FA:62:94:6F:5A:45:57:75:99:C4:81:F6:9E:4F:AE:A0:0C:51:D4:E2:07:D1:46:2D:88:30"]
+      }
+    }]

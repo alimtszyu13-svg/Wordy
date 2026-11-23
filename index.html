@@ -3,8 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Wordy — английский по 5 минут в день, бесплатно</title>
-<meta name="description" content="Слова, которые не забываются, грамматика от A1 до C1 простым языком, игры и пробные IELTS. Бесплатно, без рекламы и без регистрации — прямо в телефоне.">
+<title>Wordy — говори по-английски с Ворди. Бесплатно</title>
+<script>
+/* Landing language: the same choice as in the app (localStorage wordy.lang). English mode swaps the Russian text
+   on the page with a small dictionary as soon as it is parsed. */
+(function(){ var L; try{ L=localStorage.getItem('wordy.lang'); if(L!=='en'&&L!=='ru') L=localStorage.getItem('wordy.v1')?'ru':null; }catch(e){}
+  if(!L){ var ls=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'']).join(','); L=/(^|,)(ru|ky|kk|uk|be|uz|tg|az|hy)\b/i.test(ls)?'ru':'en'; }
+  window.WORDY_LANG=L; window.setWordyLang=function(l){ try{ localStorage.setItem('wordy.lang',l); }catch(e){} location.reload(); };
+  if(L!=='en') return;
+  document.documentElement.lang='en'; document.title='Wordy — speak English with Wordy. Free';
+  var D={"Wordy — говори по-английски с Ворди. Бесплатно": "Wordy — speak English with Wordy. Free", "Для учителя": "For teachers", "Войти": "Sign in", "Английский, на котором": "The English you'll actually", "заговоришь": "speak", "Позвони Ворди и поболтай по-английски голосом: он подстроится под твой уровень и мягко поправит ошибки. А слова и грамматика — по 5 минут в день и так, чтобы не забывались.": "Call Wordy and chat in English by voice: he adapts to your level and gently corrects your mistakes. Words and grammar take 5 minutes a day — and they stick.", "Начать бесплатно": "Start for free", "Я учитель": "I'm a teacher", "Бесплатно, без подписки": "Free, no subscription", "Без рекламы": "No ads", "Можно без регистрации": "No sign-up needed", "Включи JavaScript, чтобы попробовать карточку.": "Turn on JavaScript to try a card.", "Ворди можно позвонить": "You can call Wordy", "Настоящий разговор голосом, как с другом-иностранцем, только без стеснения. Выбираешь ситуацию — кафе, аэропорт, новый друг — и просто говоришь.": "A real voice conversation, like with a friend from abroad — just without the shyness. Pick a situation — a café, an airport, a new friend — and simply talk.", "Ошибки сразу в повторение.": "Mistakes go straight into review.", "Сказал «I goed» — Ворди поправит, а фраза попадёт в карточки, чтобы больше не путать.": "Said “I goed”? Wordy corrects it, and the phrase goes into your flashcards so you don't mix it up again.", "Разбор произношения.": "Pronunciation review.", "После звонка Ворди покажет слова, которые звучали неверно, и подскажет, как их сказать.": "After the call Wordy shows the words that sounded wrong and how to say them.", "Уроки голосом с доской.": "Voice lessons with a board.", "Ворди объясняет правило по-русски, пишет на доске и даёт задания, а ты отвечаешь вслух.": "Wordy explains the rule, writes on the board and gives you tasks, and you answer out loud.", "Стесняешься говорить?": "Shy to speak?", "Можно переписываться в чате — Ворди ответит голосом.": "You can text in the chat — Wordy answers by voice.", "Звонок с Ворди · Новый друг": "Call with Wordy · A new friend", "go — неправильный глагол · добавлено в повторение": "go is an irregular verb · added to review", "Знакомься, это Ворди": "Meet Wordy", "Он живёт прямо в приложении. Радуется твоим верным ответам, подбадривает после ошибок, засыпает, если долго ничего не делать, и просыпается, когда ты возвращаешься.": "He lives right inside the app. He's happy when you get it right, cheers you up after mistakes, falls asleep if nothing happens for a while and wakes up when you come back.", "Нажми на него — или подбери ему наряд.": "Tap him — or pick him an outfit.", "Без наряда": "No outfit", "Кепка": "Cap", "Корона": "Crown", "Очки": "Glasses", "Бабочка": "Bow tie", "Шапочка выпускника": "Graduation cap", "В приложении наряды и мебель для домика покупаются за монеты, которые зарабатываешь учёбой.": "In the app, outfits and furniture for his house are bought with coins you earn by studying.", "Привет! Я Ворди.": "Hi! I'm Wordy.", "Почему здесь получается не бросить": "Why you won't quit this time", "Слова не вылетают из головы": "Words don't slip away", "Каждое выученное слово Ворди возвращает на повторение именно тогда, когда ты начинаешь его забывать. После пяти повторений оно остаётся надолго.": "Wordy brings every learned word back for review right when you start to forget it. After five reviews it stays for a long time.", "1 д": "1 d", "2 д": "2 d", "4 д": "4 d", "7 д": "7 d", "15 д": "15 d", "Грамматика без зубрёжки": "Grammar without cramming", "Каждая тема — как в хорошем учебнике, только по-русски и короче: правило, таблица, живые примеры, типичные ошибки. Потом упражнения с разбором каждой ошибки.": "Every topic is like a good textbook, only shorter: a rule, a table, real examples, common mistakes. Then exercises with an explanation of every mistake.", "Учёба похожа на игру": "Studying feels like a game", "За верные ответы — монеты, а на них можно обставить домик Ворди и подобрать ему наряд. Надоело повторять — сыграй: побег из комнаты, космический тир и ещё пять игр на английские слова.": "Correct answers earn coins, and with them you can furnish Wordy's house and pick him an outfit. Tired of reviewing? Play: an escape room, a space shooter and five more English word games.", "Так это выглядит": "What it looks like", "Настоящие экраны Wordy на телефоне. На компьютере — то же самое, только с боковым меню и в несколько колонок.": "Real Wordy screens on a phone. On a computer it's the same, just with a side menu and several columns.", "План на сегодня": "Today's plan", "Ворди сам решает, с чего начать: повторить слова, выучить новые, пройти урок или сыграть.": "Wordy decides where to start: review words, learn new ones, take a lesson or play.", "Звонок с Ворди": "Call with Wordy", "Говоришь голосом — Ворди отвечает, радуется и тут же поправляет ошибки.": "You speak — Wordy answers, cheers and corrects mistakes right away.", "Урок голосом": "Voice lesson", "Правило на доске, задание вслух, а если не понял — Ворди объяснит иначе.": "The rule on the board, a task out loud, and if you don't get it, Wordy explains it another way.", "Подкаст дня": "Podcast of the day", "Ворди и Мия болтают пару минут на твоём уровне — с твоими словами. Потом 3 вопроса.": "Wordy and Mia chat for a couple of minutes at your level — with your words. Then 3 questions.", "Что внутри": "What's inside", "слов с произношением": "words with pronunciation", "Почти весь Oxford 5000 по уровням A1–C1, плюс слова для IELTS и SAT и идиомы. Повторение по умному алгоритму FSRS.": "Almost the whole Oxford 5000 by level A1–C1, plus IELTS and SAT words and idioms. Review with the smart FSRS algorithm.", "уроков грамматики": "grammar lessons", "От to be до инверсии: правило по-русски, таблицы, типичные ошибки и упражнения. Плюс справочник — неправильные глаголы, времена, предлоги.": "From to be to inversion: rules, tables, common mistakes and exercises. Plus a reference — irregular verbs, tenses, prepositions.", "разговор с Ворди": "conversation with Wordy", "Звонки на любые темы, уроки голосом, проверка уровня за 3 минуты и разбор произношения.": "Calls on any topic, voice lessons, a 3-minute level check and pronunciation review.", "текстов и подкасты": "texts and podcasts", "Чтение по уровням с переводом по нажатию, диктанты, аудирование и новый подкаст каждый день.": "Graded reading with tap-to-see meanings, dictations, listening and a new podcast every day.", "пробных IELTS": "IELTS mock tests", "Academic: Listening, Reading с примерным баллом, Writing и Speaking. И отдельный раздел SAT со словами и тестами.": "Academic: Listening, Reading with an estimated band, Writing and Speaking. And a separate SAT section with words and tests.", "игр и домик Ворди": "games and Wordy's house", "Побег из комнаты, космический тир, словопад и другие. Монеты за учёбу — на наряды и мебель.": "An escape room, a space shooter, word fall and more. Coins for studying go on outfits and furniture.", "Кому подойдёт": "Who it's for", "Начинаешь с нуля": "Starting from zero", "Выбери A1 — первая тема to be, первые слова самые частые. Ворди составит план на каждый день и подскажет, что дальше.": "Choose A1 — the first topic is to be, and the first words are the most common. Wordy makes a plan for every day and shows you what's next.", "Готовишься к IELTS или SAT": "Preparing for IELTS or the SAT", "Пробные тесты в формате экзамена, академические слова, примерный балл — и разговорная практика с Ворди для Speaking.": "Mock tests in the exam format, academic words, an estimated score — and speaking practice with Wordy.", "Ты учитель": "You're a teacher", "Группы, домашние задания с проверкой и викторины на уроке. Тоже бесплатно.": "Groups, homework with feedback and in-class quizzes. Also free.", "Как это работает": "How it works", "Для учителя: класс в телефоне": "For teachers: a class in your phone", "Зарегистрируйся как учитель — и Wordy станет рабочим местом для групп и индивидуальных учеников.": "Sign up as a teacher and Wordy becomes a workspace for groups and one-to-one students.", "Создай группу": "Create a group", "Для индивидуального ученика — отдельная группа с его именем.": "For a one-to-one student — a separate group with their name.", "Дай код дня": "Share the code of the day", "Код меняется каждый день. Или пригласи ученика по email.": "The code changes every day. Or invite a student by email.", "Задай и проверь домашку": "Assign and check homework", "Комментарии прямо к фрагментам ответа, оценка, возврат на доработку.": "Comments right on parts of the answer, a grade, sending it back for revision.", "Проведи викторину": "Run a quiz", "Вопросы на твоём экране, ученики отвечают с телефонов, после каждого вопроса — таблица лидеров.": "Questions on your screen, students answer from their phones, a leaderboard after every question.", "Частые вопросы": "FAQ", "Это правда бесплатно?": "Is it really free?", "Да. Без подписки, без пробного периода, без рекламы и без платных разделов. Монеты в Wordy зарабатываются только учёбой.": "Yes. No subscription, no trial period, no ads and no paid sections. Coins in Wordy are earned only by studying.", "Нужно регистрироваться?": "Do I need to sign up?", "Нет — открой и начни. Прогресс сохранится в браузере. Аккаунт через Google займёт пару секунд и нужен, чтобы прогресс был на всех устройствах, вступить в группу учителя и получать сертификаты.": "No — just open it and start. Your progress is saved in the browser. A Google account takes a couple of seconds and lets you keep progress on all devices, join a teacher's group and get certificates.", "Не знаю свой уровень. С чего начать?": "I don't know my level. Where do I start?", "При первом входе Ворди спросит уровень и коротко объяснит каждый. Не уверен — начни с A1: лёгкие темы пройдёшь быстро. Уровень можно сменить в любой момент.": "On your first visit Wordy asks your level and briefly explains each one. Not sure? Start with A1: you'll get through the easy topics quickly. You can change your level at any time.", "Сколько времени нужно в день?": "How much time a day does it take?", "Хватит 5–10 минут: слова дня и короткое повторение. Хочешь больше — урок грамматики, текст или игра. Можно включить напоминание, и Ворди пришлёт одно уведомление, только если ты в этот день ещё не занимался.": "5–10 minutes is enough: the words of the day and a short review. Want more — a grammar lesson, a text or a game. You can turn on a reminder, and Wordy sends one notification only if you haven't studied that day.", "Как поставить Wordy на телефон?": "How do I put Wordy on my phone?", "открой Wordy в Chrome → меню ⋮ → «Установить приложение» или «Добавить на главный экран».": "open Wordy in Chrome → menu ⋮ → “Install app” or “Add to Home screen”.", "открой Wordy в Safari → «Поделиться» → «На экран Домой».": "open Wordy in Safari → “Share” → “Add to Home Screen”.", "Wordy откроется как обычное приложение, без адресной строки. После первого запуска он работает даже без интернета.": "Wordy opens like a normal app, without the address bar. After the first launch it works even offline.", "Установить приложение": "Install the app", "Как Ворди разговаривает? Это безопасно?": "How does Wordy talk? Is it safe?", "Голос и ответы Ворди работают на ИИ Google Gemini. Чтобы поговорить, нужен микрофон и интернет — разрешение браузер спросит один раз. Для детей до 13 лет разговоры с ИИ выключены, а в каждом ответе можно нажать «Пожаловаться». Подробно — в": "Wordy's voice and answers run on Google Gemini AI. To talk you need a microphone and internet — the browser asks for permission once. AI conversations are off for children under 13, and every answer has a “Report” button. Details are in the", "политике конфиденциальности": "privacy policy", "Wordy есть в Google Play?": "Is Wordy on Google Play?", "Скоро: приложение проходит закрытое тестирование. А пока Wordy можно поставить прямо с сайта — смотри вопрос ниже, это занимает 10 секунд.": "Soon: the app is in closed testing. Meanwhile you can install Wordy straight from the website — see the question below, it takes 10 seconds.", "Ворди не будет отвлекать?": "Won't Wordy be distracting?", "Ворди подсказывает, радуется верным ответам и поддерживает после ошибок. Если хочется тишины — в Настройках его можно сделать тихим или совсем спрятать.": "Wordy gives hints, cheers your correct answers and supports you after mistakes. If you want quiet, you can make him quiet or hide him completely in Settings.", "Первый разговор — через минуту": "Your first conversation — in a minute", "Три коротких вопроса, и Ворди соберёт план на сегодня. А потом можно ему позвонить.": "Three short questions and Wordy builds today's plan. Then you can call him.", "Wordy · 2026 · Создатель —": "Wordy · 2026 · Made by", "Проверить сертификат": "Verify a certificate", "Конфиденциальность": "Privacy", "Условия использования": "Terms of use", "Открыть Wordy": "Open Wordy", "Wordy — говори по-английски с Ворди": "Wordy — speak English with Wordy", "Ворди. Нажми, чтобы он отреагировал": "Wordy. Tap him to see a reaction", "Главный экран Wordy: кольцо цели и план на сегодня": "Wordy home screen: the goal ring and today's plan", "Звонок с Ворди: Ворди радуется, ниже исправление I goed на I went": "Call with Wordy: Wordy is happy, below is the correction I goed → I went", "Наряд для Ворди": "Outfit for Wordy", "Повторение через 1, 2, 4, 7 и 15 дней": "Review after 1, 2, 4, 7 and 15 days", "Подкаст дня: Ворди и Мия болтают о потерянном зонте, текст выпуска": "Podcast of the day: Wordy and Mia chat about a lost umbrella, with the transcript", "Послушать произношение": "Listen to the pronunciation", "Урок Present Perfect голосом: доска с заданием и кнопки Повтори, Не понял, Подсказка": "A voice lesson on Present Perfect: the board with a task and the Repeat, Didn't get it and Hint buttons", "Попробуй прямо здесь": "Try it right here", "Что это значит?": "What does it mean?", "привычка": "something you do regularly", "жилище": "a place where someone lives", "кролик": "a small animal with long ears", "великолепный": "very impressive and beautiful", "благодарный": "feeling thankful", "тёртый": "cut into small pieces with a grater", "кусок торта": "a slice of cake", "сладкоежка": "someone who loves sweet food", "проще простого": "very easy", "Не путай с habitat — «среда обитания».": "Don't confuse it with habitat — the natural home of an animal.", "Похоже на great, но это другое слово: grateful — «благодарный».": "It looks like great, but it's a different word: grateful means thankful.", "Это идиома: дословно «кусок торта», а по смыслу — «проще простого».": "It's an idiom: literally “a piece of cake”, but it means “very easy”.", "Верно! +5 монет.": "Correct! +5 coins.", "Почти!": "Almost!", "Ворди вернёт это слово через 1 день, потом через 2, 4, 7 и 15.": "Wordy will bring this word back in 1 day, then in 2, 4, 7 and 15.", "Такое слово Ворди покажет снова уже завтра.": "Wordy will show a word like this again tomorrow.", "Следующее слово": "Next word", "Посмотреть итог": "See the result", "Это три из более чем 3000 слов в Wordy. Ворди сам напомнит, когда их пора повторить.": "These are three of more than 5,000 words in Wordy. Wordy reminds you when it's time to review them.", "Продолжить в Wordy": "Continue in Wordy", "Попробовать ещё раз": "Try again", "— отлично!": "— excellent!", "Ой, щекотно!": "Hee-hee, that tickles!", "Пять минут в день — и слова останутся с тобой.": "Five minutes a day — and the words stay with you.", "Знаешь, как будет «привычка»? Habit!": "Know a word for something you do every day? Habit!", "Ещё раз — и я станцую!": "Once more and I'll dance!", "Ошибся? Не страшно, повторим завтра.": "Made a mistake? No problem, we'll review it tomorrow.", "Я храню твои слова, пока ты отдыхаешь.": "I keep your words safe while you rest.", "Мне и так хорошо!": "I'm fine as I am!", "Кепка! Теперь я спортивный.": "A cap! Now I'm sporty.", "Король английского!": "The king of English!", "В очках я выгляжу умнее, правда?": "I look smarter in glasses, right?", "Бабочка — для экзамена IELTS.": "A bow tie — for the IELTS exam.", "Сдам IELTS — и сразу на выпускной!": "I'll pass IELTS and go straight to graduation!", "Ой, я задремал! Ты вернулся!": "Oh, I dozed off! You're back!", "Привет! Я Ворди. Нажми на меня!": "Hi! I'm Wordy. Tap me!", "Zzz… Нажми, чтобы разбудить.": "Zzz… Tap to wake me up.", "Готово! Wordy установлен — значок появится на главном экране.": "Done! Wordy is installed — the icon will appear on your home screen.", "Wordy уже установлен на этом устройстве.": "Wordy is already installed on this device.", "Браузер пока не предложил установку. Сделай это по шагам выше — это пара нажатий.": "The browser hasn't offered installation yet. Follow the steps above — it's a couple of taps.", "Подтверди установку в окне браузера…": "Confirm the installation in the browser window…", "Устанавливается. Значок Wordy появится на главном экране через несколько секунд.": "Installing. The Wordy icon will appear on your home screen in a few seconds.", "Установку можно сделать и позже — по шагам выше.": "You can install it later too — following the steps above."}, P=[["«{0}» — это «{1}». {2}", "“{0}” means “{1}”. {2}"], ["Слово {0} из 3", "Word {0} of 3"], ["{0} из 3{1}", "{0} of 3{1}"]], CY=/[А-Яа-яЁё]/, RX=P.map(function(p){ var parts=p[0].split(/\{(\d+)\}/), re='^', idx=[]; parts.forEach(function(x,i){ if(i%2){ re+='([\\s\\S]*?)'; idx.push(+x); } else re+=x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }); return [new RegExp(re+'$'),p[1],idx]; });
+  function core(c){ if(D[c]!=null) return D[c]; var pm=c.match(/^(.*[^\s!?.…:])([!?.…:]+)$/); if(pm&&D[pm[1]]!=null) return D[pm[1]]+pm[2];
+    for(var i=0;i<RX.length;i++){ var m=c.match(RX[i][0]); if(m){ var idx=RX[i][2]; return RX[i][1].replace(/\{(\d+)\}/g,function(_,k){ var v=m[idx.indexOf(+k)+1]||''; return CY.test(v)?(core(v.trim())||v):v; }); } }
+    var sn=c.split(/(?<=[.!?…])\s+(?=\S)/); if(sn.length>1){ var out=sn.map(function(x){ return CY.test(x)?core(x):x; }); if(out.every(function(x){ return x!=null; })) return out.join(' '); }
+    return null; }
+  function tr(s){ var m=s.match(/^(\s*)([\s\S]*?)(\s*)$/), c=m[2].replace(/\s+/g,' '), r=core(c); return r==null?s:m[1]+r+m[3]; }
+  var A=['alt','aria-label','title','placeholder','content'];
+  function walk(n){ if(n.nodeType===3){ if(CY.test(n.nodeValue)&&n.parentElement&&!n.parentElement.closest('script,style,[translate=no]')){ var t=tr(n.nodeValue); if(t!==n.nodeValue) n.nodeValue=t; } return; }
+    if(n.nodeType!==1||n.matches('script,style,[translate=no]')) return; A.forEach(function(a){ var v=n.getAttribute(a); if(v&&CY.test(v)){ var t=tr(v); if(t!==v) n.setAttribute(a,t); } });
+    for(var c=n.firstChild;c;c=c.nextSibling) walk(c); }
+  new MutationObserver(function(ms){ ms.forEach(function(m){ if(m.type==='characterData') walk(m.target); else if(m.type==='attributes') walk(m.target); else m.addedNodes.forEach(walk); }); })
+    .observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:A});
+  document.addEventListener('DOMContentLoaded',function(){ walk(document.documentElement);
+    [].forEach.call(document.querySelectorAll('img[data-en]'),function(im){ im.src=im.getAttribute('data-en'); }); });
+})();
+</script>
+<meta name="description" content="Разговаривай с Ворди по-английски голосом — он подстроится под твой уровень и мягко исправит ошибки. Слова с умным повторением, грамматика A1–C1, подкасты, пробные IELTS и SAT. Бесплатно и без рекламы.">
 <meta name="theme-color" content="#F2F3EF">
 <meta name="author" content="Alim Tszyu">
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -13,8 +37,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wordy">
-<meta property="og:title" content="Wordy — английский по 5 минут в день">
-<meta property="og:description" content="Слова, которые не забываются, грамматика A1–C1, игры и пробные IELTS. Бесплатно и без рекламы.">
+<meta property="og:title" content="Wordy — говори по-английски с Ворди">
+<meta property="og:description" content="Звонки с Ворди голосом, слова с умным повторением, грамматика A1–C1, подкасты, пробные IELTS и SAT. Бесплатно и без рекламы.">
 <meta property="og:image" content="https://wordy-b5142.web.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -178,20 +202,44 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
 }
 @media (max-width:520px){ .steps{grid-template-columns:1fr} .cta .btn{flex:1 1 100%} }
 @media (prefers-reduced-motion:reduce){ .mascot,.coins{transition:none} }
+
+/* voice section */
+.voice{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.vlist{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:14px}
+.vlist li{position:relative;padding-left:30px;color:var(--muted);font-size:16.5px;line-height:1.5}
+.vlist li::before{content:"";position:absolute;left:0;top:.42em;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px var(--accent-soft)}
+.vlist b{color:var(--ink)}
+.vdemo{background:var(--surface);border-radius:28px;padding:20px 20px 24px;display:grid;gap:10px;box-shadow:0 1px 2px rgba(20,28,40,.06),0 30px 70px -34px rgba(20,28,40,.45)}
+.vd-top{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.vd-dot{width:9px;height:9px;border-radius:50%;background:#2FB36B;box-shadow:0 0 0 4px rgba(47,179,107,.18);animation:vdP 1.6s ease-in-out infinite}
+@keyframes vdP{50%{box-shadow:0 0 0 7px rgba(47,179,107,.06)}}
+.vd{margin:0;max-width:86%;padding:10px 14px;border-radius:18px;font-size:15.5px;line-height:1.4}
+.vd.w{background:var(--accent-soft);color:var(--ink);border-bottom-left-radius:6px;justify-self:start}
+.vd.me{background:var(--bg-2,#ECEDE8);color:var(--ink);border-bottom-right-radius:6px;justify-self:end}
+.vd.fix{justify-self:center;max-width:100%;text-align:center;background:none;padding:2px 6px;font-size:15px}
+.vd.fix s{color:#D9483B}.vd.fix small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.vdemo.go .vd{opacity:0;transform:translateY(8px);animation:vdIn .45s ease forwards}
+.vdemo.go .vd:nth-of-type(1){animation-delay:.2s}.vdemo.go .vd:nth-of-type(2){animation-delay:1.3s}.vdemo.go .vd:nth-of-type(3){animation-delay:2.3s}
+.vdemo.go .vd:nth-of-type(4){animation-delay:3.2s}.vdemo.go .vd:nth-of-type(5){animation-delay:4.4s}.vdemo.go .vd:nth-of-type(6){animation-delay:5.4s}
+@keyframes vdIn{to{opacity:1;transform:none}}
+.screens{grid-template-columns:repeat(4,1fr);gap:22px}
+@media (max-width:900px){.voice{grid-template-columns:1fr;gap:28px}}
+@media (prefers-reduced-motion:reduce){.vdemo.go .vd{animation:none;opacity:1;transform:none}.vd-dot{animation:none}}
+.final{background:linear-gradient(135deg,#FF8A2A,#E4580E)!important;color:#fff}.final p{opacity:.92}.final .btn{background:#fff!important;color:#C2410C!important;box-shadow:0 10px 24px -12px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <a class="brand" href="/"><img src="/icons/face.svg" alt="">wordy</a>
-    <nav><a class="btn small ghost hide-s" href="/app.html#teacher">Для учителя</a><a class="btn small ghost" href="/app.html#class">Войти</a></nav>
+    <nav><button type="button" class="btn small ghost lang-sw" id="lang-sw" translate="no" lang="en" onclick="setWordyLang(WORDY_LANG==='en'?'ru':'en')">English</button><script>(function(){ var b=document.getElementById('lang-sw'); if(window.WORDY_LANG==='en'){ b.textContent='Русский'; b.lang='ru'; } })();</script><a class="btn small ghost hide-s" href="/app.html#teacher">Для учителя</a><a class="btn small ghost" href="/app.html#class">Войти</a></nav>
   </header>
 
   <main>
     <div class="hero">
       <div>
-        <h1>Английский, который <span class="swash">не забывается</span></h1>
-        <p class="lead">По 5 минут в день. Слова возвращаются ровно тогда, когда начинают забываться, грамматика объяснена по-русски и просто, а Ворди радуется каждому твоему успеху.</p>
+        <h1>Английский, на котором <span class="swash">заговоришь</span></h1>
+        <p class="lead">Позвони Ворди и поболтай по-английски голосом: он подстроится под твой уровень и мягко поправит ошибки. А слова и грамматика — по 5 минут в день и так, чтобы не забывались.</p>
         <div class="cta"><a class="btn" id="go" href="/app.html">Начать бесплатно</a><a class="btn ghost" href="/app.html#teacher">Я учитель</a></div>
         <ul class="free">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17 19 7.5"/></svg>Бесплатно, без подписки</li>
@@ -214,6 +262,28 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
         <noscript><p>Включи JavaScript, чтобы попробовать карточку.</p></noscript>
       </div>
     </div>
+
+    <section class="voice" aria-labelledby="h-voice">
+      <div class="voice-txt">
+        <h2 id="h-voice">Ворди можно позвонить</h2>
+        <p class="sub">Настоящий разговор голосом, как с другом-иностранцем, только без стеснения. Выбираешь ситуацию — кафе, аэропорт, новый друг — и просто говоришь.</p>
+        <ul class="vlist">
+          <li><b>Ошибки сразу в повторение.</b> Сказал «I goed» — Ворди поправит, а фраза попадёт в карточки, чтобы больше не путать.</li>
+          <li><b>Разбор произношения.</b> После звонка Ворди покажет слова, которые звучали неверно, и подскажет, как их сказать.</li>
+          <li><b>Уроки голосом с доской.</b> Ворди объясняет правило по-русски, пишет на доске и даёт задания, а ты отвечаешь вслух.</li>
+          <li><b>Стесняешься говорить?</b> Можно переписываться в чате — Ворди ответит голосом.</li>
+        </ul>
+      </div>
+      <div class="vdemo" id="vdemo" aria-hidden="true">
+        <div class="vd-top"><span class="vd-dot"></span>Звонок с Ворди · Новый друг</div>
+        <p class="vd w">Hi! What did you do last weekend?</p>
+        <p class="vd me">I goed to the park with my sister.</p>
+        <p class="vd fix"><s>I goed</s> → <b>I went</b><small>go — неправильный глагол · добавлено в повторение</small></p>
+        <p class="vd w">Oh, you went to the park? Nice! What did you do there?</p>
+        <p class="vd me">We played football and ate ice cream.</p>
+        <p class="vd w">Sounds like a perfect day! 🍦</p>
+      </div>
+    </section>
 
     <section class="meet" aria-labelledby="h-meet">
       <div class="meet-txt">
@@ -271,31 +341,32 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
 
     <section aria-labelledby="h-screens">
       <h2 id="h-screens">Так это выглядит</h2>
-      <p class="sub">Настоящие экраны Wordy на телефоне. На компьютере всё то же самое, только просторнее.</p>
+      <p class="sub">Настоящие экраны Wordy на телефоне. На компьютере — то же самое, только с боковым меню и в несколько колонок.</p>
       <div class="screens">
-        <figure><div class="phone"><img src="/img/screen-home.webp" width="560" height="1120" alt="Главный экран Wordy: цель на сегодня и план от Ворди" loading="lazy"></div><figcaption><b>План на сегодня</b>Ворди сам решает, с чего начать: повторить слова, пройти урок или сыграть.</figcaption></figure>
-        <figure><div class="phone"><img src="/img/screen-gram.webp" width="560" height="1120" alt="Урок грамматики Present Perfect с содержанием" loading="lazy"></div><figcaption><b>Урок грамматики</b>95 тем от to be до инверсии. Правило, примеры, упражнения и итоговый тест.</figcaption></figure>
-        <figure><div class="phone"><img src="/img/screen-esc.webp" width="560" height="1120" alt="Игра «Побег из комнаты»: комната, в которой нужно найти ключ" loading="lazy"></div><figcaption><b>Побег из комнаты</b>Подсказки спрятаны в записках на английском. Понял — выбрался.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-home.webp" data-en="/img/screen-home-en.webp" width="560" height="1120" alt="Главный экран Wordy: кольцо цели и план на сегодня" loading="lazy"></div><figcaption><b>План на сегодня</b>Ворди сам решает, с чего начать: повторить слова, выучить новые, пройти урок или сыграть.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-call.webp" data-en="/img/screen-call-en.webp" width="560" height="1120" alt="Звонок с Ворди: Ворди радуется, ниже исправление I goed на I went" loading="lazy"></div><figcaption><b>Звонок с Ворди</b>Говоришь голосом — Ворди отвечает, радуется и тут же поправляет ошибки.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-lesson.webp" data-en="/img/screen-lesson-en.webp" width="560" height="1120" alt="Урок Present Perfect голосом: доска с заданием и кнопки Повтори, Не понял, Подсказка" loading="lazy"></div><figcaption><b>Урок голосом</b>Правило на доске, задание вслух, а если не понял — Ворди объяснит иначе.</figcaption></figure>
+        <figure><div class="phone"><img src="/img/screen-pod.webp" data-en="/img/screen-pod-en.webp" width="560" height="1120" alt="Подкаст дня: Ворди и Мия болтают о потерянном зонте, текст выпуска" loading="lazy"></div><figcaption><b>Подкаст дня</b>Ворди и Мия болтают пару минут на твоём уровне — с твоими словами. Потом 3 вопроса.</figcaption></figure>
       </div>
     </section>
 
     <section aria-labelledby="h-inside">
       <h2 id="h-inside">Что внутри</h2>
       <div class="inside">
-        <div><span class="n">3000+</span><h3>слов с произношением</h3><p>От базовых до IELTS и SAT, плюс идиомы. Карточки, мини-тест и повторение по дням.</p></div>
-        <div><span class="n">95</span><h3>тем грамматики</h3><p>Уровни A1–C1 и 2670 упражнений. Открыто всё до твоего уровня, дальше — по мере роста.</p></div>
-        <div><span class="n">7</span><h3>игр</h3><p>Угадай слово, кроссворд, космический тир, побег из комнаты, словопад и другие.</p></div>
-        <div><span class="n">126</span><h3>текстов для чтения</h3><p>Факты, истории и классика по уровням. Нажми на незнакомое слово — увидишь перевод.</p></div>
-        <div><span class="n">10</span><h3>пробных IELTS</h3><p>Academic: Listening с озвучкой и Reading с проверкой и примерным баллом, а ещё Writing и Speaking.</p></div>
-        <div><span class="n">A1→C1</span><h3>сертификаты уровней</h3><p>Прошёл уровень — получи сертификат с кодом, который можно проверить на сайте.</p></div>
+        <div><span class="n">5 300+</span><h3>слов с произношением</h3><p>Почти весь Oxford 5000 по уровням A1–C1, плюс слова для IELTS и SAT и идиомы. Повторение по умному алгоритму FSRS.</p></div>
+        <div><span class="n">107</span><h3>уроков грамматики</h3><p>От to be до инверсии: правило по-русски, таблицы, типичные ошибки и упражнения. Плюс справочник — неправильные глаголы, времена, предлоги.</p></div>
+        <div><span class="n">24/7</span><h3>разговор с Ворди</h3><p>Звонки на любые темы, уроки голосом, проверка уровня за 3 минуты и разбор произношения.</p></div>
+        <div><span class="n">140</span><h3>текстов и подкасты</h3><p>Чтение по уровням с переводом по нажатию, диктанты, аудирование и новый подкаст каждый день.</p></div>
+        <div><span class="n">10 + SAT</span><h3>пробных IELTS</h3><p>Academic: Listening, Reading с примерным баллом, Writing и Speaking. И отдельный раздел SAT со словами и тестами.</p></div>
+        <div><span class="n">7</span><h3>игр и домик Ворди</h3><p>Побег из комнаты, космический тир, словопад и другие. Монеты за учёбу — на наряды и мебель.</p></div>
       </div>
     </section>
 
     <section aria-labelledby="h-who">
       <h2 id="h-who">Кому подойдёт</h2>
       <div class="who">
-        <div><h3>Начинаешь с нуля</h3><p>Выбери A1 — первая тема to be, первые слова самые частые. Ворди подскажет, что делать дальше.</p></div>
-        <div><h3>Готовишься к IELTS или SAT</h3><p>Пробные тесты в формате экзамена, академические слова и примерный балл, чтобы видеть рост.</p></div>
+        <div><h3>Начинаешь с нуля</h3><p>Выбери A1 — первая тема to be, первые слова самые частые. Ворди составит план на каждый день и подскажет, что дальше.</p></div>
+        <div><h3>Готовишься к IELTS или SAT</h3><p>Пробные тесты в формате экзамена, академические слова, примерный балл — и разговорная практика с Ворди для Speaking.</p></div>
         <div><h3>Ты учитель</h3><p>Группы, домашние задания с проверкой и викторины на уроке. Тоже бесплатно.</p><a href="#h-teacher">Как это работает</a></div>
       </div>
     </section>
@@ -324,12 +395,14 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
           <p>Wordy откроется как обычное приложение, без адресной строки. После первого запуска он работает даже без интернета.</p>
           <button class="btn inst-big" id="install-btn" type="button"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M5 21h14"/></svg><span>Установить приложение</span></button>
           <p class="inst-msg" id="install-msg" role="status" hidden></p></div></details>
+        <details><summary>Как Ворди разговаривает? Это безопасно?</summary><div><p>Голос и ответы Ворди работают на ИИ Google Gemini. Чтобы поговорить, нужен микрофон и интернет — разрешение браузер спросит один раз. Для детей до 13 лет разговоры с ИИ выключены, а в каждом ответе можно нажать «Пожаловаться». Подробно — в <a href="/privacy.html">политике конфиденциальности</a>.</p></div></details>
+        <details><summary>Wordy есть в Google Play?</summary><div><p>Скоро: приложение проходит закрытое тестирование. А пока Wordy можно поставить прямо с сайта — смотри вопрос ниже, это занимает 10 секунд.</p></div></details>
         <details><summary>Ворди не будет отвлекать?</summary><div><p>Ворди подсказывает, радуется верным ответам и поддерживает после ошибок. Если хочется тишины — в Настройках его можно сделать тихим или совсем спрятать.</p></div></details>
       </div>
     </section>
 
     <div class="final">
-      <div><h2>Первое слово — через 10 секунд</h2><p>Выбери уровень, и Ворди соберёт подборку на сегодня.</p></div>
+      <div><h2>Первый разговор — через минуту</h2><p>Три коротких вопроса, и Ворди соберёт план на сегодня. А потом можно ему позвонить.</p></div>
       <a class="btn" href="/app.html">Начать бесплатно</a>
     </div>
   </main>
@@ -472,5 +545,7 @@ section>.sub{color:var(--muted);margin-top:12px;max-width:38em;font-size:17.5px}
   if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('/sw.js').catch(function(){});
 })();
 </script>
+<script>(()=>{ const d=document.getElementById('vdemo'); if(!d) return; const go=()=>d.classList.add('go');
+  if(!('IntersectionObserver' in window)) return go(); const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ go(); io.disconnect(); } },{threshold:.4}); io.observe(d); })();</script>
 </body>
 </html>

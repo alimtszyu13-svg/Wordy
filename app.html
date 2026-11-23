@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover">
 <title>Wordy</title>
 <meta name="author" content="Alim Tszyu">
 <meta name="description" content="Слова с повторением по дням, грамматика A1–C1, пробные IELTS и домашние задания от учителя.">
@@ -21,6 +21,15 @@ window.__fbReady=(function(){ var V='https://www.gstatic.com/firebasejs/10.14.1/
   var core=load('app').then(function(ok){ return ok?Promise.all(['auth','firestore','storage'].map(load)).then(function(r){ return r[0]&&r[1]; }):false; });
   return Promise.race([core,new Promise(function(r){ setTimeout(function(){ r(!!(window.firebase&&window.firebase.firestore)); },25000); })]); })();
 window.WORDY_SITE=true;
+/* Interface language. A saved choice wins; people who already use Wordy keep Russian; a new visitor gets
+   Russian when the browser speaks a CIS language and English otherwise. */
+window.WORDY_LANG=(function(){ try{ var v=localStorage.getItem('wordy.lang'); if(v==='en'||v==='ru') return v;
+    if(localStorage.getItem('wordy.v1')) return 'ru'; }catch(e){}
+  var ls=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'']).join(',');
+  return /(^|,)(ru|ky|kk|uk|be|uz|tg|az|hy)\b/i.test(ls)?'ru':'en'; })();
+/* iPhone Safari ignores minimum-scale: block pinch-zoom OUT below 100% (zooming in stays allowed for accessibility) */
+try{ document.addEventListener('gesturechange',function(e){ var vv=window.visualViewport; if(e.scale<1&&(!vv||vv.scale<=1.01)) e.preventDefault(); },{passive:false}); document.addEventListener('gesturestart',function(e){ var vv=window.visualViewport; if(vv&&vv.scale<=1.01&&e.scale<1) e.preventDefault(); },{passive:false}); }catch(e){}
+if(window.WORDY_LANG==='en'){ document.documentElement.lang='en'; document.title='Wordy — English comes alive'; }
 /* keep Chrome's install prompt for our own «Установить приложение» button */
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); window.__bip=e; window.dispatchEvent(new Event('wordy-bip')); });
 window.addEventListener('appinstalled',function(){ window.__bip=null; try{ localStorage.setItem('wordy.installed','1'); }catch(e){} });
@@ -44,7 +53,7 @@ window.WORDY_LIVE={model:'gemini-3.1-flash-live-preview',alt:['gemini-2.5-flash-
 window.WORDY_AI={sdk:'13.1.0',models:['gemini-3.5-flash-lite','gemini-3.6-flash','gemini-3.8-flash'],fast:'gemini-3.5-flash-lite',tts:['gemini-3.8-flash-tts','gemini-2.5-flash-preview-tts'],recaptcha:'6LfsWBkuAAAAACfCXJHgtgvkBGhAA2d620gDEZFc',recaptchaEnterprise:true};
 if('serviceWorker' in navigator && location.protocol==='https:') window.addEventListener('load',function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
 </script>
-<link rel="preload" href="/js/wordy-data.js?v=0de9c1b21e" as="script"><link rel="preload" href="/js/wordy-core.js?v=2e255d80a1" as="script">
+<link rel="preload" href="/js/wordy-data.js?v=704ca8d3f0" as="script"><link rel="preload" href="/js/wordy-core.js?v=6792c57059" as="script">
 </head><body>
 <title>Wordy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -221,13 +230,13 @@ main>div:not([hidden]){animation:tabIn .32s cubic-bezier(.2,.8,.3,1)}@keyframes 
 .review-card.has .rv-count{animation:rvPulse 2.4s ease-in-out 3}@keyframes rvPulse{50%{transform:scale(1.12);box-shadow:0 0 0 6px rgba(46,158,91,.15)}}
 .ring circle:last-of-type{animation:ringIn 1s cubic-bezier(.2,.8,.2,1)}@keyframes ringIn{from{stroke-dashoffset:170}}
 @media (prefers-reduced-motion:reduce){main>div:not([hidden]),.bar>i,.seg .tglyph,.subtabs button,.review-card .rv-count,.ring circle,.pill-plus,.ach2-ring{animation:none!important}}
-.fz-card{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:12px;border-radius:var(--r-md);background:linear-gradient(135deg,#EAF6FF,#F6FBFF);border:1px solid #CFE6F7;color:#16324A}
-.fz-ic{font-size:30px;line-height:1;animation:fzSpin 6s ease-in-out infinite}@keyframes fzSpin{50%{transform:rotate(18deg) scale(1.06)}}.fz-main{flex:1;display:grid;gap:2px}.fz-main small{color:#4A6A85}
-.fz-dots{display:flex;gap:4px;font-size:13px}.fz-dots i{font-style:normal;color:#B9D3E6}.fz-dots i.on{color:#2D8BD8}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fz-card{background:#132433;border-color:#24425C;color:#DCEBF7}:root:not([data-theme="light"]) .fz-main small{color:#9DB8CF}}
-:root[data-theme="dark"] .fz-card{background:#132433;border-color:#24425C;color:#DCEBF7}:root[data-theme="dark"] .fz-main small{color:#9DB8CF}
+.fz-card{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:12px;row-gap:8px;padding:14px 16px;margin-bottom:12px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);color:var(--ink);box-shadow:var(--shadow)}.fz-card>.btn{grid-column:2;justify-self:start}
+.fz-ic{font-size:30px;line-height:1;animation:fzSpin 6s ease-in-out infinite}@keyframes fzSpin{50%{transform:rotate(18deg) scale(1.06)}}.fz-main{flex:1;display:grid;gap:2px}.fz-main small{color:var(--muted)}
+.fz-dots{display:flex;gap:4px;font-size:13px}.fz-dots i{font-style:normal;color:var(--line)}.fz-dots i.on{color:#2D8BD8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :root:not([data-theme="light"]) }
+:root[data-theme="dark"] :root[data-theme="dark"] 
 @media (prefers-reduced-motion:reduce){.fz-ic{animation:none}}
-.vg-more{margin-top:8px}.hero.today{display:block;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface) 70%)!important;color:var(--ink)!important;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))!important;box-shadow:var(--shadow)!important}.hero.today .eyebrow{color:var(--accent-ink)!important}.hero.today h2{color:var(--ink)!important}.hero.today .ring text{fill:var(--ink)!important}.hero.today .eyebrow{color:var(--accent-ink,var(--accent));opacity:1}.hero.today h2{color:var(--ink)}.hero.today .ring circle:first-of-type{stroke:color-mix(in srgb,var(--accent) 18%,transparent)}.hero.today .ring circle:last-of-type{stroke:var(--accent)}.hero.today .ring text{fill:var(--ink)}.hero.today.met .ring circle:last-of-type{stroke:var(--good)}.today-top{display:flex;gap:14px;align-items:center}.today-top>div{min-width:0}.hero .plan-card.pl-embed{margin:14px 0 0;padding:0;background:none;border:0;box-shadow:none}.hero .pl-embed .pl-list li{color:var(--ink);padding:8px 8px 8px 10px}.hero .pl-embed .btn.small{padding:8px 14px;min-width:0;font-size:14px}.hero .pl-embed .pl-main small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero .pl-embed .pl-reward{color:var(--muted);margin-top:10px}.hero .pl-embed.all .pl-reward{color:var(--good)}.mem-how{margin-top:8px}.mem-how summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}.prog-more{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:0 14px}.prog-more>summary{list-style:none;cursor:pointer;display:grid;gap:2px;padding:14px 0;position:relative;padding-right:24px}.prog-more>summary::-webkit-details-marker{display:none}.prog-more>summary::after{content:'›';position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:22px;color:var(--muted);transition:transform .2s}.prog-more[open]>summary::after{transform:translateY(-50%) rotate(-90deg)}.prog-more>summary .muted{font-size:13px}.prog-more[open]{padding-bottom:14px}.rung-sum .rung-main b{font-size:14px}.ach-all{display:block;margin:10px auto 0}.pace{display:grid;gap:6px;width:100%}.pace .chips{flex-wrap:nowrap}.pace-l{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}.story-start{text-align:center;padding:22px 18px 18px;border-radius:var(--r-lg);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:radial-gradient(120% 70% at 50% 0%,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow)}.story-start h3{font-family:var(--f-display);font-size:24px;margin:6px 0 4px}.story-start>.muted{max-width:34ch;margin:0 auto 14px;font-size:14.5px}.ss-hero{position:relative;width:84px;height:84px;margin:0 auto;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,var(--surface));box-shadow:inset 0 -4px 0 color-mix(in srgb,var(--accent) 30%,transparent)}.ss-book{font-size:44px;animation:ssBob 3s ease-in-out infinite}.ss-sp{position:absolute;font-size:16px;animation:ssTw 2.4s ease-in-out infinite}.ss-sp.s1{top:2px;right:0}.ss-sp.s2{bottom:8px;left:-2px;animation-delay:1.2s;font-size:12px}@keyframes ssBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}@keyframes ssTw{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}.ss-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px}.ss-w{padding:5px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-size:14px;animation:tabIn .35s both;animation-delay:calc(var(--i)*.05s)}.ss-l{font-weight:700;font-size:14px;margin:0 0 8px}.ss-topics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}.ss-t{display:grid;gap:2px;justify-items:center;padding:9px 2px 7px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:11.5px;font-weight:600;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}.ss-t span{font-size:22px;line-height:1.1}.ss-t[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface));transform:translateY(-2px)}.ss-t:active{transform:scale(.95)}@media (prefers-reduced-motion:reduce){.ss-book,.ss-sp{animation:none}}.st-errs{margin-top:14px}.pod-card{margin-bottom:10px}.pod-ic{font-size:22px}.pod{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px 16px;margin-bottom:12px}.pod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.pod-title{margin:6px 0 2px}.pod-sub{margin:0 0 10px}.pod-player{display:flex;align-items:center;gap:14px;margin:10px 0}.pod-play{width:56px;height:56px;border-radius:50%;border:0;background:var(--accent,#ff8a1f);color:#fff;font-size:20px;cursor:pointer;flex:none;box-shadow:0 6px 16px rgba(255,138,31,.35);transition:transform .15s}.pod-play:active{transform:scale(.94)}.pod-wave{display:flex;gap:4px;align-items:center;height:30px}.pod-wave i{width:4px;height:8px;border-radius:3px;background:var(--accent,#ff8a1f);opacity:.45}.pod-wave i.on{animation:podW .9s ease-in-out infinite;animation-delay:calc(var(--i)*.09s);opacity:1}@keyframes podW{0%,100%{height:6px}50%{height:28px}}.pod-who{flex:1;text-align:right}.pod-who b,.pod-text b{color:var(--accent,#ff8a1f)}.pod-who b.mia,.pod-text b.mia{color:#7b5cff}.pod-words{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.pod-text p{margin:6px 0;padding:4px 8px;border-radius:10px;transition:background .2s}.pod-text p.cur{background:var(--soft,#fff3e6)}.pod-q{margin-top:12px}.pod-qi p{margin:8px 0 6px}.pod-opts{display:flex;flex-wrap:wrap;gap:6px}.pod-o.ok{background:#2fb36b;color:#fff;border-color:#2fb36b}.pod-o.bad{background:#e5534b;color:#fff;border-color:#e5534b}.pod-res{margin-top:10px}@media (prefers-reduced-motion:reduce){.pod-wave i.on{animation:none;height:18px}}.pron-rev{margin:14px 0;text-align:left}.pron-list{display:grid;gap:8px}.pron-item{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;animation:tabIn .35s both}.pron-item:nth-child(2){animation-delay:.06s}.pron-item:nth-child(3){animation-delay:.12s}.pron-item:nth-child(4){animation-delay:.18s}.pron-say{border:0;background:var(--soft,#fff3e6);border-radius:50%;width:36px;height:36px;flex:none;cursor:pointer;font-size:16px}.pron-txt{flex:1;min-width:0}.pron-rev .pron-txt p{margin:4px 0 8px;font-size:13.5px;font-weight:400;color:var(--ink,inherit);line-height:1.4}.pron-txt small{color:var(--muted);font-size:12px;margin-left:6px}.pron-ipa{color:var(--muted);font-size:13px;font-weight:400}.pron-add{font-size:13px;padding:5px 12px;min-height:0}.st-errmsg{font-size:12px;word-break:break-word;color:var(--muted)}.ls-h{margin-top:18px}
+.vg-more{margin-top:8px}.hero.today{display:block;background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface) 70%)!important;color:var(--ink)!important;border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line))!important;box-shadow:var(--shadow)!important}.hero.today .eyebrow{color:var(--accent-ink)!important}.hero.today h2{color:var(--ink)!important}.hero.today .ring text{fill:var(--ink)!important}.hero.today .eyebrow{color:var(--accent-ink,var(--accent));opacity:1}.hero.today h2{color:var(--ink)}.hero.today .ring circle:first-of-type{stroke:color-mix(in srgb,var(--accent) 18%,transparent)}.hero.today .ring circle:last-of-type{stroke:var(--accent)}.hero.today .ring text{fill:var(--ink)}.hero.today.met .ring circle:last-of-type{stroke:var(--good)}.today-top{display:flex;gap:14px;align-items:center}.today-top>div{min-width:0}.hero .plan-card.pl-embed{margin:14px 0 0;padding:0;background:none;border:0;box-shadow:none}.hero .pl-embed .pl-list li{color:var(--ink);padding:8px 8px 8px 10px}.hero .pl-embed .btn.small{padding:8px 14px;min-width:0;font-size:14px}.hero .pl-embed .pl-main small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero .pl-embed .pl-reward{color:var(--muted);margin-top:10px}.hero .pl-embed.all .pl-reward{color:var(--good)}.mem-how{margin-top:8px}.mem-how summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted)}.prog-more{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:0 14px}.prog-more>summary{list-style:none;cursor:pointer;display:grid;gap:2px;padding:14px 0;position:relative;padding-right:24px}.prog-more>summary::-webkit-details-marker{display:none}.prog-more>summary::after{content:'›';position:absolute;right:4px;top:50%;transform:translateY(-50%) rotate(90deg);font-size:22px;color:var(--muted);transition:transform .2s}.prog-more[open]>summary::after{transform:translateY(-50%) rotate(-90deg)}.prog-more>summary .muted{font-size:13px}.prog-more[open]{padding-bottom:14px}.rung-sum .rung-main b{font-size:14px}.ach-all{display:block;margin:10px auto 0}.pace{display:grid;gap:6px;width:100%}.pace .chips{flex-wrap:nowrap}.pace-l{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}.story-start{text-align:center;padding:22px 18px 18px;border-radius:var(--r-lg);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));background:radial-gradient(120% 70% at 50% 0%,color-mix(in srgb,var(--accent) 22%,var(--surface)),var(--surface) 70%);box-shadow:var(--shadow)}.story-start h3{font-family:var(--f-display);font-size:24px;margin:6px 0 4px}.story-start>.muted{max-width:34ch;margin:0 auto 14px;font-size:14.5px}.ss-hero{position:relative;width:84px;height:84px;margin:0 auto;display:grid;place-items:center;border-radius:50%;background:color-mix(in srgb,var(--accent) 22%,var(--surface));box-shadow:inset 0 -4px 0 color-mix(in srgb,var(--accent) 30%,transparent)}.ss-book{font-size:44px;animation:ssBob 3s ease-in-out infinite}.ss-sp{position:absolute;font-size:16px;animation:ssTw 2.4s ease-in-out infinite}.ss-sp.s1{top:2px;right:0}.ss-sp.s2{bottom:8px;left:-2px;animation-delay:1.2s;font-size:12px}@keyframes ssBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(4deg)}}@keyframes ssTw{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}.ss-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px}.ss-w{padding:5px 11px;border-radius:99px;background:var(--accent-soft);color:var(--accent-ink);font-weight:700;font-size:14px;animation:tabIn .35s both;animation-delay:calc(var(--i)*.05s)}.ss-l{font-weight:700;font-size:14px;margin:0 0 8px}.ss-topics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}.ss-t{display:grid;gap:2px;justify-items:center;padding:9px 2px 7px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:11.5px;font-weight:600;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}.ss-t span{font-size:22px;line-height:1.1}.ss-t[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface));transform:translateY(-2px)}.ss-t:active{transform:scale(.95)}@media (prefers-reduced-motion:reduce){.ss-book,.ss-sp{animation:none}}.onb3{gap:10px}.onb-top{display:flex;align-items:center;justify-content:space-between;margin:-4px 0 2px}.onb-back{width:36px;height:36px;font-size:22px}span.onb-back{display:block}.onb-dots{display:flex;gap:6px}.onb-dots i{width:22px;height:6px;border-radius:99px;background:var(--bg-2);transition:background .25s,width .25s}.onb-dots i.on{background:var(--accent);width:30px}.onb-step{display:grid;gap:12px;animation:tabIn .3s both}.onb-step h1{font-size:24px;line-height:1.2;margin:0}.onb-sub{margin:-4px 0 4px;color:var(--muted)}.onb-step h2{margin:6px 0 0;font-size:17px}.onb-ages{display:grid;gap:8px}.onb-age{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-size:17px;font-weight:700;text-align:left;cursor:pointer;transition:border-color .15s,transform .15s}.onb-age span{font-size:26px}.onb-age[aria-pressed=true],.onb-n[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}.onb-age:active,.onb-n:active{transform:scale(.97)}.onb-lvls .lvl-opt{padding:7px 12px}.onb-lvls .lvl-opt small{display:block;font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.onb-lvls .lvl-opt>span:last-child{min-width:0}.onb-pace{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.onb-n{display:grid;gap:2px;justify-items:center;padding:14px 4px;border-radius:16px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}.onb-n b{font-family:var(--f-display);font-size:24px}.onb-n small{color:var(--muted);font-size:12px}.onb-step .onb-restore{margin-top:6px}.set-row>.btn,.set-row>button.btn{flex:none;white-space:nowrap}.bk-cta .btn{white-space:normal;height:auto;min-height:48px;line-height:1.25;padding-block:10px;text-wrap:balance}.lc-wrap{scroll-padding-bottom:140px}.lc-wrap .lb-type{scroll-margin-bottom:140px}.typed .talk-log{padding-top:14px;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 26px);mask-image:linear-gradient(to bottom,transparent 0,#000 26px)}.lb-dock{flex-basis:100%;display:grid;justify-items:center;gap:8px;margin-bottom:2px}.lb-dock .lb-quick small{font-size:10.5px}.lb-dock .lqb span{width:42px;height:42px;font-size:18px}.lb-dock.wait .lqb{opacity:.45}.lqb:disabled{cursor:default}.mic-round.hush{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 14%,var(--surface))!important;animation:hushP 1.2s ease-in-out infinite}@keyframes hushP{50%{box-shadow:0 0 0 8px color-mix(in srgb,var(--accent) 18%,transparent)}}@media (prefers-reduced-motion:reduce){.mic-round.hush{animation:none}}.st-errs{margin-top:14px}.pod-card{margin-bottom:10px;background:linear-gradient(135deg,#FF9447,#EE5A24)!important;color:#fff}.pod-card .btn{color:#D9480F!important}.pod-card .lc-main small{opacity:.95}.pod-ic{font-size:22px}.pod{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px 16px;margin-bottom:12px}.pod-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.pod-title{margin:6px 0 2px}.pod-sub{margin:0 0 10px}.pod-player{display:flex;align-items:center;gap:14px;margin:10px 0}.pod-play{width:56px;height:56px;border-radius:50%;border:0;background:var(--accent,#ff8a1f);color:#fff;font-size:20px;cursor:pointer;flex:none;box-shadow:0 6px 16px rgba(255,138,31,.35);transition:transform .15s}.pod-play:active{transform:scale(.94)}.pod-wave{display:flex;gap:4px;align-items:center;height:30px}.pod-wave i{width:4px;height:8px;border-radius:3px;background:var(--accent,#ff8a1f);opacity:.45}.pod-wave i.on{animation:podW .9s ease-in-out infinite;animation-delay:calc(var(--i)*.09s);opacity:1}@keyframes podW{0%,100%{height:6px}50%{height:28px}}.pod-who{flex:1;text-align:right}.pod-who b,.pod-text b{color:var(--accent,#ff8a1f)}.pod-who b.mia,.pod-text b.mia{color:#7b5cff}.pod-words{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.pod-text p{margin:6px 0;padding:4px 8px;border-radius:10px;transition:background .2s}.pod-text p.cur{background:var(--soft,#fff3e6)}.pod-q{margin-top:12px}.pod-qi p{margin:8px 0 6px}.pod-opts{display:flex;flex-wrap:wrap;gap:6px}.pod-o.ok{background:#2fb36b;color:#fff;border-color:#2fb36b}.pod-o.bad{background:#e5534b;color:#fff;border-color:#e5534b}.pod-res{margin-top:10px}@media (prefers-reduced-motion:reduce){.pod-wave i.on{animation:none;height:18px}}.pron-rev{margin:14px 0;text-align:left}.pron-list{display:grid;gap:8px}.pron-item{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;animation:tabIn .35s both}.pron-item:nth-child(2){animation-delay:.06s}.pron-item:nth-child(3){animation-delay:.12s}.pron-item:nth-child(4){animation-delay:.18s}.pron-say{border:0;background:var(--soft,#fff3e6);border-radius:50%;width:36px;height:36px;flex:none;cursor:pointer;font-size:16px}.pron-txt{flex:1;min-width:0}.pron-rev .pron-txt p{margin:4px 0 8px;font-size:13.5px;font-weight:400;color:var(--ink,inherit);line-height:1.4}.pron-txt small{color:var(--muted);font-size:12px;margin-left:6px}.pron-ipa{color:var(--muted);font-size:13px;font-weight:400}.pron-add{font-size:13px;padding:5px 12px;min-height:0}.st-errmsg{font-size:12px;word-break:break-word;color:var(--muted)}.ls-h{margin-top:18px}
 .ls-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.ls-test{display:grid;justify-items:center;gap:2px;padding:12px 4px;border-radius:var(--r-md);background:var(--surface);border:1px solid var(--line);font:inherit;color:var(--ink);cursor:pointer}
 .ls-n{font-family:var(--f-display);font-size:22px;font-weight:800}.ls-test small{font-size:11px;color:var(--muted)}.ls-test.done{border-color:#2E9E5B}.ls-test.done small{color:#2E9E5B;font-weight:700}
 .prac-wrap{margin-top:14px}.prac-h{margin-bottom:8px}.prac-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -289,8 +298,8 @@ main>div:not([hidden]){animation:tabIn .32s cubic-bezier(.2,.8,.3,1)}@keyframes 
 .lb-ex{list-style:none;margin:0;padding:0;display:grid;gap:8px}.lb-ex li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center}.lb-ex li div{display:grid}.lb-ex span{color:var(--muted);font-size:14px}.lb-ex .ex-say{width:30px;height:30px}
 .ask-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.ask-quick .chip{font-size:13px;padding:6px 11px}
 .lb-quick{display:flex;justify-content:center;gap:14px;width:100%;max-width:560px}
-.lq{display:grid;justify-items:center;gap:3px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}.lq span{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--surface);border:1px solid var(--line);font-size:20px;box-shadow:0 4px 10px -8px rgba(0,0,0,.4)}
-.lq small{font-size:11px;font-weight:700;color:var(--muted)}.lq:active span{transform:scale(.94)}.lq[aria-pressed="true"] span{border-color:var(--accent);background:var(--accent-soft)}
+.lqb{display:grid;justify-items:center;gap:3px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}.lqb span{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--surface);border:1px solid var(--line);font-size:20px;box-shadow:0 4px 10px -8px rgba(0,0,0,.4)}
+.lqb small{font-size:11px;font-weight:700;color:var(--muted)}.lqb:active span{transform:scale(.94)}.lqb[aria-pressed="true"] span{border-color:var(--accent);background:var(--accent-soft)}
 .live-top{position:relative}.live-menu{margin-left:auto;position:relative}.live-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:250px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);display:grid;gap:2px}
 .live-pop button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border:0;background:none;border-radius:10px;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}.live-pop button:hover{background:var(--bg)}.live-pop i{font-style:normal;font-size:13px;color:var(--muted)}.live-pop button[aria-checked="true"] i{color:var(--accent-ink)}
 .live-pop p{margin:4px 10px 6px;font-size:12px;line-height:1.4}
@@ -813,6 +822,9 @@ html.in-call .call-ctrl{position:sticky;bottom:0;z-index:5;background:var(--bg);
 
 /* ---- phone adaptation ---- */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* iPhone: no rubber-band past the page ends (Wordy rides the nav and the cards; the bounce made him fall off) and nothing wider than the screen, so the page can't be zoomed out */
+html,body{overscroll-behavior:none}
+html{overflow-x:clip}body{overflow-x:clip}
 button,a,input,.opt,.chip{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 #w-root{transform-origin:0 0}
 @media (hover:none){
@@ -1561,7 +1573,7 @@ button,a,input,.opt,.chip{touch-action:manipulation;-webkit-tap-highlight-color:
 :root:not([data-style="play"]) .gt-badge{border-radius:10px;box-shadow:none}
 
 /* textbook: read like a book — serif for theory */
-:root:not([data-style="play"]) .bk{border-radius:var(--r-lg);border-top-width:4px}
+:root:not([data-style="play"]) .bk{border-radius:var(--r-lg);border-top-width:4px}.bk{grid-template-columns:minmax(0,1fr)}.bk>*{min-width:0}.bk pre{max-width:100%;overflow-x:auto}.bk .bk-tbl{table-layout:fixed;width:100%;overflow-wrap:anywhere}
 :root:not([data-style="play"]) .bk-head h2{font-size:30px;font-weight:700;letter-spacing:-.025em}
 :root:not([data-style="play"]) .bk-p,:root:not([data-style="play"]) .bk-ul,:root:not([data-style="play"]) .bk-sum,:root:not([data-style="play"]) .bk-goal,:root:not([data-style="play"]) .bk-key p,:root:not([data-style="play"]) .bk-note p,:root:not([data-style="play"]) .ask-ans p{font-family:var(--f-read);font-size:17px;line-height:1.7}
 :root:not([data-style="play"]) .bk-sec h3{font-size:21px;font-weight:700}
@@ -2735,6 +2747,8 @@ main>[hidden]{display:none!important}
   .tab-settings>.set-legal,.tab-settings>.set-credit{column-span:all}
 }
 @media (min-width:1500px){ .tab-games:not(.playing) .games{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.bk-en-note{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:var(--bg-2);color:var(--muted);font-size:14px;line-height:1.45}
+.onb-lang{display:flex;justify-content:center;margin:26px 0 6px}.onb-lang .chip,.lang-chips .chip{padding:7px 14px;font-size:14px}
 </style>
 
 <div id="bg-deco" aria-hidden="true"></div>
@@ -2742,7 +2756,8 @@ main>[hidden]{display:none!important}
 <div style="display:grid;gap:14px;justify-items:center;max-width:320px"><img src="/icons/face.svg" alt="" width="72" height="72" style="animation:wsp 1.4s ease-in-out infinite">
 <b style="font-size:19px">Загружаем Wordy…</b><span id="splash-slow" style="display:none;color:#5E6672;font-size:14.5px;line-height:1.5">Медленный интернет: первый запуск может занять до минуты. Потом Wordy будет открываться сразу, даже без сети.</span></div></div>
 <style>@keyframes wsp{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@media (prefers-color-scheme:dark){#splash{color:#EBEDF0}}@media (prefers-reduced-motion:reduce){#splash img{animation:none!important}}</style>
-<script>setTimeout(function(){ var e=document.getElementById('splash-slow'); if(e) e.style.display='block'; },5000);</script></div>
+<script>if(window.WORDY_LANG==='en'){ var sb=document.querySelector('#splash b'), ss=document.getElementById('splash-slow'); if(sb) sb.textContent='Loading Wordy…'; if(ss) ss.textContent='Slow connection: the first launch can take up to a minute. After that Wordy opens instantly, even offline.'; }
+setTimeout(function(){ var e=document.getElementById('splash-slow'); if(e) e.style.display='block'; },5000);</script></div>
 <div id="wordy-layer"></div>
 
 <script>
@@ -2750,9 +2765,9 @@ main>[hidden]{display:none!important}
 window.__wordyErr=function(msg){
   try{ var r=document.getElementById('root'); if(!r||r.getAttribute('data-ok')) return;
     r.innerHTML='<div style="max-width:520px;margin:120px auto 0;padding:20px;border-radius:20px;background:var(--surface);border:1px solid var(--line);font-family:var(--f-body);color:var(--ink)">'+
-      '<b style="font-family:var(--f-display);font-size:20px">Wordy не запустился</b><p style="margin:8px 0;color:var(--muted)">Проверь интернет и обнови страницу. Если не поможет, пришли этот текст:</p>'+
+      '<b style="font-family:var(--f-display);font-size:20px">'+(window.WORDY_LANG==='en'?"Wordy didn't start":'Wordy не запустился')+'</b><p style="margin:8px 0;color:var(--muted)">'+(window.WORDY_LANG==='en'?"Check your connection and reload the page. If that doesn't help, send us this text:":'Проверь интернет и обнови страницу. Если не поможет, пришли этот текст:')+'</p>'+
       '<pre style="white-space:pre-wrap;font-size:12px;background:var(--bg-2);padding:10px;border-radius:12px">'+String(msg).replace(/</g,'&lt;').slice(0,600)+'</pre>'+
-      '<button onclick="location.reload()" style="margin-top:8px;padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:800">Обновить</button></div>';
+      '<button onclick="location.reload()" style="margin-top:8px;padding:10px 16px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:800">'+(window.WORDY_LANG==='en'?'Reload':'Обновить')+'</button></div>';
   }catch(e){}
 };
 window.addEventListener('error',function(e){ window.__wordyErr((e.message||'Ошибка')+(e.filename?' @ '+e.filename.split('/').pop()+':'+e.lineno:'')); });
@@ -3193,6 +3208,7 @@ window.Wordy = (function(){
   // ---------- surfaces ----------
   function surf(name){
     /* several elements may carry the same perch (the desktop sidebar has its own home ledge); use the last visible one */
+    if(name==='home'&&document.documentElement.classList.contains('in-call')){ const c=document.querySelector('[data-perch="'+(document.documentElement.dataset.cp||'call')+'"]'); if(c){ const r=c.getBoundingClientRect(); if(r.width>=40) return {left:r.left,right:r.right,top:r.top,width:r.width}; } }
     const es=document.querySelectorAll('[data-perch="'+name+'"]');
     for(let i=es.length-1;i>=0;i--){ const r=es[i].getBoundingClientRect(); if(r.width>=40&&r.height>=4) return {left:r.left,right:r.right,top:r.top,width:r.width}; }
     return null;
@@ -3238,7 +3254,13 @@ window.Wordy = (function(){
     while(S.dust.length>N.dust.length) S.dust.shift();
   }
   function plantFeet(){ S.feet.forEach((ft,i)=>{ ft.lx=S.local+(i?13:-13); ft.ly=0; ft.step=null; ft.end=S.t; }); }
+  /* reduced motion: no flight across the screen, but no hard jump either — fade out, move, fade in */
   function teleport(surface,local){
+    if(S.started&&S.tpFade==null){ S.tp={surface,local}; S.tpFade=S.t; return; }
+    if(S.tpFade!=null&&S.tp){ S.tp={surface,local}; return; }
+    teleportNow(surface,local);
+  }
+  function teleportNow(surface,local){
     const sf=surf(surface); if(!sf) return;
     S.mode='ground'; S.air=null; S.surface=surface; S.local=clamp(local,10,sf.width-10); S.vx=0; S.pending=null; S.crouch=0; plantFeet();
   }
@@ -3342,10 +3364,25 @@ window.Wordy = (function(){
     }
     S.bob=bob; S.shift=mix(S.shift,shift,1-Math.exp(-dt*14));
   }
+  /* the surface he was jumping to vanished mid-air (the user switched tabs): no teleport — he keeps his momentum, falls onto the bottom bar and faceplants */
+  function fall(dt){
+    const a=S.air, h=surf('home'); if(!h){ S.air=null; S.mode='ground'; teleportNow('home',100); return; }
+    a.fvy+=G*dt; S.x+=a.fvx*dt; S.y+=a.fvy*dt; a.fvx*=Math.exp(-dt*1.2);
+    const lo=h.left+30, hi=h.right-30; if(S.x<lo){ S.x=lo; a.fvx=Math.abs(a.fvx)*.3; } if(S.x>hi){ S.x=hi; a.fvx=-Math.abs(a.fvx)*.3; }
+    S.vy=a.fvy; S.vx=a.fvx; a.spin+=dt*(a.fvx>=0?1:-1)*260;
+    const k=1-Math.exp(-dt*12); S.fr.forEach((p,i)=>{ p.x=mix(p.x,(i?1:-1)*(12+Math.sin(S.t*22+i*2)*6),k); p.y=mix(p.y,-6+Math.cos(S.t*22+i*2)*6,k); });
+    if(a.fvy>0&&S.y>=h.top){ S.y=h.top; S.air=null; S.mode='ground'; S.surface='home'; S.local=clamp(S.x-h.left,30,h.width-30); S.vx=0; S.vy=0; S.pending=null; S.hops=0;
+      plantFeet(); snd('land',1.5); S.sv-=5; spawnDust(14,1.6); try{ navigator.vibrate&&navigator.vibrate(30); }catch(e){}
+      S.act={type:'trip',t:.12,fired:1,dur:3.1,lock:true,dir:a.fvx<0?-1:1,dust:true}; S.wander=null; S.atGoalT=0; }
+  }
   function air(dt){
-    const a=S.air; a.t+=dt; const t=Math.min(a.t,a.T);
+    const a=S.air; if(a.fall){ fall(dt); return; } a.t+=dt; const t=Math.min(a.t,a.T);
     let x=a.sx+a.vx*t, y=a.sy+a.vy0*t+.5*G*t*t;
-    const ts=surf(a.surface);
+    let ts=surf(a.surface);
+    if(a.surface!=='home'){ const lost=!ts||(a.lt&&(Math.abs(ts.top-a.lt.top)>90||Math.abs(ts.left-a.lt.left)>90));
+      if(lost){ a.fall=true; a.fvx=(S.x-(a.px==null?S.x:a.px))/Math.max(dt,.008); a.fvy=S.vy; a.spin=0; if(!isFinite(a.fvx)) a.fvx=0; a.fvx=clamp(a.fvx,-400,400); emote('surprised',1.2); snd('aww'); fall(dt); return; }
+      a.lt={top:ts.top,left:ts.left}; }
+    a.px=S.x;
     if(ts){ const k=t/a.T; x+=(ts.left+a.local-a.tx0)*k; y+=(ts.top-a.ty0)*k; }
     S.vy=a.vy0+G*t; S.x=x; S.y=y; S.vx=a.vx;
     const rem=a.T-a.t;
@@ -3402,7 +3439,7 @@ window.Wordy = (function(){
     if(S.crouch>0) lT=-S.crouchDir*6;
     if(S.shake>0){ S.shake-=dt; lT+=Math.sin(S.t*20)*7*Math.min(1,S.shake*2); }
     if(S.wig>0){ S.wig-=dt; lT+=Math.sin(S.t*12)*9*S.wig; S.jxv+=Math.sin(S.t*12)*30*S.wig*dt*60; }
-    lT+=S.tilt+(S.fxLean||0);
+    lT+=S.tilt+(S.fxLean||0)+(S.air&&S.air.fall?clamp(S.air.spin,-120,120):0);
     S.leanV+=(200*(lT-S.lean)-16*S.leanV)*dt; S.lean+=S.leanV*dt;
     // arms (noodle arms on springs)
     const walking=Math.abs(S.vx)>15&&S.mode==='ground';
@@ -3490,7 +3527,7 @@ window.Wordy = (function(){
     if(S.goal.surface==='home' && !S.sleeping && !S.wander && !S.act && S.atGoalT>3){ S.wanderT-=dt; if(S.wanderT<=0) startWander(); }
     if(S.wander){ S.wander.age=(S.wander.age||0)+dt; if(S.wander.age>16){ S.wander=null; S.wanderT=rnd(18,30); } }
     S.swingBoost=1;
-    if(!S.act){ S.fxLean=0; if(S.flyEl){ try{ S.flyEl.remove(); }catch(e){} S.flyEl=null; } }
+    if(!S.act){ S.fxLean=0; S.turn=0; S.faceDown=0; if(S.flyEl){ try{ S.flyEl.remove(); }catch(e){} S.flyEl=null; } }
     if(S.act&&S.act.el) S.flyEl=S.act.el;
     if(!S.act&&!RM&&!S.sleeping&&S.mode==='ground'&&Math.abs(S.vx)>75&&S.t-(S.lastTrip||-60)>75&&Math.random()<dt*.014){ S.lastTrip=S.t; S.act={type:'trip',t:0,fired:0,dur:2.1,lock:true,dir:Math.sign(S.vx)||1}; }
     if(S.sleeping){ S.snoreT=(S.snoreT||0)-dt; if(S.snoreT<=0){ snd('snore'); S.snoreT=3.4; } }
@@ -3504,14 +3541,15 @@ window.Wordy = (function(){
       if(A.type==='swing') S.swingBoost=1.7;
       if(A.type==='flap' && !A.fired){ A.fired=true; snd('flutter'); arm('flap',.95); emote('happy',1.1); }
       if(A.type==='hum'){ S.swingBoost=1.5; if(!A.fired){ A.fired=true; emote('happy',2.4); S.talkUntil=S.t+2; snd('hum'); } }
-      if(A.type==='trip'){ const d=A.dir||1;
+      if(A.type==='trip'){ const d=A.dir||1; if(A.dust){ S.fdDir=d; S.faceDown=A.t<.2?A.t/.2:A.t<1.35?1:Math.max(0,1-(A.t-1.35)/.4); }
         if(A.t<.16){ S.fxLean=d*78*(A.t/.16); if(!A.fired){ A.fired=1; emote('surprised',.5); } }
         else if(A.t<1.35){ S.fxLean=d*(80+Math.sin(A.t*30)*Math.max(0,.5-A.t)*6); if(A.fired===1){ A.fired=2; spawnDust(10,1.3); S.sv-=3.2; S.shake=.18; snd('hop'); emote('sad',1.2); try{ navigator.vibrate&&navigator.vibrate(25); }catch(e){} } }
-        else { S.fxLean=d*80*Math.max(0,1-(A.t-1.35)/.45); if(A.fired===2){ A.fired=3; emote('happy',1.4); arm('wave',.7); S.sv-=1.6; } if(A.fired===3&&A.t>1.6){ A.fired=4; say(pick(['Ой! Никто не видел?','Всё в порядке, я специально!','Пол сегодня скользкий…','Упс! Встаю-встаю.'])); } } }
+        else { S.fxLean=d*80*Math.max(0,1-(A.t-1.35)/.45); if(A.fired===2){ A.fired=3; emote(A.dust?'dizzy':'happy',A.dust?.9:1.4); arm('wave',.7); S.sv-=1.6; }
+          if(A.dust&&A.t>2.05&&A.fired<5){ A.fired=5; S.shake=.7; S.wig=.6; spawnDust(7,.7); snd('flutter'); emote('happy',1.2); setTimeout(()=>say(pick(['Ой! Я падал, но встал!','Отряхнусь — и как новенький.','Кто тут вкладки переключает? 😄','Бух! Зато быстро добрался.']),0,true),400); } if(A.fired===3&&!A.dust&&A.t>1.6){ A.fired=4; say(pick(['Ой! Никто не видел?','Всё в порядке, я специально!','Пол сегодня скользкий…','Упс! Встаю-встаю.'])); } } }
       if(A.type==='sneeze'){ if(A.t<.75){ S.fxLean=-Math.sin(A.t/.75*Math.PI/2)*9; if(!A.fired){ A.fired=1; emote('surprised',.8); } }
         else { if(A.fired===1){ A.fired=2; S.leanV+=520; S.sv-=3; S.shake=.12; snd('hop'); say('Апчхи!',900,true); spawnDust(4,.6); } S.fxLean=mix(S.fxLean||0,0,.12); if(A.t>1.1&&A.fired===2){ A.fired=3; emote('happy',1); } } }
       if(A.type==='hiccup'){ const k=[.25,1.0,1.75].findIndex(x=>A.t>=x&&A.t<x+.05); if(k>=0&&A.fired!==k+1){ A.fired=k+1; S.sv-=2.4; emote('surprised',.35); snd('blip'); if(k===0) say('Ик!',700,true); } }
-      if(A.type==='spin'){ if(!A.fired){ A.fired=1; S.sv-=2.4; emote('joy',1.2); snd('giggle'); } S.fxLean=Math.min(1,A.t/.8)*360*(A.dir||1); if(A.t>=.8&&A.fired===1){ A.fired=2; S.fxLean=0; S.leanV=0; S.lean=0; arm('up',.5); hearts(2); } if(A.t>=.8) S.fxLean=0; }
+      if(A.type==='spin'){ if(!A.fired){ A.fired=1; emote('joy',1.2); snd('giggle'); hop(30); } S.turn=Math.min(1,A.t/.8)*(A.dir||1); if(A.t>=.8&&A.fired===1){ A.fired=2; S.turn=0; arm('up',.5); hearts(2); } if(A.t>=.8) S.turn=0; }
       if(A.type==='whistle'){ if(!A.fired){ A.fired=1; emote('happy',2.4); S.talkUntil=S.t+2.2; snd('hum'); } S.tilt=Math.sin(A.t*4)*5; }
       if(A.type==='fly'){ const el=A.el, t=A.t, fx=A.ox+Math.sin(t*1.3)*90*S.K+(t>4?(t-4)*260:0), fy=A.oy+Math.cos(t*2.1)*28*S.K-(t>4?(t-4)*220:0);
         if(el){ el.style.transform='translate('+(fx-11)+'px,'+(fy-9)+'px) scaleX('+(Math.cos(t*1.3)>0?1:-1)+')'; el.style.opacity=t<.3?t/.3:t>4.6?Math.max(0,(5-t)/.4):1; }
@@ -3519,7 +3557,7 @@ window.Wordy = (function(){
         if(t>1.2&&A.fired===0){ A.fired=1; emote('love',2); say(pick(['Ой, бабочка!','Какая красивая!','Привет, бабочка!'])); }
         if(t>2.4&&A.fired===1){ A.fired=2; arm('up',.8); S.sv-=2; }
         if(t>4.2&&A.fired===2){ A.fired=3; emote('sad',.8); } }
-      if(A.t>A.dur){ if(A.el) try{ A.el.remove(); }catch(e){} S.fxLean=0; S.act=null; S.actT=rnd(5,10); }
+      if(A.t>A.dur){ if(A.el) try{ A.el.remove(); }catch(e){} S.fxLean=0; S.turn=0; S.faceDown=0; S.act=null; S.actT=rnd(5,10); }
     }
   }
   function startAct(){
@@ -3595,16 +3633,18 @@ window.Wordy = (function(){
 
   // ---------- rendering ----------
   function render(ok){
-    N.root.style.opacity=ok?1:0;
+    let op=1; if(S.tpFade!=null){ const k=S.t-S.tpFade; if(S.tp&&k>=.16){ const q=S.tp; S.tp=null; teleportNow(q.surface,q.local); S.tpFade=S.t-.16; } op=k<.16?1-k/.16:Math.min(1,(k-.16)/.24); if(!S.tp&&k>=.4){ S.tpFade=null; op=1; } }
+    N.root.style.opacity=ok?op:0;
     const h=clamp(S.h,0,1.12);
     let hs=S.s<1?-24+(1-S.s)*50:-24-(S.s-1)*16; hs=Math.min(hs,-9);
     const hipY=mix(hs-S.bob,4,h)+(h>1?(h-1)*20:0); S.hipY=hipY;
     const idleSway=S.mode==='ground'&&Math.abs(S.vx)<10&&!S.sleeping?Math.sin(S.t*1.7)*1.1*(1-h):0;
     const breath=1+Math.sin(S.t*(S.sleeping?1.3:2.2))*(S.sleeping?.025:.012);
-    const sy=S.s*breath, sx=clamp(1+(1-S.s)*.8,.86,1.3);
+    const tp=(S.turn||0)*Math.PI*2, tc=Math.cos(tp), sy=S.s*breath, sx=clamp(1+(1-S.s)*.8,.86,1.3)*(S.turn?Math.max(.16,Math.abs(tc)):1);
     N.root.style.transform=`translate3d(${f(S.x-80*S.K)}px,${f(S.y-150*S.K)}px,0) scale(${S.K})`;
     const bx=S.jx+S.shift+idleSway;
-    { const bt=`translate(${f(bx)} ${f(hipY+6+S.jy)}) rotate(${f(S.lean)}) scale(${f(sx)} ${f(sy)})`; N.body.setAttribute('transform',bt); N.back.setAttribute('transform',bt); }
+    const lieUp=S.mode==='ground'?-15*smooth(15,80,Math.abs(S.lean)):0;
+    { const bt=`translate(${f(bx)} ${f(hipY+6+S.jy+lieUp)}) rotate(${f(S.lean)}) scale(${f(sx)} ${f(sy)})`; N.body.setAttribute('transform',bt); N.back.setAttribute('transform',bt); }
     // legs: straight stubby legs, feet planted or swinging over the edge
     const k=smooth(.2,.85,h);
     [[N.legL,N.footL,0],[N.legR,N.footR,1]].forEach(([leg,foot,i])=>{
@@ -3612,9 +3652,13 @@ window.Wordy = (function(){
       const phi=Math.sin(S.swingT+(i?Math.PI:0))*.62*S.swingAmp;
       const dX=side*12+Math.max(0,phi)*side*2, dY=hipY+23*Math.cos(phi), dS=1+.42*Math.sin(phi);
       const fx=mix(S.fr[i].x,dX,k), fy=mix(S.fr[i].y,dY,k), fs=mix(1,dS,k);
-      const hx=side*13*sx+bx*.5;
-      leg.setAttribute('d',`M${f(hx)} ${f(hipY)}L${f(fx)} ${f(fy-5)}`);
-      foot.setAttribute('cx',f(fx+side*2)); foot.setAttribute('cy',f(fy-4.6));
+      let hx=side*13*sx+bx*.5, hy=hipY, ex=fx, ey=fy-5, cx=fx+side*2, cy=fy-4.6;
+      /* lying down / tumbling: the legs turn with the body around the same pivot, so they stay attached and lie on the floor */
+      if(Math.abs(S.lean)>6){ const px=bx, py=hipY+6+S.jy, rot=(x,y,deg)=>{ const r=deg*Math.PI/180, c=Math.cos(r), sn=Math.sin(r), dx=x-px, dy=y-py; return [px+dx*c-dy*sn, py+dx*sn+dy*c]; };
+        const w=smooth(12,45,Math.abs(S.lean)); [hx,hy]=rot(hx,hy,S.lean); [ex,ey]=rot(ex,ey,S.lean*w); [cx,cy]=rot(cx,cy,S.lean*w); hy+=lieUp; ey+=lieUp; cy+=lieUp; foot.setAttribute('transform',`rotate(${f(S.lean*w)} ${f(cx)} ${f(cy)})`); }
+      else foot.removeAttribute('transform');
+      leg.setAttribute('d',`M${f(hx)} ${f(hy)}L${f(ex)} ${f(ey)}`);
+      foot.setAttribute('cx',f(cx)); foot.setAttribute('cy',f(cy));
       foot.setAttribute('rx',f(9*fs)); foot.setAttribute('ry',f(5.6*fs));
     });
     S.shadowO=mix(S.shadowO,S.mode==='air'?0:.16*(1-.75*h),.2);
@@ -3636,7 +3680,7 @@ window.Wordy = (function(){
     });
     // face: whole face slides on the ball = head turn
     const fx=S.lookX*1.8, fy=S.lookY*1.1;
-    N.face.setAttribute('transform',`translate(${f(fx)} ${f(fy)})`);
+    const fdn=S.faceDown||0; N.face.setAttribute('transform',`translate(${f(fx+Math.sin(tp)*26+fdn*(S.fdDir||1)*17)} ${f(fy+fdn*8)})`); N.face.setAttribute('opacity',S.turn&&tc<-.05?0:1);
     const joy=S.emotion==='joy'||S.emotion==='love';
     [[N.eyeL,N.pupL,N.hlL,-1],[N.eyeR,N.pupR,N.hlR,1]].forEach(([eg,pu,hl,side])=>{
       const turn=Math.max(0,side*S.lookX)*.05;
@@ -3646,9 +3690,11 @@ window.Wordy = (function(){
       pu.setAttribute('rx',f(5.6*S.pupil)); pu.setAttribute('ry',f(8*S.pupil));
       hl.setAttribute('cx',f(px-1.9)); hl.setAttribute('cy',f(py-4));
     });
-    N.eyeL.setAttribute('opacity',joy?0:1); N.eyeR.setAttribute('opacity',joy?0:1);
+    /* closing: the squashed eye and the closed-lid line used to show together (a double stroke); cross-fade them instead */
+    const lid=joy?0:smooth(.3,.12,S.eye);
+    N.eyeL.setAttribute('opacity',joy?0:f(1-lid)); N.eyeR.setAttribute('opacity',joy?0:f(1-lid));
     N.joy.setAttribute('opacity',joy?1:0);
-    N.closed.setAttribute('opacity',!joy&&S.eye<.22?1:0);
+    N.closed.setAttribute('opacity',f(lid));
     if(S.shownEmo!==S.emotion){
       S.shownEmo=S.emotion; const b=BROW[S.emotion];
       N.brows.setAttribute('opacity',b?1:0);
@@ -3721,6 +3767,7 @@ window.Wordy = (function(){
   document.addEventListener('mouseout',e=>{ if(e.relatedTarget||!S.started||S.sleeping||S.mode!=='ground') return; if(Math.random()<.35&&line('leave',90,['Ты куда?','Не уходи далеко!'])) emote('sad',1.2); });
 
   return {
+    _dbg(){ return {mode:S.mode,fall:!!(S.air&&S.air.fall),act:S.act&&S.act.type,surface:S.surface,goal:S.goal.surface,x:Math.round(S.x),y:Math.round(S.y)}; },
     start(){
       if(S.started) return; S.started=true;
       const h=surf('home');
@@ -3791,8 +3838,9 @@ window.Wordy = (function(){
 })();
 </script>
 
-<script src="/js/wordy-data.js?v=0de9c1b21e"></script>
-<script src="/js/wordy-core.js?v=2e255d80a1"></script>
+<script>if(window.WORDY_LANG==="en") document.write('<script src="/js/wordy-en.js?v=fda84f295e"><\/script>');</script>
+<script src="/js/wordy-data.js?v=704ca8d3f0"></script>
+<script src="/js/wordy-core.js?v=6792c57059"></script>
 
 
 </body></html>
